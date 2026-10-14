@@ -12,6 +12,7 @@
     "db:init": "prisma db push --accept-data-loss && node prisma/seed.js",
     "db:use-postgres": "node scripts/switch-db.js postgresql",
     "db:use-sqlite": "node scripts/switch-db.js sqlite",
+    "db:setup-cloud": "node scripts/setup-cloud-db.js",
     "postinstall": "node scripts/switch-db.js auto"
   },
   "dependencies": {

@@ -1,19 +1,63 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import * as XLSX from "xlsx";
 import { ShieldAlert, RefreshCw, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
 import { AdminSidebar, AdminTab } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { AnalyticsTab } from "@/components/admin/AnalyticsTab";
-import { MenusTab } from "@/components/admin/MenusTab";
-import { TablesTab } from "@/components/admin/TablesTab";
-import { InventoryTab } from "@/components/admin/InventoryTab";
-import { ShiftsTab } from "@/components/admin/ShiftsTab";
-import { UsersTab } from "@/components/admin/UsersTab";
+import { TabSkeleton } from "@/components/admin/TabSkeleton";
+
+// Dynamic Code-Splitting Lazy Loading for all Admin Module Tabs
+const AnalyticsTab = dynamic(
+  () => import("@/components/admin/AnalyticsTab").then((m) => m.AnalyticsTab),
+  {
+    loading: () => <TabSkeleton title="Memuat Analitik Penjualan..." count={4} />,
+    ssr: false,
+  }
+);
+
+const MenusTab = dynamic(
+  () => import("@/components/admin/MenusTab").then((m) => m.MenusTab),
+  {
+    loading: () => <TabSkeleton title="Memuat Master Katalog Menu & Resep..." count={4} />,
+    ssr: false,
+  }
+);
+
+const TablesTab = dynamic(
+  () => import("@/components/admin/TablesTab").then((m) => m.TablesTab),
+  {
+    loading: () => <TabSkeleton title="Memuat Denah Meja Restoran..." count={4} />,
+    ssr: false,
+  }
+);
+
+const InventoryTab = dynamic(
+  () => import("@/components/admin/InventoryTab").then((m) => m.InventoryTab),
+  {
+    loading: () => <TabSkeleton title="Memuat Stok Bahan Baku & Inventaris..." count={4} />,
+    ssr: false,
+  }
+);
+
+const ShiftsTab = dynamic(
+  () => import("@/components/admin/ShiftsTab").then((m) => m.ShiftsTab),
+  {
+    loading: () => <TabSkeleton title="Memuat Riwayat Shift Kasir & Audit Log..." count={4} />,
+    ssr: false,
+  }
+);
+
+const UsersTab = dynamic(
+  () => import("@/components/admin/UsersTab").then((m) => m.UsersTab),
+  {
+    loading: () => <TabSkeleton title="Memuat Otorisasi Hak Akses Pengguna..." count={4} />,
+    ssr: false,
+  }
+);
 
 export default function AdminDashboardPage() {
   const { user, logout, loading: authLoading } = useAuth();
@@ -30,23 +74,32 @@ export default function AdminDashboardPage() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
 
-  // Loading states
+  // Visible lazy loading states for each tab
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+  const [loadingMenus, setLoadingMenus] = useState(false);
+  const [loadingTables, setLoadingTables] = useState(false);
+  const [loadingIngredients, setLoadingIngredients] = useState(false);
+  const [loadingShifts, setLoadingShifts] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
   // 1. Fetch Sales Summary
   const fetchSalesSummary = useCallback(async () => {
+    setLoadingAnalytics(true);
     try {
       const res = await fetch("/api/v1/admin/reports/sales-summary");
       const data = await res.json();
       if (data.success) setSalesData(data.data);
     } catch {
       console.error("Failed to load sales summary");
+    } finally {
+      setLoadingAnalytics(false);
     }
   }, []);
 
-  // 2. Fetch Menus & Categories
+  // 2. Fetch Menus & Categories (Lazy)
   const fetchMenus = useCallback(async () => {
+    setLoadingMenus(true);
     try {
       const res = await fetch("/api/v1/admin/menus");
       const data = await res.json();
@@ -56,33 +109,42 @@ export default function AdminDashboardPage() {
       }
     } catch {
       console.error("Failed to load menus");
+    } finally {
+      setLoadingMenus(false);
     }
   }, []);
 
-  // 3. Fetch Tables
+  // 3. Fetch Tables (Lazy)
   const fetchTables = useCallback(async () => {
+    setLoadingTables(true);
     try {
       const res = await fetch("/api/v1/admin/tables");
       const data = await res.json();
       if (data.success) setTables(data.data);
     } catch {
       console.error("Failed to load tables");
+    } finally {
+      setLoadingTables(false);
     }
   }, []);
 
-  // 4. Fetch Ingredients
+  // 4. Fetch Ingredients (Lazy)
   const fetchIngredients = useCallback(async () => {
+    setLoadingIngredients(true);
     try {
       const res = await fetch("/api/v1/admin/ingredients");
       const data = await res.json();
       if (data.success) setIngredients(data.data);
     } catch {
       console.error("Failed to load ingredients");
+    } finally {
+      setLoadingIngredients(false);
     }
   }, []);
 
-  // 5. Fetch Shifts & Audit Logs
+  // 5. Fetch Shifts & Audit Logs (Lazy)
   const fetchShiftsAndLogs = useCallback(async () => {
+    setLoadingShifts(true);
     try {
       const res = await fetch("/api/v1/admin/reports/shifts");
       const data = await res.json();
@@ -92,10 +154,12 @@ export default function AdminDashboardPage() {
       }
     } catch {
       console.error("Failed to load shifts");
+    } finally {
+      setLoadingShifts(false);
     }
   }, []);
 
-  // 6. Fetch Users List
+  // 6. Fetch Users List (Lazy)
   const fetchUsers = useCallback(async () => {
     setLoadingUsers(true);
     try {
@@ -133,11 +197,11 @@ export default function AdminDashboardPage() {
   // Lazy-load tabs on-demand when the admin navigates to them
   useEffect(() => {
     if (!user || user.role !== "admin") return;
-    if ((activeTab === "menus") && menus.length === 0) fetchMenus();
-    if ((activeTab === "tables") && tables.length === 0) fetchTables();
-    if ((activeTab === "inventory") && ingredients.length === 0) fetchIngredients();
-    if ((activeTab === "shifts") && shiftHistory.length === 0) fetchShiftsAndLogs();
-    if ((activeTab === "users") && usersList.length === 0) fetchUsers();
+    if (activeTab === "menus" && menus.length === 0) fetchMenus();
+    if (activeTab === "tables" && tables.length === 0) fetchTables();
+    if (activeTab === "inventory" && ingredients.length === 0) fetchIngredients();
+    if (activeTab === "shifts" && shiftHistory.length === 0) fetchShiftsAndLogs();
+    if (activeTab === "users" && usersList.length === 0) fetchUsers();
   }, [
     activeTab,
     user,
@@ -180,65 +244,68 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleUpdateMenu = async (menuId: number, form: any): Promise<boolean> => {
+  const handleUpdateMenu = async (form: any): Promise<boolean> => {
     try {
-      const res = await fetch(`/api/v1/admin/menus/${menuId}`, {
+      const res = await fetch(`/api/v1/admin/menus/${form.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
       const data = await res.json();
       if (data.success) {
-        toast.success("Perubahan menu berhasil disimpan!", "Menu Diperbarui");
+        toast.success(`Menu "${form.name}" berhasil diperbarui.`, "Menu Diperbarui");
         fetchMenus();
         return true;
       } else {
-        toast.error(data.message || "Gagal memperbarui menu.", "Gagal Update");
+        toast.error(data.message || "Gagal mengupdate menu.", "Gagal Update");
         return false;
       }
     } catch {
-      toast.error("Terjadi gangguan koneksi saat memperbarui menu.", "Gangguan Jaringan");
+      toast.error("Terjadi kesalahan koneksi saat memperbarui menu.", "Gangguan Koneksi");
       return false;
     }
   };
 
-  const handleDeleteMenu = async (menuId: number, menuName: string) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus menu "${menuName}"?`)) return;
+  const handleDeleteMenu = async (id: number, name: string) => {
+    if (!confirm(`Hapus permanen hidangan "${name}"?`)) return;
     try {
-      const res = await fetch(`/api/v1/admin/menus/${menuId}`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/admin/menus/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        toast.success(`Menu "${menuName}" berhasil dihapus.`, "Menu Dihapus");
+        toast.success(`Menu "${name}" berhasil dihapus.`, "Menu Dihapus");
         fetchMenus();
       } else {
         toast.error(data.message || "Gagal menghapus menu.", "Gagal Hapus");
       }
     } catch {
-      toast.error("Terjadi gangguan koneksi saat menghapus menu.", "Gangguan Jaringan");
+      toast.error("Gagal menghapus menu karena kendala jaringan.", "Gangguan Koneksi");
     }
   };
 
-  const handleToggleMenuAvailability = async (menuId: number, currentStatus: boolean) => {
+  const handleToggleMenuAvailability = async (id: number, current: boolean) => {
     try {
-      await fetch(`/api/v1/admin/menus/${menuId}`, {
+      const res = await fetch(`/api/v1/admin/menus/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isAvailable: !currentStatus }),
+        body: JSON.stringify({ isAvailable: !current }),
       });
-      fetchMenus();
-      toast.success(
-        `Status menu diperbarui: ${!currentStatus ? "Tersedia" : "Habis"}`,
-        "Ketersediaan Menu"
-      );
+      const data = await res.json();
+      if (data.success) {
+        toast.info(
+          !current ? "Status menu diubah menjadi [READY]." : "Status menu diubah menjadi [HABIS].",
+          "Status Ketersediaan"
+        );
+        fetchMenus();
+      }
     } catch {
-      toast.error("Gagal mengubah ketersediaan menu.", "Gagal Update");
+      toast.error("Gagal mengubah status ketersediaan menu.", "Gagal Update");
     }
   };
 
   // TABLE ACTIONS
   const handleCreateTable = async (form: any): Promise<boolean> => {
-    if (!form.tableNumber) {
-      toast.warning("Nomor meja wajib diisi.", "Nomor Meja Diperlukan");
+    if (!form.tableNumber || !form.capacity) {
+      toast.warning("Nomor meja dan kapasitas wajib diisi.", "Form Belum Lengkap");
       return false;
     }
     try {
@@ -249,11 +316,11 @@ export default function AdminDashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(`Meja #${form.tableNumber} berhasil didaftarkan!`, "Meja Ditambahkan");
+        toast.success(`Meja "${form.tableNumber}" berhasil ditambahkan!`, "Meja Ditambahkan");
         fetchTables();
         return true;
       } else {
-        toast.error(data.message || "Gagal membuat meja.", "Gagal Buat Meja");
+        toast.error(data.message || "Gagal membuat meja.", "Gagal Simpan");
         return false;
       }
     } catch {
@@ -348,14 +415,15 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // EXCEL EXPORT
-  const handleExportExcel = () => {
+  // DYNAMIC EXCEL EXPORT (Heavy library loaded strictly on demand)
+  const handleExportExcel = async () => {
     if (!salesData) {
       toast.warning("Data analitik penjualan belum siap diekspor.", "Data Belum Tersedia");
       return;
     }
 
     try {
+      const XLSX = await import("xlsx");
       const summaryRows = [
         { Indikator: "Total Omzet Penjualan (Gross)", Nilai: salesData.summary.totalRevenue },
         { Indikator: "Estimasi Laba Kotor (Gross Profit)", Nilai: salesData.summary.grossProfit },
@@ -370,69 +438,65 @@ export default function AdminDashboardPage() {
         { Metode: "Kartu Debit/Kredit", Total: salesData.paymentBreakdown.debit },
       ];
 
-      const topItemRows = (salesData.topSellingItems || []).map((i: any, idx: number) => ({
-        Ranking: idx + 1,
-        Nama_Menu: i.name,
-        Porsi_Terjual: i.quantity,
-        Total_Pendapatan: i.revenue,
+      const topMenuRows = salesData.topSellingItems.map((item: any, i: number) => ({
+        Peringkat: i + 1,
+        "Nama Hidangan": item.name,
+        "Total Terjual (Porsi)": item.quantity,
+        "Kontribusi Omzet": item.revenue,
       }));
 
       const wb = XLSX.utils.book_new();
       const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
       const wsPayments = XLSX.utils.json_to_sheet(paymentRows);
-      const wsTopItems = XLSX.utils.json_to_sheet(topItemRows);
+      const wsTopMenu = XLSX.utils.json_to_sheet(topMenuRows);
 
       XLSX.utils.book_append_sheet(wb, wsSummary, "Ringkasan Finansial");
-      XLSX.utils.book_append_sheet(wb, wsPayments, "Rekap Pembayaran");
-      XLSX.utils.book_append_sheet(wb, wsTopItems, "Menu Terlaris");
+      XLSX.utils.book_append_sheet(wb, wsPayments, "Metode Pembayaran");
+      XLSX.utils.book_append_sheet(wb, wsTopMenu, "10 Menu Terlaris");
 
       const dateStr = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(wb, `SAVORIA_Sales_Report_${dateStr}.xlsx`);
-      toast.success("File Excel berhasil di-generate dan diunduh!", "Ekspor Selesai");
-    } catch {
-      toast.error("Gagal mengekspor laporan ke format Excel.", "Ekspor Gagal");
+      XLSX.writeFile(wb, `Laporan-Restoran-Savoria-${dateStr}.xlsx`);
+      toast.success("Laporan Excel berhasil di-generate dan diunduh.", "Ekspor Berhasil");
+    } catch (err: any) {
+      toast.error(err.message || "Gagal mengunduh Excel.", "Ekspor Gagal");
     }
   };
 
-  // AUTH LOADING STATE
+  // GUARDS
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex items-center justify-center">
-        <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-2xl shadow-sm border border-slate-200/80">
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
+        <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-2xl shadow-sm border border-slate-200">
           <RefreshCw className="w-5 h-5 animate-spin text-[#EA580C]" />
-          <span className="text-sm font-medium">Memverifikasi otorisasi administrator...</span>
+          <span className="text-sm font-medium text-[#18181B]">Memverifikasi izin eksekutif admin...</span>
         </div>
       </div>
     );
   }
 
-  // ACCESS DENIED (RBAC GUARD)
   if (!user || user.role !== "admin") {
     return (
-      <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-xl">
-          <div className="w-16 h-16 rounded-full bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center mx-auto">
-            <ShieldAlert className="w-8 h-8" />
+      <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-4">
+        <div className="bg-white max-w-md w-full p-8 rounded-3xl border border-rose-200 shadow-xl text-center space-y-4">
+          <div className="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+            <ShieldAlert className="w-7 h-7" />
           </div>
-          <div>
-            <h2 className="font-serif text-2xl font-bold text-[#18181B]">Otorisasi Akses Ditolak</h2>
-            <p className="text-xs text-[#64748B] mt-2">
-              Halaman ini dikhususkan untuk <strong>Administrator</strong>. Akun Anda terdeteksi sebagai{" "}
-              <strong className="text-[#EA580C] font-mono">{user ? user.role.toUpperCase() : "GUEST (Belum Login)"}</strong>.
-            </p>
-          </div>
-          <div className="space-y-2 pt-2">
+          <h2 className="font-serif text-2xl font-bold text-[#18181B]">Akses Terbatas</h2>
+          <p className="text-xs text-[#64748B] leading-relaxed">
+            Halaman ini khusus General Manager & Eksekutif Savoria. Silakan masuk menggunakan akun kredensial Admin.
+          </p>
+          <div className="pt-2 flex flex-col gap-2">
             <Link
-              href="/login?redirect=/admin"
-              className="w-full py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs shadow-cta block transition-all"
+              href="/login"
+              className="py-3 px-4 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold transition-all shadow-md shadow-[#EA580C]/25"
             >
-              Masuk dengan Akun Admin
+              Masuk Sebagai Admin
             </Link>
             <Link
-              href="/pos"
-              className="w-full py-2.5 text-[#64748B] hover:text-[#18181B] font-semibold text-xs flex items-center justify-center gap-1 transition-all block text-center"
+              href="/"
+              className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-[#18181B] rounded-full text-xs font-semibold transition-all"
             >
-              Buka POS Kasir Terminal →
+              Kembali ke Beranda
             </Link>
           </div>
         </div>
@@ -440,17 +504,9 @@ export default function AdminDashboardPage() {
     );
   }
 
-  const tabTitles: Record<AdminTab, string> = {
-    analytics: "Ringkasan & Analitik Finansial",
-    menus: "Master Data Menu & Kategori",
-    tables: "Denah Meja & Generator QR Pass",
-    inventory: "Inventaris Bahan Baku & Resep",
-    shifts: "Rekap Shift & Audit Trail Kasir",
-    users: "Manajemen Pengguna & Otorisasi Akses",
-  };
-
   return (
-    <div className="min-h-screen bg-[#FDFBF7] flex flex-col md:flex-row text-[#18181B]">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex flex-col md:flex-row font-sans">
+      {/* SIDEBAR NAVIGATION */}
       <AdminSidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -461,64 +517,102 @@ export default function AdminDashboardPage() {
         onLogout={logout}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* MAIN ADMIN WORKSPACE */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        {/* TOP HEADER BAR */}
         <AdminHeader
           user={user}
-          activeTabTitle={tabTitles[activeTab]}
-          onRefresh={refreshAllData}
+          activeTabTitle={
+            activeTab === "analytics"
+              ? "Ringkasan Finansial & Analitik Penjualan"
+              : activeTab === "menus"
+              ? "Manajemen Menu & Resep"
+              : activeTab === "tables"
+              ? "Denah Meja & Generator QR"
+              : activeTab === "inventory"
+              ? "Inventaris & Stok Bahan Baku"
+              : activeTab === "shifts"
+              ? "Riwayat Shift Kasir & Audit Log"
+              : "Manajemen Pengguna & Otorisasi Akses"
+          }
           isRefreshing={isRefreshing}
+          onRefresh={refreshAllData}
         />
 
         <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
           {activeTab === "analytics" && (
-            <AnalyticsTab
-              salesData={salesData}
-              onRefresh={fetchSalesSummary}
-              onExportExcel={handleExportExcel}
-            />
+            loadingAnalytics && !salesData ? (
+              <TabSkeleton title="Memuat Ringkasan Analitik Penjualan..." count={4} />
+            ) : (
+              <AnalyticsTab
+                salesData={salesData}
+                onRefresh={fetchSalesSummary}
+                onExportExcel={handleExportExcel}
+              />
+            )
           )}
 
           {activeTab === "menus" && (
-            <MenusTab
-              menus={menus}
-              categories={categories}
-              onCreateMenu={handleCreateMenu}
-              onUpdateMenu={handleUpdateMenu}
-              onDeleteMenu={handleDeleteMenu}
-              onToggleAvailability={handleToggleMenuAvailability}
-            />
+            loadingMenus && menus.length === 0 ? (
+              <TabSkeleton title="Memuat Master Katalog Menu & Resep Dapur..." count={4} />
+            ) : (
+              <MenusTab
+                menus={menus}
+                categories={categories}
+                onCreateMenu={handleCreateMenu}
+                onUpdateMenu={handleUpdateMenu}
+                onDeleteMenu={handleDeleteMenu}
+                onToggleAvailability={handleToggleMenuAvailability}
+              />
+            )
           )}
 
           {activeTab === "tables" && (
-            <TablesTab
-              tables={tables}
-              onCreateTable={handleCreateTable}
-              onRegenerateQr={handleRegenerateQr}
-            />
+            loadingTables && tables.length === 0 ? (
+              <TabSkeleton title="Memuat Denah Meja & Tata Letak Restoran..." count={4} />
+            ) : (
+              <TablesTab
+                tables={tables}
+                onCreateTable={handleCreateTable}
+                onRegenerateQr={handleRegenerateQr}
+              />
+            )
           )}
 
           {activeTab === "inventory" && (
-            <InventoryTab
-              ingredients={ingredients}
-              onRestock={handleRestock}
-            />
+            loadingIngredients && ingredients.length === 0 ? (
+              <TabSkeleton title="Memuat Stok Bahan Baku & Inventaris Dapur..." count={4} />
+            ) : (
+              <InventoryTab
+                ingredients={ingredients}
+                onRestock={handleRestock}
+              />
+            )
           )}
 
           {activeTab === "shifts" && (
-            <ShiftsTab
-              shiftHistory={shiftHistory}
-              auditLogs={auditLogs}
-            />
+            loadingShifts && shiftHistory.length === 0 ? (
+              <TabSkeleton title="Memuat Riwayat Shift Kasir & Log Audit..." count={4} />
+            ) : (
+              <ShiftsTab
+                shiftHistory={shiftHistory}
+                auditLogs={auditLogs}
+              />
+            )
           )}
 
           {activeTab === "users" && (
-            <UsersTab
-              usersList={usersList}
-              loadingUsers={loadingUsers}
-              currentUser={user}
-              onCreateUser={handleCreateUser}
-              onDeleteUser={handleDeleteUser}
-            />
+            loadingUsers && usersList.length === 0 ? (
+              <TabSkeleton title="Memuat Manajemen Hak Akses Pengguna..." count={4} />
+            ) : (
+              <UsersTab
+                usersList={usersList}
+                loadingUsers={loadingUsers}
+                currentUser={user}
+                onCreateUser={handleCreateUser}
+                onDeleteUser={handleDeleteUser}
+              />
+            )
           )}
         </main>
       </div>
