@@ -9,6 +9,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
 import { formatIDR, formatDate } from "@/lib/utils";
 import { VisualFloorPlan } from "@/components/tables/VisualFloorPlan";
+import { isTableCapacityEligible } from "@/components/tables/FloorTableFurniture";
+import { DishImage } from "@/components/ui/DishImage";
 import {
   Calendar,
   Clock,
@@ -144,9 +146,18 @@ export default function SavoriaReservationPage() {
   // Cart Operations
   const addToCart = (menu: MenuItem) => {
     if (menu.modifierGroups && menu.modifierGroups.length > 0) {
-      setCustomizingMenu(menu);
-      setSelectedModifiers({});
+      // Pre-select first option for single choice groups to provide frictionless UX
+      const initialMods: Record<number, number[]> = {};
+      menu.modifierGroups.forEach((g) => {
+        if (g.options && g.options.length > 0) {
+          if (g.maxSelection === 1 || g.minSelection > 0) {
+            initialMods[g.id] = [g.options[0].id];
+          }
+        }
+      });
+      setSelectedModifiers(initialMods);
       setItemNotes("");
+      setCustomizingMenu(menu);
       return;
     }
 
@@ -168,16 +179,54 @@ export default function SavoriaReservationPage() {
         },
       ]);
     }
+    toast.success(`"${menu.name}" berhasil ditambahkan ke keranjang.`, "Menu Ditambahkan");
+  };
+
+  const toggleModifier = (groupId: number, optionId: number, maxSelection: number) => {
+    const current = selectedModifiers[groupId] || [];
+    if (maxSelection === 1) {
+      setSelectedModifiers({
+        ...selectedModifiers,
+        [groupId]: [optionId],
+      });
+    } else {
+      if (current.includes(optionId)) {
+        setSelectedModifiers({
+          ...selectedModifiers,
+          [groupId]: current.filter((id) => id !== optionId),
+        });
+      } else {
+        if (maxSelection && current.length >= maxSelection) {
+          toast.warning(`Maksimal ${maxSelection} pilihan untuk kategori ini.`, "Batas Pilihan");
+          return;
+        }
+        setSelectedModifiers({
+          ...selectedModifiers,
+          [groupId]: [...current, optionId],
+        });
+      }
+    }
   };
 
   const confirmCustomization = () => {
     if (!customizingMenu) return;
 
+    // Validate required selections
+    if (customizingMenu.modifierGroups) {
+      for (const group of customizingMenu.modifierGroups) {
+        const selected = selectedModifiers[group.id] || [];
+        if (group.minSelection > 0 && selected.length < group.minSelection) {
+          toast.warning(`Silakan pilih opsi untuk "${group.name}".`, "Pilihan Wajib");
+          return;
+        }
+      }
+    }
+
     const variantsList: { group: string; option: string; extraPrice: number }[] = [];
-    customizingMenu.modifierGroups.forEach((group) => {
+    customizingMenu.modifierGroups?.forEach((group) => {
       const selectedIds = selectedModifiers[group.id] || [];
       selectedIds.forEach((optId) => {
-        const opt = group.options.find((o: any) => o.id === optId);
+        const opt = group.options?.find((o: any) => o.id === optId);
         if (opt) {
           variantsList.push({
             group: group.name,
@@ -190,20 +239,48 @@ export default function SavoriaReservationPage() {
 
     const extraTotal = variantsList.reduce((sum, v) => sum + v.extraPrice, 0);
 
-    setCart([
-      ...cart,
-      {
-        menuId: customizingMenu.id,
-        name: customizingMenu.name,
-        price: customizingMenu.price + extraTotal,
-        quantity: 1,
-        selectedVariants: variantsList,
-        notes: itemNotes.trim(),
-      },
-    ]);
+    const existingIdx = cart.findIndex(
+      (i) =>
+        i.menuId === customizingMenu.id &&
+        JSON.stringify(i.selectedVariants) === JSON.stringify(variantsList) &&
+        i.notes === itemNotes.trim()
+    );
 
+    if (existingIdx > -1) {
+      const updated = [...cart];
+      updated[existingIdx].quantity += 1;
+      setCart(updated);
+    } else {
+      setCart([
+        ...cart,
+        {
+          menuId: customizingMenu.id,
+          name: customizingMenu.name,
+          price: customizingMenu.price + extraTotal,
+          quantity: 1,
+          selectedVariants: variantsList,
+          notes: itemNotes.trim(),
+        },
+      ]);
+    }
+
+    toast.success(`"${customizingMenu.name}" dengan kustomisasi ditambahkan ke keranjang!`, "Menu Ditambahkan");
     setCustomizingMenu(null);
   };
+
+  // Auto-check table capacity eligibility when guest count changes
+  useEffect(() => {
+    if (selectedTable) {
+      const eligibility = isTableCapacityEligible(selectedTable.capacity, guestCount);
+      if (!eligibility.eligible) {
+        setSelectedTable(null);
+        toast.info(
+          `Pilihan meja di-reset karena jumlah tamu diubah menjadi ${guestCount} orang. Silakan pilih meja berkapasitas yang sesuai pada denah lantai.`,
+          "Kapasitas Tamu Disesuaikan"
+        );
+      }
+    }
+  }, [guestCount]);
 
   const updateCartQty = (menuId: number, delta: number) => {
     const updated = cart
@@ -678,18 +755,13 @@ export default function SavoriaReservationPage() {
                     className="bg-white rounded-card border border-[#E2E8F0] overflow-hidden shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between group"
                   >
                     <div className="h-44 w-full relative bg-stone-100 overflow-hidden">
-                      {m.image ? (
-                        <Image
-                          src={m.image}
-                          alt={m.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-stone-300">
-                          <UtensilsCrossed className="w-10 h-10" />
-                        </div>
-                      )}
+                      <DishImage
+                        src={m.image}
+                        alt={m.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
                       <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] text-[#EA580C] font-bold shadow-sm">
                         Chef&apos;s Pick
                       </div>
@@ -737,7 +809,11 @@ export default function SavoriaReservationPage() {
                             className="px-3.5 sm:px-4 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold flex items-center gap-1.5 shadow-cta transition-all cursor-pointer shrink-0"
                           >
                             <Plus className="w-3.5 h-3.5" />
-                            <span>Pilih Menu</span>
+                            <span>
+                              {m.modifierGroups && m.modifierGroups.length > 0
+                                ? "Pilih Variasi"
+                                : "Pilih Menu"}
+                            </span>
                           </button>
                         )}
                       </div>
@@ -837,10 +913,18 @@ export default function SavoriaReservationPage() {
 
               <button
                 type="button"
-                disabled={!selectedTable}
+                disabled={
+                  !selectedTable ||
+                  !isTableCapacityEligible(selectedTable.capacity, guestCount).eligible
+                }
                 onClick={() => {
                   if (!selectedTable) {
                     toast.warning("Silakan pilih salah satu meja yang tersedia terlebih dahulu.", "Meja Belum Dipilih");
+                    return;
+                  }
+                  const eligibility = isTableCapacityEligible(selectedTable.capacity, guestCount);
+                  if (!eligibility.eligible) {
+                    toast.warning(eligibility.reason, "Kapasitas Meja Tidak Sesuai");
                     return;
                   }
                   setCurrentStep(4);
@@ -1199,6 +1283,164 @@ export default function SavoriaReservationPage() {
       <footer className="border-t border-[#E2E8F0] px-6 py-6 text-center text-xs text-[#64748B] bg-white mt-12">
         <p>© 2026 Savoria Modern Restaurant • Reservation & Dining System</p>
       </footer>
+
+      {/* Modal Kustomisasi Variasi Menu */}
+      {customizingMenu && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-stone-200 animate-in zoom-in-95 my-auto">
+            {/* Header Modal */}
+            <div className="relative p-5 sm:p-6 border-b border-stone-100 flex items-start gap-4">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden relative shrink-0 bg-stone-100 border border-stone-200">
+                <DishImage
+                  src={customizingMenu.image}
+                  alt={customizingMenu.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex-1 pr-6">
+                <span className="text-[10px] uppercase font-mono font-bold tracking-wider text-[#EA580C] bg-[#EA580C]/10 px-2 py-0.5 rounded-full inline-block mb-1">
+                  Kustomisasi Porsi & Rasa
+                </span>
+                <h3 className="font-display font-bold text-base sm:text-lg text-[#18181B] leading-snug">
+                  {customizingMenu.name}
+                </h3>
+                <p className="text-xs text-[#64748B] line-clamp-1 mt-0.5">
+                  {customizingMenu.description || "Hidangan haute cuisine racikan Executive Chef."}
+                </p>
+                <span className="font-display font-bold text-sm text-[#EA580C] mt-1 block">
+                  Harga Dasar: {formatIDR(customizingMenu.price)}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCustomizingMenu(null)}
+                className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-700 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body: Modifier Groups & Options */}
+            <div className="overflow-y-auto p-5 sm:p-6 space-y-5 flex-1">
+              {customizingMenu.modifierGroups?.map((group) => {
+                const isSingle = group.maxSelection === 1;
+                const currentSelected = selectedModifiers[group.id] || [];
+
+                return (
+                  <div key={group.id} className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-bold text-[#18181B]">
+                          {group.name}
+                        </h4>
+                        <span className="text-[10px] text-[#64748B]">
+                          {isSingle ? "Pilih salah satu" : `Pilih hingga ${group.maxSelection} opsi`}
+                          {group.minSelection > 0 && " • Wajib"}
+                        </span>
+                      </div>
+                      {group.minSelection > 0 && currentSelected.length === 0 && (
+                        <span className="text-[10px] text-[#EA580C] font-semibold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                          Wajib Pilih
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2">
+                      {group.options.map((opt: any) => {
+                        const isChecked = currentSelected.includes(opt.id);
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => toggleModifier(group.id, opt.id, group.maxSelection)}
+                            className={`w-full p-3 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                              isChecked
+                                ? "bg-[#EA580C]/5 border-[#EA580C] text-[#EA580C] shadow-xs"
+                                : "bg-white border-stone-200 text-[#18181B] hover:border-stone-300 hover:bg-stone-50/50"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-5 h-5 rounded-${isSingle ? "full" : "lg"} border flex items-center justify-center transition-colors ${
+                                  isChecked
+                                    ? "bg-[#EA580C] border-[#EA580C] text-white"
+                                    : "border-stone-300 bg-white"
+                                }`}
+                              >
+                                {isChecked && <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />}
+                              </div>
+                              <span className="text-xs font-semibold">{opt.name}</span>
+                            </div>
+                            <span className="text-xs font-mono font-bold text-stone-600">
+                              {opt.price > 0 ? `+${formatIDR(opt.price)}` : "Termasuk"}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Special Instructions / Notes */}
+              <div className="space-y-1.5 pt-2 border-t border-stone-100">
+                <label className="text-xs font-bold text-[#18181B] block">
+                  Catatan Khusus untuk Kitchen / Chef (Opsional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={itemNotes}
+                  onChange={(e) => setItemNotes(e.target.value)}
+                  placeholder="Contoh: Saus dipisah di mangkuk kecil, daging dipanggang medium-well, minim garam..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-[#18181B] placeholder:text-stone-400 focus:outline-none focus:border-[#EA580C]"
+                />
+              </div>
+            </div>
+
+            {/* Footer Modal */}
+            <div className="p-4 sm:p-5 border-t border-stone-100 bg-stone-50/70 flex items-center justify-between gap-3">
+              <div>
+                <span className="text-[10px] text-stone-400 block font-mono">Total Hidangan</span>
+                <span className="font-display font-bold text-base sm:text-lg text-[#18181B]">
+                  {formatIDR(
+                    customizingMenu.price +
+                      (customizingMenu.modifierGroups || []).reduce((sum, g) => {
+                        const sel = selectedModifiers[g.id] || [];
+                        return (
+                          sum +
+                          sel.reduce((optSum, oId) => {
+                            const opt = g.options?.find((o: any) => o.id === oId);
+                            return optSum + (opt?.price || 0);
+                          }, 0)
+                        );
+                      }, 0)
+                  )}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCustomizingMenu(null)}
+                  className="px-4 py-2.5 rounded-full border border-stone-200 bg-white text-stone-600 text-xs font-bold hover:bg-stone-100 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmCustomization}
+                  className="px-5 sm:px-6 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold shadow-cta flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah ke Keranjang</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

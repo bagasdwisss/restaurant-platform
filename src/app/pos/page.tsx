@@ -34,6 +34,7 @@ import { formatIDR, formatDate } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
 import { VisualFloorPlan } from "@/components/tables/VisualFloorPlan";
+import { DishImage } from "@/components/ui/DishImage";
 
 export default function PosCashierPage() {
   const { user, logout, quickLogin, loading: authLoading } = useAuth();
@@ -723,19 +724,13 @@ export default function PosCashierPage() {
                       }`}
                     >
                       <div className="relative w-full h-24 sm:h-28 rounded-xl overflow-hidden bg-slate-100 mb-2">
-                        {menu.image ? (
-                          <Image
-                            src={menu.image}
-                            alt={menu.name}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform"
-                            sizes="(max-width: 640px) 150px, 180px"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-400">
-                            <Coffee className="w-6 h-6" />
-                          </div>
-                        )}
+                        <DishImage
+                          src={menu.image}
+                          alt={menu.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform"
+                          sizes="(max-width: 640px) 150px, 180px"
+                        />
                         {!menu.isAvailable && (
                           <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-[10px] font-bold">
                             HABIS

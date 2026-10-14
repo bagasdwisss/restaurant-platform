@@ -62,6 +62,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (guestCount && table.capacity < parseInt(guestCount)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Kapasitas meja (${table.capacity} kursi) tidak mencukupi untuk jumlah tamu (${guestCount} orang).`,
+        },
+        { status: 400 }
+      );
+    }
+
     // Get active cashier shift if any
     const activeShift = await prisma.cashierShift.findFirst({
       where: { status: "open" },

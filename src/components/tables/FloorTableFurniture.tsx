@@ -9,9 +9,61 @@ import {
   DollarSign,
   ArrowRightLeft,
   Sparkles,
+  Lock,
+  AlertTriangle,
 } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { TableItemData } from "./VisualTableCard";
+import { useToast } from "@/lib/toast-context";
+
+export function getRequiredTableCapacity(guestCount: number): number {
+  if (guestCount <= 2) return 2;
+  if (guestCount <= 4) return 4;
+  if (guestCount <= 6) return 6;
+  if (guestCount <= 8) return 8;
+  return 10;
+}
+
+export function isTableCapacityEligible(
+  tableCapacity: number,
+  guestCount: number
+): {
+  eligible: boolean;
+  reason: string;
+  badge: string;
+} {
+  const reqCap = getRequiredTableCapacity(guestCount);
+
+  if (tableCapacity < guestCount) {
+    return {
+      eligible: false,
+      reason: `Kapasitas meja (${tableCapacity} kursi) tidak mencukupi untuk ${guestCount} tamu.`,
+      badge: `⛔ Kurang Kursi (${tableCapacity}/${guestCount} Pax)`,
+    };
+  }
+
+  if (tableCapacity !== reqCap) {
+    if (tableCapacity > reqCap) {
+      return {
+        eligible: false,
+        reason: `Untuk pesanan ${guestCount} tamu, silakan pilih meja ${reqCap} kursi. Meja ${tableCapacity} kursi dialokasikan khusus untuk rombongan lebih besar.`,
+        badge: `🔒 Khusus ${tableCapacity} Pax`,
+      };
+    } else {
+      return {
+        eligible: false,
+        reason: `Kapasitas meja (${tableCapacity} kursi) tidak sesuai untuk ${guestCount} tamu.`,
+        badge: `⛔ Tidak Sesuai`,
+      };
+    }
+  }
+
+  return {
+    eligible: true,
+    reason: `Sesuai untuk ${guestCount} tamu (${tableCapacity} kursi).`,
+    badge: `✓ Cocok (${tableCapacity} Pax)`,
+  };
+}
 
 interface FloorTableFurnitureProps {
   table: TableItemData;
@@ -34,13 +86,20 @@ export function FloorTableFurniture({
   onPayOrder,
   onMoveTable,
 }: FloorTableFurnitureProps) {
+  const { toast } = useToast();
+
   const isAvailable = table.status === "available";
   const isReserved = table.status === "reserved";
   const hasActiveOrder = table.orders && table.orders.length > 0;
   const isOccupied = table.status === "occupied" || hasActiveOrder;
   const activeOrder = hasActiveOrder ? table.orders![0] : null;
 
-  const isSuitable = table.capacity >= guestCount;
+  const eligibility =
+    mode === "reservation"
+      ? isTableCapacityEligible(table.capacity, guestCount)
+      : { eligible: true, reason: "", badge: "" };
+
+  const isSelectable = mode === "reservation" ? isAvailable && eligibility.eligible : isAvailable;
 
   // Determine chair layout by capacity
   const cap = table.capacity;
@@ -80,6 +139,8 @@ export function FloorTableFurniture({
       colorClasses += "bg-rose-700 border-rose-800 text-white shadow-xs";
     } else if (isReserved) {
       colorClasses += "bg-purple-700 border-purple-800 text-white shadow-xs";
+    } else if (mode === "reservation" && !eligibility.eligible) {
+      colorClasses += "bg-stone-300 border-stone-400 text-stone-500 shadow-none";
     } else {
       colorClasses += "bg-[#14281D] border-[#1E3A2B] text-emerald-300 group-hover:bg-[#EA580C] group-hover:border-[#C2410C] shadow-xs";
     }
@@ -119,7 +180,20 @@ export function FloorTableFurniture({
 
   const handleTableClick = () => {
     if (mode === "reservation") {
-      if (isAvailable && onSelect) {
+      if (!isAvailable) {
+        toast.warning(
+          `Meja ${table.tableNumber} saat ini sedang ${table.status === "occupied" ? "terisi" : "direservasi tamu lain"}. Silakan pilih meja lain.`,
+          "Meja Tidak Tersedia"
+        );
+        return;
+      }
+
+      if (!eligibility.eligible) {
+        toast.warning(eligibility.reason, "Kapasitas Meja Tidak Sesuai");
+        return;
+      }
+
+      if (onSelect) {
         onSelect(table);
       }
     } else if (mode === "pos") {
@@ -144,12 +218,14 @@ export function FloorTableFurniture({
   return (
     <div
       onClick={handleTableClick}
-      className={`relative inline-flex flex-col items-center justify-center p-2 sm:p-3 select-none cursor-pointer group transition-all duration-300 ${
+      className={`relative inline-flex flex-col items-center justify-center p-2 sm:p-3 select-none transition-all duration-300 ${
         isSelected
-          ? "scale-105 z-20"
+          ? "scale-105 z-20 cursor-pointer"
+          : mode === "reservation" && !eligibility.eligible
+          ? "opacity-45 grayscale-[35%] cursor-not-allowed z-0 hover:opacity-60"
           : isAvailable
-          ? "hover:scale-105 z-10"
-          : "opacity-90 z-0 cursor-pointer"
+          ? "hover:scale-105 z-10 cursor-pointer group"
+          : "opacity-85 z-0 cursor-pointer group"
       }`}
     >
       {/* Top Status Pill Hovering over Furniture */}
@@ -162,10 +238,20 @@ export function FloorTableFurniture({
               ? "bg-rose-100 text-rose-800 border border-rose-300"
               : isReserved
               ? "bg-purple-100 text-purple-800 border border-purple-300"
+              : mode === "reservation" && !eligibility.eligible
+              ? "bg-stone-200 text-stone-600 border border-stone-300"
               : "bg-emerald-100 text-emerald-800 border border-emerald-300 group-hover:bg-[#EA580C] group-hover:text-white"
           }`}
         >
-          {isSelected ? "✓ Terpilih" : isOccupied ? "Terisi" : isReserved ? "Reserved" : "Tersedia"}
+          {isSelected
+            ? "✓ Terpilih"
+            : isOccupied
+            ? "Terisi"
+            : isReserved
+            ? "Reserved"
+            : mode === "reservation" && !eligibility.eligible
+            ? eligibility.badge
+            : "Tersedia"}
         </span>
       </div>
 
@@ -263,9 +349,9 @@ export function FloorTableFurniture({
           {areaTag}
         </span>
 
-        {mode === "reservation" && !isSuitable && isAvailable && (
-          <span className="text-[8px] text-[#EA580C] font-semibold bg-amber-50 px-1 py-0.2 rounded border border-amber-200 inline-block mt-0.5">
-            &lt; {guestCount} tamu
+        {mode === "reservation" && !eligibility.eligible && isAvailable && (
+          <span className="text-[9px] text-[#C2410C] font-bold bg-amber-100/90 px-2 py-0.5 rounded-full border border-amber-300 inline-block mt-1 shadow-xs">
+            {eligibility.badge}
           </span>
         )}
       </div>

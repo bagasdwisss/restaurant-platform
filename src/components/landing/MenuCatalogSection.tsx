@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Star, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { CatalogDish, MenuFilterTab } from "@/data/landing-menu";
+import { DishImage } from "@/components/ui/DishImage";
 
 interface MenuCatalogSectionProps {
   tabs: MenuFilterTab[];
@@ -84,7 +85,7 @@ export function MenuCatalogSection({
             >
               {/* Image Container with high-res object cover */}
               <div className="w-full xs:w-24 sm:w-28 h-36 xs:h-24 sm:h-28 rounded-xl overflow-hidden relative shrink-0 bg-stone-100 self-center border border-[#E2E8F0]/60">
-                <Image
+                <DishImage
                   src={item.image}
                   alt={item.name}
                   fill

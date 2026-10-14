@@ -135,7 +135,7 @@ export const ALL_CATALOG_DISHES: CatalogDish[] = [
     priceIDR: 250000,
     rating: 4.9,
     country: "Italia",
-    image: "https://images.unsplash.com/photo-1592417817098-8f3d6910985b?auto=format&fit=crop&w=800&q=80",
+    image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80",
   },
   {
     id: 205,
@@ -203,7 +203,7 @@ export const ALL_CATALOG_DISHES: CatalogDish[] = [
     priceIDR: 570000,
     rating: 4.9,
     country: "Prancis",
-    image: "https://images.unsplash.com/photo-1514944298352-78d1245037e9?auto=format&fit=crop&w=800&q=80",
+    image: "https://images.unsplash.com/photo-1518492104633-130d0cc84637?auto=format&fit=crop&w=800&q=80",
   },
   {
     id: 211,
@@ -293,7 +293,7 @@ export const ALL_CATALOG_DISHES: CatalogDish[] = [
     priceIDR: 420000,
     rating: 4.8,
     country: "Italia",
-    image: "https://images.unsplash.com/photo-1621996346565-e3d5d6281781?auto=format&fit=crop&w=800&q=80",
+    image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80",
   },
   {
     id: 219,
@@ -440,7 +440,7 @@ export const ALL_CATALOG_DISHES: CatalogDish[] = [
     priceIDR: 675000,
     rating: 4.9,
     country: "Tiongkok",
-    image: "https://images.unsplash.com/photo-1514944298352-78d1245037e9?auto=format&fit=crop&w=800&q=80",
+    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80",
   },
   {
     id: 232,

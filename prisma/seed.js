@@ -200,7 +200,7 @@ async function main() {
       country: 'Italia',
       description: 'Keju Burrata segar lembut dari Puglia, tomat ceri confit karamel madu, minyak zaitun extra virgin, dan daun basil wangi.',
       price: 210000,
-      image: 'https://images.unsplash.com/photo-1592417817098-8f3d69102a56?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80',
     },
 
     // 2. WORLD SIGNATURE MAINS & STEAKS (7 Items)
@@ -275,7 +275,7 @@ async function main() {
       country: 'Prancis',
       description: 'Dada bebek Prancis kulit krispi terpanggang madu lavender, jus ceri liar asam manis, dan puree ubi jalar beludru.',
       price: 480000,
-      image: 'https://images.unsplash.com/photo-1514944298352-7a8e0f6c2578?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1518492104633-130d0cc84637?auto=format&fit=crop&w=800&q=80',
       recipes: [{ ingName: 'French Magret Duck Breast (g)', qty: 280 }],
     },
     {
@@ -324,7 +324,7 @@ async function main() {
       country: 'Italia',
       description: 'Pasta lebar pappardelle dengan daging pipi sapi Wagyu direbus 12 jam bersama anggur Chianti dan keju Pecorino Romano.',
       price: 380000,
-      image: 'https://images.unsplash.com/photo-1621996346565-e3d5d6281699?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80',
     },
     {
       categoryId: catPasta.id,
@@ -445,7 +445,7 @@ async function main() {
       country: 'Indonesia',
       description: 'Paha bebek confit 18 bumbu base genep Bali, kuah gulai saffron kecombrang, lawar asap, dan sambal matah kelapa murni.',
       price: 450000,
-      image: 'https://images.unsplash.com/photo-1514944298352-7a8e0f6c2578?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
       recipes: [{ ingName: 'French Magret Duck Breast (g)', qty: 250 }],
     },
     {

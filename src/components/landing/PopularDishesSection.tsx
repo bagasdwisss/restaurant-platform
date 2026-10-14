@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowRight, Star, Heart, Plus } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { PopularDish } from "@/data/landing-menu";
+import { DishImage } from "@/components/ui/DishImage";
 
 interface PopularDishesSectionProps {
   dishes: PopularDish[];
@@ -56,11 +57,12 @@ export function PopularDishesSection({
               >
                 {/* Top Edge: Circular Plate Overlapping Image */}
                 <div className="relative w-full h-48 rounded-2xl overflow-hidden bg-stone-100 mb-4">
-                  <Image
+                  <DishImage
                     src={dish.image}
                     alt={dish.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   />
 
                   {/* Badge */}

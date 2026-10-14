@@ -10,9 +10,10 @@ import {
   RefreshCw,
   Layers,
   Eye,
+  AlertTriangle,
 } from "lucide-react";
 import { TableItemData } from "./VisualTableCard";
-import { FloorTableFurniture } from "./FloorTableFurniture";
+import { FloorTableFurniture, isTableCapacityEligible } from "./FloorTableFurniture";
 
 interface VisualFloorPlanProps {
   tables: TableItemData[];
@@ -194,46 +195,75 @@ export function VisualFloorPlan({
       </div>
 
       {/* DOCK / INSPECTOR PANEL DI BAWAH DENAH */}
-      {selectedTable ? (
-        <div className="bg-[#14281D] text-white p-4 sm:p-5 rounded-3xl shadow-2xl border border-emerald-500/30 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-2">
-          <div className="flex items-center gap-3.5 w-full md:w-auto">
-            <div className="w-12 h-12 rounded-2xl bg-[#EA580C] text-white flex items-center justify-center font-serif font-black text-lg shadow-cta shrink-0">
-              {selectedTable.tableNumber}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h4 className="font-serif font-bold text-base text-white">
-                  Meja {selectedTable.tableNumber}
-                </h4>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold border border-emerald-500/30">
-                  {selectedTable.capacity} Kursi
-                </span>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-white/10 text-stone-300">
-                  {selectedTable.status === "available" ? "Tersedia" : selectedTable.status}
-                </span>
-              </div>
-              <p className="text-xs text-stone-300 mt-0.5 font-light">
-                Area: <strong className="text-white font-medium">{selectedTable.area}</strong> • Terhubung Real-Time ke Sistem Restoran
-              </p>
-            </div>
-          </div>
+      {selectedTable ? (() => {
+        const dockEligibility =
+          mode === "reservation"
+            ? isTableCapacityEligible(selectedTable.capacity, guestCount)
+            : { eligible: true, reason: "", badge: "" };
 
-          {/* Action buttons depending on mode */}
-          {mode === "reservation" && (
-            <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-              <span className="text-xs text-stone-300 hidden lg:inline">
-                Meja siap dikunci untuk reservasi jamuan Anda
-              </span>
-              <button
-                type="button"
-                onClick={() => onSelectTable && onSelectTable(selectedTable)}
-                className="w-full md:w-auto px-6 py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta cursor-pointer transition-all"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Pilih Meja {selectedTable.tableNumber} & Lanjut</span>
-              </button>
+        return (
+          <div className="bg-[#14281D] text-white p-4 sm:p-5 rounded-3xl shadow-2xl border border-emerald-500/30 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-2">
+            <div className="flex items-center gap-3.5 w-full md:w-auto">
+              <div className="w-12 h-12 rounded-2xl bg-[#EA580C] text-white flex items-center justify-center font-serif font-black text-lg shadow-cta shrink-0">
+                {selectedTable.tableNumber}
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-serif font-bold text-base text-white">
+                    Meja {selectedTable.tableNumber}
+                  </h4>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold border border-emerald-500/30">
+                    {selectedTable.capacity} Kursi
+                  </span>
+                  {mode === "reservation" && !dockEligibility.eligible ? (
+                    <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 text-rose-400" />
+                      <span>{dockEligibility.badge}</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-white/10 text-stone-300">
+                      {selectedTable.status === "available" ? "Tersedia" : selectedTable.status}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-stone-300 mt-0.5 font-light">
+                  Area: <strong className="text-white font-medium">{selectedTable.area}</strong> • Terhubung Real-Time ke Sistem Restoran
+                </p>
+              </div>
             </div>
-          )}
+
+            {/* Action buttons depending on mode */}
+            {mode === "reservation" && (
+              <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                <span className="text-xs text-stone-300 hidden lg:inline">
+                  {dockEligibility.eligible
+                    ? "Meja siap dikunci untuk reservasi jamuan Anda"
+                    : dockEligibility.reason}
+                </span>
+                <button
+                  type="button"
+                  disabled={!dockEligibility.eligible}
+                  onClick={() => onSelectTable && onSelectTable(selectedTable)}
+                  className={`w-full md:w-auto px-6 py-3 font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta transition-all ${
+                    dockEligibility.eligible
+                      ? "bg-[#EA580C] hover:bg-[#C2410C] text-white cursor-pointer"
+                      : "bg-stone-700 text-stone-400 cursor-not-allowed opacity-60"
+                  }`}
+                >
+                  {dockEligibility.eligible ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Pilih Meja {selectedTable.tableNumber} & Lanjut</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="w-4 h-4 text-amber-400" />
+                      <span>Kapasitas Meja Tidak Cocok</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
 
           {mode === "pos" && (
             <div className="flex items-center gap-2 w-full md:w-auto justify-end">
@@ -259,7 +289,8 @@ export function VisualFloorPlan({
             </div>
           )}
         </div>
-      ) : (
+        );
+      })() : (
         <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-stone-200 text-center text-xs text-[#64748B] flex items-center justify-center gap-2">
           <Eye className="w-4 h-4 text-[#EA580C]" />
           <span>
