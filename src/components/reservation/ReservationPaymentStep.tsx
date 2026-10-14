@@ -17,6 +17,9 @@ import {
   Building2,
   Wallet,
   Sparkles,
+  Ticket,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { TableItem, CartItem } from "./types";
 import {
@@ -51,7 +54,7 @@ interface ReservationPaymentStepProps {
   paymentCategory: string;
   onChangePaymentCategory: (cat: string) => void;
   isProcessingPayment: boolean;
-  onExecutePayment: () => void;
+  onExecutePayment: (voucherCode?: string) => void;
   onPrev: () => void;
 }
 
@@ -71,10 +74,56 @@ export function ReservationPaymentStep({
   onExecutePayment,
   onPrev,
 }: ReservationPaymentStepProps) {
+  // Voucher state
+  const [voucherCodeInput, setVoucherCodeInput] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
+  const [voucherDiscount, setVoucherDiscount] = useState(0);
+  const [isCheckingVoucher, setIsCheckingVoucher] = useState(false);
+  const [voucherError, setVoucherError] = useState("");
+
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const taxAmount = Math.round(subtotal * 0.1); // PB1 10%
-  const serviceCharge = Math.round(subtotal * 0.05); // Service 5%
-  const totalAmount = subtotal + taxAmount + serviceCharge;
+  const netSubtotal = Math.max(0, subtotal - voucherDiscount);
+  const taxAmount = Math.round(netSubtotal * 0.1); // PB1 10%
+  const serviceCharge = Math.round(netSubtotal * 0.05); // Service 5%
+  const totalAmount = netSubtotal + taxAmount + serviceCharge;
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCodeInput.trim()) return;
+    setIsCheckingVoucher(true);
+    setVoucherError("");
+
+    try {
+      const res = await fetch("/api/v1/customer/vouchers/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: voucherCodeInput.trim(),
+          subtotal,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setVoucherError(data.message || "Gagal menerapkan voucher.");
+        setAppliedVoucher(null);
+        setVoucherDiscount(0);
+      } else {
+        setAppliedVoucher(data.data.voucher);
+        setVoucherDiscount(data.data.discountAmount);
+        setVoucherError("");
+      }
+    } catch (err: any) {
+      setVoucherError(err.message || "Gagal memverifikasi voucher.");
+    } finally {
+      setIsCheckingVoucher(false);
+    }
+  };
+
+  const handleRemoveVoucher = () => {
+    setAppliedVoucher(null);
+    setVoucherDiscount(0);
+    setVoucherCodeInput("");
+    setVoucherError("");
+  };
 
   // Track accordion expand state: 'va', 'ewallet', or null
   const isVaSelected = ["bca_va", "mandiri_va", "bni_va", "bri_va"].includes(paymentMethod);
@@ -531,12 +580,82 @@ export function ReservationPaymentStep({
               ))}
             </div>
 
+            {/* Voucher Promo Input */}
+            <div className="p-3 bg-amber-50/50 border border-amber-200/80 rounded-2xl space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <Ticket className="w-3.5 h-3.5 text-[#EA580C]" /> Punya Kode Voucher?
+                </span>
+                {appliedVoucher && (
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                    Terpasang
+                  </span>
+                )}
+              </div>
+
+              {!appliedVoucher ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Masukkan Kode Voucher (cth: PROMO10)"
+                    value={voucherCodeInput}
+                    onChange={(e) => {
+                      setVoucherCodeInput(e.target.value.toUpperCase());
+                      setVoucherError("");
+                    }}
+                    className="flex-1 text-xs px-3 py-2 bg-white border border-slate-200 rounded-xl uppercase font-mono font-bold focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyVoucher}
+                    disabled={isCheckingVoucher || !voucherCodeInput.trim()}
+                    className="px-3.5 py-2 bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold rounded-xl disabled:opacity-50 transition-all shrink-0 cursor-pointer"
+                  >
+                    {isCheckingVoucher ? "Cek..." : "Terapkan"}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+                  <div>
+                    <span className="font-mono font-bold text-emerald-900 block">
+                      {appliedVoucher.code} ({appliedVoucher.name})
+                    </span>
+                    <span className="text-[11px] text-emerald-700 font-medium">
+                      Hemat {formatIDR(voucherDiscount)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveVoucher}
+                    className="text-[11px] text-rose-600 hover:text-rose-800 font-bold px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              )}
+
+              {voucherError && (
+                <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-1.5 text-[11px] text-rose-700 font-medium leading-tight">
+                  <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-rose-500" />
+                  <span>{voucherError}</span>
+                </div>
+              )}
+            </div>
+
             {/* Financial breakdown */}
             <div className="space-y-1.5 text-xs text-[#64748B]">
               <div className="flex justify-between">
                 <span>Subtotal Menu</span>
                 <span className="font-mono text-[#18181B]">{formatIDR(subtotal)}</span>
               </div>
+              {voucherDiscount > 0 && (
+                <div className="flex justify-between text-emerald-700 font-semibold">
+                  <span className="flex items-center gap-1">
+                    <Ticket className="w-3 h-3" /> Diskon Voucher ({appliedVoucher?.code})
+                  </span>
+                  <span className="font-mono">-{formatIDR(voucherDiscount)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Pajak Restoran PB1 (10%)</span>
                 <span className="font-mono text-[#18181B]">{formatIDR(taxAmount)}</span>
@@ -582,7 +701,7 @@ export function ReservationPaymentStep({
             {/* Execute Payment Button */}
             <button
               type="button"
-              onClick={onExecutePayment}
+              onClick={() => onExecutePayment(appliedVoucher?.code)}
               onMouseDown={(e) => {
                 // Prevent input blur from canceling button click
                 e.preventDefault();
@@ -624,7 +743,7 @@ export function ReservationPaymentStep({
           </div>
           <button
             type="button"
-            onClick={onExecutePayment}
+            onClick={() => onExecutePayment(appliedVoucher?.code)}
             onMouseDown={(e) => e.preventDefault()}
             disabled={isProcessingPayment}
             className="px-5 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-500 text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#EA580C]/30 shrink-0 cursor-pointer active:scale-95 transition-all"

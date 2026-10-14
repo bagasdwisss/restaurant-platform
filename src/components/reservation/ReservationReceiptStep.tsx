@@ -146,6 +146,12 @@ export function ReservationReceiptStep({
             <span>Subtotal Menu</span>
             <span className="font-mono text-[#18181B]">{formatIDR(completedOrder.subtotal)}</span>
           </div>
+          {completedOrder.discountAmount > 0 && (
+            <div className="flex justify-between text-emerald-700 font-semibold">
+              <span>Potongan Voucher Promo</span>
+              <span className="font-mono">-{formatIDR(completedOrder.discountAmount)}</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span>Pajak Restoran PB1 (10%)</span>
             <span className="font-mono text-[#18181B]">{formatIDR(completedOrder.taxAmount)}</span>

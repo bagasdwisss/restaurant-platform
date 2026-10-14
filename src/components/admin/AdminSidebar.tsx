@@ -12,9 +12,10 @@ import {
   LogOut,
   Sparkles,
   X,
+  Ticket,
 } from "lucide-react";
 
-export type AdminTab = "analytics" | "menus" | "tables" | "inventory" | "shifts" | "users";
+export type AdminTab = "analytics" | "menus" | "tables" | "inventory" | "shifts" | "vouchers" | "users";
 
 interface AdminSidebarProps {
   activeTab: AdminTab;
@@ -23,6 +24,7 @@ interface AdminSidebarProps {
   tableCount: number;
   ingredientCount: number;
   userCount: number;
+  voucherCount?: number;
   onLogout: () => void;
   mobileOpen?: boolean;
   onCloseMobile?: () => void;
@@ -35,6 +37,7 @@ export function AdminSidebar({
   tableCount,
   ingredientCount,
   userCount,
+  voucherCount = 0,
   onLogout,
   mobileOpen = false,
   onCloseMobile,
@@ -45,6 +48,7 @@ export function AdminSidebar({
     { id: "tables" as AdminTab, label: "Manajemen Meja & QR", icon: QrCode, count: tableCount },
     { id: "inventory" as AdminTab, label: "Bahan Baku & Stok", icon: Package, count: ingredientCount },
     { id: "shifts" as AdminTab, label: "Kasir & Audit Log", icon: History },
+    { id: "vouchers" as AdminTab, label: "Voucher & Promo", icon: Ticket, count: voucherCount },
     { id: "users" as AdminTab, label: "Staff & Hak Akses", icon: Users, count: userCount },
   ];
 

@@ -117,6 +117,9 @@ model Order {
   totalAmount   Float        @default(0)
   paymentStatus String       @default("unpaid")  // unpaid, paid
   paymentMethod String?                          // cash, qris, debit
+  voucherId     Int?
+  voucher       Voucher?     @relation(fields: [voucherId], references: [id], onDelete: SetNull)
+  discountAmount Float       @default(0)
   items         OrderItem[]
   payments      Payment[]
   createdAt     DateTime     @default(now())
@@ -183,3 +186,34 @@ model AuditLog {
   details   String
   createdAt DateTime @default(now())
 }
+
+model Voucher {
+  id            Int      @id @default(autoincrement())
+  code          String   @unique
+  name          String
+  discountType  String   @default("percentage") // percentage, fixed
+  discountValue Float
+  minSpend      Float    @default(0)
+  maxDiscount   Float?
+  maxUsage      Int      @default(10)
+  usedCount     Int      @default(0)
+  validFrom     DateTime @default(now())
+  validUntil    DateTime
+  isActive      Boolean  @default(true)
+  orders        Order[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SystemUpdate {
+  id          Int      @id @default(autoincrement())
+  version     String   @unique
+  releaseDate String
+  title       String
+  status      String   @default("stable") // latest, stable, legacy
+  badge       String?
+  features    String   // JSON stringified array of feature points
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+

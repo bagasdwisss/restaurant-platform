@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
       isDirectPayment = false,
       paymentMethod = "qris",
       amountPaid,
+      voucherCode,
     } = body;
 
     const isDirect = Boolean(isDirectPayment || body.isPaid);
@@ -175,17 +176,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Tax 10%, Service Charge 5%
-    const taxAmount = Math.round(calculatedSubtotal * 0.1);
-    const serviceCharge = Math.round(calculatedSubtotal * 0.05);
-    const totalAmount = calculatedSubtotal + taxAmount + serviceCharge;
-
     const prefix = orderType === "reservation" ? "RES" : "ORD";
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const orderNumber = `${prefix}-${dateStr}-${randomSuffix}`;
-
-    const paidNum = parseFloat(amountPaid) || totalAmount;
 
     // Safely validate userId from session or request
     let validUserId: number | null = sessionUser ? sessionUser.id : null;
@@ -204,6 +198,65 @@ export async function POST(request: NextRequest) {
 
     // Database transaction
     const newOrder = await prisma.$transaction(async (tx) => {
+      let appliedVoucher = null;
+      let calculatedDiscount = 0;
+
+      if (voucherCode) {
+        const vCode = String(voucherCode).trim().toUpperCase();
+        appliedVoucher = await tx.voucher.findUnique({
+          where: { code: vCode },
+        });
+
+        if (!appliedVoucher || !appliedVoucher.isActive) {
+          throw new Error(`Kode voucher "${vCode}" tidak valid atau sudah dinonaktifkan.`);
+        }
+
+        const now = new Date();
+        if (now < appliedVoucher.validFrom) {
+          throw new Error(`Voucher "${appliedVoucher.code}" belum mulai berlaku.`);
+        }
+        if (now > appliedVoucher.validUntil) {
+          throw new Error(`Voucher "${appliedVoucher.code}" telah melewati batas masa berlaku (kadaluarsa).`);
+        }
+
+        // STRICT QUOTA CHECK (e.g. 10th user succeeds, 11th user gets clear rejection message)
+        if (appliedVoucher.usedCount >= appliedVoucher.maxUsage) {
+          throw new Error(
+            `Kuota voucher "${appliedVoucher.code}" sudah habis terpakai (Maksimal ${appliedVoucher.maxUsage} penggunaan). Penukaran voucher ditolak.`
+          );
+        }
+
+        if (calculatedSubtotal < appliedVoucher.minSpend) {
+          throw new Error(
+            `Minimal pembelanjaan untuk voucher "${appliedVoucher.code}" adalah Rp ${appliedVoucher.minSpend.toLocaleString("id-ID")}`
+          );
+        }
+
+        if (appliedVoucher.discountType === "percentage") {
+          calculatedDiscount = Math.round((calculatedSubtotal * appliedVoucher.discountValue) / 100);
+          if (appliedVoucher.maxDiscount && calculatedDiscount > appliedVoucher.maxDiscount) {
+            calculatedDiscount = appliedVoucher.maxDiscount;
+          }
+        } else {
+          calculatedDiscount = Math.min(calculatedSubtotal, appliedVoucher.discountValue);
+        }
+
+        // Increment quota used count
+        await tx.voucher.update({
+          where: { id: appliedVoucher.id },
+          data: {
+            usedCount: { increment: 1 },
+          },
+        });
+      }
+
+      // Net subtotal after voucher discount
+      const netSubtotal = Math.max(0, calculatedSubtotal - calculatedDiscount);
+      const taxAmount = Math.round(netSubtotal * 0.1);
+      const serviceCharge = Math.round(netSubtotal * 0.05);
+      const totalAmount = netSubtotal + taxAmount + serviceCharge;
+      const paidNum = parseFloat(amountPaid) || totalAmount;
+
       const order = await tx.order.create({
         data: {
           orderNumber,
@@ -222,6 +275,8 @@ export async function POST(request: NextRequest) {
           taxAmount,
           serviceCharge,
           totalAmount,
+          voucherId: appliedVoucher ? appliedVoucher.id : null,
+          discountAmount: calculatedDiscount,
           paymentStatus: isDirect ? "paid" : "unpaid",
           paymentMethod: isDirect ? paymentMethod : null,
           items: {
@@ -236,6 +291,7 @@ export async function POST(request: NextRequest) {
           },
           table: true,
           payments: true,
+          voucher: true,
         },
       });
 

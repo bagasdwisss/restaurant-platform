@@ -360,7 +360,7 @@ export default function SavoriaReservationPage() {
   };
 
   // Process Complete Reservation & Payment
-  const handleExecutePayment = async () => {
+  const handleExecutePayment = async (voucherCode?: string) => {
     if (!user) {
       toast.error("Sesi login Anda belum aktif. Harap masuk terlebih dahulu untuk menyelesaikan reservasi.", "Otorisasi Diperlukan");
       router.push("/login?redirect=/reservation");
@@ -403,6 +403,7 @@ export default function SavoriaReservationPage() {
         isDirectPayment: true,
         isPaid: true,
         userId: user ? user.id : undefined,
+        voucherCode: voucherCode ? voucherCode.trim() : undefined,
         items: cart.map((i) => ({
           menuId: i.menuId,
           quantity: i.quantity,

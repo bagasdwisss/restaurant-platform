@@ -59,6 +59,14 @@ const UsersTab = dynamic(
   }
 );
 
+const VouchersTab = dynamic(
+  () => import("@/components/admin/VouchersTab").then((m) => m.VouchersTab),
+  {
+    loading: () => <TabSkeleton title="Memuat Katalog Voucher & Promo Diskon..." count={4} />,
+    ssr: false,
+  }
+);
+
 export default function AdminDashboardPage() {
   const { user, logout, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -77,6 +85,7 @@ export default function AdminDashboardPage() {
   const [cashierOrders, setCashierOrders] = useState<any[]>([]);
   const [systemUpdates, setSystemUpdates] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
+  const [vouchers, setVouchers] = useState<any[]>([]);
 
   // Visible lazy loading states for each tab
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -86,6 +95,7 @@ export default function AdminDashboardPage() {
   const [loadingIngredients, setLoadingIngredients] = useState(false);
   const [loadingShifts, setLoadingShifts] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingVouchers, setLoadingVouchers] = useState(false);
 
   // 1. Fetch Sales Summary
   const fetchSalesSummary = useCallback(async () => {
@@ -179,6 +189,20 @@ export default function AdminDashboardPage() {
     }
   }, []);
 
+  // 7. Fetch Vouchers List (Lazy)
+  const fetchVouchers = useCallback(async () => {
+    setLoadingVouchers(true);
+    try {
+      const res = await fetch("/api/v1/admin/vouchers");
+      const data = await res.json();
+      if (data.success) setVouchers(data.data);
+    } catch {
+      console.error("Failed to load vouchers");
+    } finally {
+      setLoadingVouchers(false);
+    }
+  }, []);
+
   const refreshAllData = useCallback(async () => {
     setIsRefreshing(true);
     await Promise.all([
@@ -188,10 +212,11 @@ export default function AdminDashboardPage() {
       fetchIngredients(),
       fetchShiftsAndLogs(),
       fetchUsers(),
+      fetchVouchers(),
     ]);
     setIsRefreshing(false);
     toast.info("Seluruh data dashboard berhasil diperbarui.", "Data Terkini");
-  }, [fetchSalesSummary, fetchMenus, fetchTables, fetchIngredients, fetchShiftsAndLogs, fetchUsers, toast]);
+  }, [fetchSalesSummary, fetchMenus, fetchTables, fetchIngredients, fetchShiftsAndLogs, fetchUsers, fetchVouchers, toast]);
 
   // Initial load: Only fetch Overview sales summary for instant sub-second response
   useEffect(() => {
@@ -208,6 +233,7 @@ export default function AdminDashboardPage() {
     if (activeTab === "inventory" && ingredients.length === 0) fetchIngredients();
     if (activeTab === "shifts" && shiftHistory.length === 0) fetchShiftsAndLogs();
     if (activeTab === "users" && usersList.length === 0) fetchUsers();
+    if (activeTab === "vouchers" && vouchers.length === 0) fetchVouchers();
   }, [
     activeTab,
     user,
@@ -216,11 +242,13 @@ export default function AdminDashboardPage() {
     ingredients.length,
     shiftHistory.length,
     usersList.length,
+    vouchers.length,
     fetchMenus,
     fetchTables,
     fetchIngredients,
     fetchShiftsAndLogs,
     fetchUsers,
+    fetchVouchers,
   ]);
 
   // MENU ACTIONS
@@ -421,6 +449,69 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // VOUCHER ACTIONS
+  const handleCreateVoucher = async (voucherData: any): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/v1/admin/vouchers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(voucherData),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        toast.error(data.message || "Gagal membuat voucher.", "Gagal");
+        return false;
+      }
+      toast.success(`Voucher ${data.data.code} berhasil diterbitkan!`, "Promo Aktif");
+      fetchVouchers();
+      return true;
+    } catch (err: any) {
+      toast.error(err.message || "Gagal membuat voucher.", "Gangguan Koneksi");
+      return false;
+    }
+  };
+
+  const handleToggleVoucher = async (id: string, currentActive: boolean): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/v1/admin/vouchers/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !currentActive }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        toast.error(data.message || "Gagal memperbarui status voucher.", "Gagal");
+        return false;
+      }
+      toast.info("Status keaktifan voucher berhasil diperbarui.", "Status Diubah");
+      fetchVouchers();
+      return true;
+    } catch {
+      toast.error("Gagal mengubah status voucher.", "Gangguan Koneksi");
+      return false;
+    }
+  };
+
+  const handleDeleteVoucher = async (id: string): Promise<boolean> => {
+    if (!confirm("Hapus voucher promo ini? Tindakan ini tidak dapat dibatalkan.")) return false;
+    try {
+      const res = await fetch(`/api/v1/admin/vouchers/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!data.success) {
+        toast.error(data.message || "Gagal menghapus voucher.", "Gagal");
+        return false;
+      }
+      toast.info("Voucher promo berhasil dihapus.", "Terhapus");
+      fetchVouchers();
+      return true;
+    } catch {
+      toast.error("Gagal menghapus voucher.", "Gangguan Koneksi");
+      return false;
+    }
+  };
+
   // DYNAMIC EXCEL EXPORT (Heavy library loaded strictly on demand)
   const handleExportExcel = async () => {
     if (!salesData) {
@@ -520,6 +611,7 @@ export default function AdminDashboardPage() {
         tableCount={tables.length}
         ingredientCount={ingredients.length}
         userCount={usersList.length}
+        voucherCount={vouchers.length}
         onLogout={logout}
         mobileOpen={mobileSidebarOpen}
         onCloseMobile={() => setMobileSidebarOpen(false)}
@@ -541,6 +633,8 @@ export default function AdminDashboardPage() {
               ? "Inventaris & Stok Bahan Baku"
               : activeTab === "shifts"
               ? "Riwayat Shift Kasir & Audit Log"
+              : activeTab === "vouchers"
+              ? "Manajemen Voucher & Promo Diskon"
               : "Manajemen Pengguna & Otorisasi Akses"
           }
           isRefreshing={isRefreshing}
@@ -605,6 +699,22 @@ export default function AdminDashboardPage() {
                 auditLogs={auditLogs}
                 cashierOrders={cashierOrders}
                 systemUpdates={systemUpdates}
+                onRefresh={fetchShiftsAndLogs}
+              />
+            )
+          )}
+
+          {activeTab === "vouchers" && (
+            loadingVouchers && vouchers.length === 0 ? (
+              <TabSkeleton title="Memuat Katalog Voucher & Promo Diskon..." count={4} />
+            ) : (
+              <VouchersTab
+                vouchers={vouchers}
+                isLoading={loadingVouchers}
+                onRefresh={fetchVouchers}
+                onCreateVoucher={handleCreateVoucher}
+                onToggleVoucher={handleToggleVoucher}
+                onDeleteVoucher={handleDeleteVoucher}
               />
             )
           )}
