@@ -88,28 +88,28 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss:
   return (
     <div
       aria-live="polite"
-      className="fixed top-4 right-4 sm:top-6 sm:right-6 z-[99999] flex flex-col gap-2.5 pointer-events-none max-w-sm sm:max-w-md w-[calc(100vw-2rem)] select-none"
+      className="fixed top-20 right-3 sm:top-24 sm:right-6 z-[99999] flex flex-col gap-3 pointer-events-none max-w-sm sm:max-w-md w-[calc(100vw-1.5rem)] select-none"
     >
       {toasts.map((item) => {
         const isError = item.type === "error";
         const isSuccess = item.type === "success";
         const isWarning = item.type === "warning";
 
-        const borderColor = isError
-          ? "border-rose-500/40"
+        const cardBorder = isError
+          ? "border-rose-500/80 border-l-[6px] border-l-rose-500"
           : isSuccess
-          ? "border-emerald-500/40"
+          ? "border-emerald-500/80 border-l-[6px] border-l-emerald-500"
           : isWarning
-          ? "border-amber-500/40"
-          : "border-[#EA580C]/40";
+          ? "border-amber-500/80 border-l-[6px] border-l-amber-500"
+          : "border-[#EA580C]/80 border-l-[6px] border-l-[#EA580C]";
 
-        const iconBg = isError
-          ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
+        const iconContainer = isError
+          ? "bg-rose-600 text-white shadow-md shadow-rose-600/40"
           : isSuccess
-          ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+          ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/40"
           : isWarning
-          ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
-          : "bg-[#EA580C]/15 text-[#EA580C] border-[#EA580C]/30";
+          ? "bg-amber-500 text-black shadow-md shadow-amber-500/40"
+          : "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/40";
 
         const badgeColor = isError
           ? "text-rose-400"
@@ -117,7 +117,15 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss:
           ? "text-emerald-400"
           : isWarning
           ? "text-amber-400"
-          : "text-[#EA580C]";
+          : "text-[#FB923C]";
+
+        const defaultTitle = isError
+          ? "Peringatan / Kendala"
+          : isSuccess
+          ? "Berhasil"
+          : isWarning
+          ? "Perhatian"
+          : "Informasi SAVORIA";
 
         const IconComponent = isError
           ? AlertCircle
@@ -131,21 +139,21 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss:
           <div
             key={item.id}
             role="status"
-            className={`pointer-events-auto bg-[#14281D]/95 backdrop-blur-md rounded-2xl border ${borderColor} p-3.5 sm:p-4 shadow-2xl flex items-start gap-3 transition-all duration-300 animate-in fade-in slide-in-from-top-3 group`}
+            className={`pointer-events-auto bg-[#131B16] rounded-2xl border ${cardBorder} p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/15 flex items-start gap-3.5 transition-all duration-300 animate-in fade-in slide-in-from-top-4`}
           >
             {/* Status Icon */}
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border ${iconBg}`}>
-              <IconComponent className="w-4 h-4 stroke-[2.2]" />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconContainer}`}>
+              <IconComponent className="w-5 h-5 stroke-[2.5]" />
             </div>
 
             {/* Content */}
             <div className="flex-1 min-w-0 pr-1">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className={`text-[10px] font-mono uppercase tracking-widest font-bold ${badgeColor}`}>
-                  {item.title || (isError ? "Error" : isSuccess ? "Success" : isWarning ? "Notice" : "Savoria")}
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`text-xs font-mono uppercase tracking-wider font-extrabold ${badgeColor}`}>
+                  {item.title || defaultTitle}
                 </span>
               </div>
-              <p className="text-xs text-stone-200 font-sans leading-relaxed break-words">
+              <p className="text-xs sm:text-[13px] text-white font-medium font-sans leading-snug break-words">
                 {item.message}
               </p>
             </div>
@@ -153,10 +161,10 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss:
             {/* Dismiss Button */}
             <button
               onClick={() => onDismiss(item.id)}
-              className="text-stone-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+              className="text-stone-300 hover:text-white p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors cursor-pointer shrink-0"
               title="Tutup Notifikasi"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-4 h-4 stroke-[2.2]" />
             </button>
           </div>
         );
