@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #EA580C;
+  --color-primary-hover: #C2410C;
+  --color-secondary: #14281D;
+  --color-accent: #F59E0B;
+  --bg-canvas: #FDFBF7;
+  --bg-surface: #FFFFFF;
+  --bg-muted: #F3EFE6;
+  --text-primary: #18181B;
+  --text-secondary: #64748B;
+  --border-subtle: #E2E8F0;
+  --radius-pill: 9999px;
+  --radius-card: 24px;
+  --radius-section: 32px;
+  --shadow-float: 0 20px 40px -15px rgba(24, 24, 27, 0.08);
+  --shadow-cta: 0 10px 25px -5px rgba(234, 88, 12, 0.4);
+}
+
+body {
+  color: var(--text-primary);
+  background-color: var(--bg-canvas);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .font-display {
+  font-family: 'Playfair Display', 'Fraunces', Georgia, serif;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Floating element gentle animation */
+@keyframes gentle-float {
+  0% {
+    transform: translateY(0px);
+  }
+  100% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: gentle-float 3.5s ease-in-out infinite alternate;
+}
+
+.animate-float-delayed {
+  animation: gentle-float 4s ease-in-out infinite alternate;
+  animation-delay: 1.5s;
+}
+
+/* Thermal Printer Styling for 58mm / 80mm ESC/POS Receipts */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-receipt, #printable-receipt * {
+    visibility: visible;
+  }
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 78mm;
+    margin: 0;
+    padding: 2mm;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    line-height: 1.25;
+    color: #000;
+    background: #fff;
+  }
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+}
