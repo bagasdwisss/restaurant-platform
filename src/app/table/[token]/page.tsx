@@ -22,6 +22,7 @@ import {
   User,
   Coffee,
   ArrowRight,
+  RefreshCw,
 } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { useCartStore, SelectedVariant } from "@/lib/cart-store";
@@ -170,6 +171,8 @@ export default function CustomerTablePage({
         body: JSON.stringify({
           tableId: table.id,
           tableNumber: table.tableNumber,
+          customerName: user?.name || `Tamu Meja ${table.tableNumber}`,
+          notes: `Panggilan pelayan langsung dari meja ${table.tableNumber}`,
         }),
       });
       const data = await res.json();
@@ -386,12 +389,18 @@ export default function CustomerTablePage({
             className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-semibold transition-all shadow-sm cursor-pointer shrink-0 ${
               waiterCalledSuccess
                 ? "bg-emerald-600 text-white"
-                : "bg-white hover:bg-amber-50 text-amber-900 border border-amber-200 active:scale-95"
+                : "bg-white hover:bg-amber-50 text-amber-900 border border-amber-200 active:scale-95 disabled:opacity-60"
             }`}
           >
-            <BellRing className={`w-3.5 h-3.5 ${callingWaiter ? "animate-bounce" : "text-[#EA580C]"}`} />
+            {callingWaiter ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#EA580C]" />
+            ) : (
+              <BellRing className="w-3.5 h-3.5 text-[#EA580C]" />
+            )}
             <span>
-              {waiterCalledSuccess ? (
+              {callingWaiter ? (
+                <span>Memanggil...</span>
+              ) : waiterCalledSuccess ? (
                 <>
                   <span className="hidden xs:inline">Pelayan Menuju Meja!</span>
                   <span className="xs:hidden">Pelayan Datang!</span>

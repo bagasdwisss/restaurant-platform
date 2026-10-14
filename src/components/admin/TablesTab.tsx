@@ -36,11 +36,18 @@ export function TablesTab({ tables, onCreateTable, onRegenerateQr }: TablesTabPr
     }
   };
 
+  const [isCreating, setIsCreating] = useState(false);
+
   const handleCreate = async () => {
-    const success = await onCreateTable(tableForm);
-    if (success) {
-      setShowAddModal(false);
-      setTableForm({ tableNumber: "", capacity: "4", area: "Indoor" });
+    setIsCreating(true);
+    try {
+      const success = await onCreateTable(tableForm);
+      if (success) {
+        setShowAddModal(false);
+        setTableForm({ tableNumber: "", capacity: "4", area: "Indoor" });
+      }
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -159,9 +166,17 @@ export function TablesTab({ tables, onCreateTable, onRegenerateQr }: TablesTabPr
 
             <button
               onClick={handleCreate}
-              className="w-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold py-3 rounded-full text-xs transition-all shadow-md shadow-[#EA580C]/25 cursor-pointer"
+              disabled={isCreating}
+              className="w-full bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white font-bold py-3 rounded-full text-xs transition-all shadow-md shadow-[#EA580C]/25 flex items-center justify-center gap-2 cursor-pointer"
             >
-              Buat Meja & Generate Token
+              {isCreating ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Membuat Meja & Token...</span>
+                </>
+              ) : (
+                <span>Buat Meja & Generate Token</span>
+              )}
             </button>
           </div>
         </div>

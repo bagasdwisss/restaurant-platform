@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Users, Plus, Trash2, KeyRound, ShieldCheck, X, Sparkles } from "lucide-react";
+import { Users, Plus, Trash2, KeyRound, ShieldCheck, X, Sparkles, RefreshCw } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 interface UsersTabProps {
@@ -401,9 +401,16 @@ export function UsersTab({
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold cursor-pointer shadow-md shadow-[#EA580C]/25 disabled:opacity-50"
+                  className="flex-1 py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold cursor-pointer shadow-md shadow-[#EA580C]/25 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {submitting ? "Menyimpan..." : "Simpan Akun"}
+                  {submitting ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <span>Simpan Akun</span>
+                  )}
                 </button>
               </div>
             </form>

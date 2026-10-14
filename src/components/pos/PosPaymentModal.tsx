@@ -17,6 +17,7 @@ interface PosPaymentModalProps {
   onChangePayMethod: (method: "cash" | "qris" | "debit") => void;
   cashPaidInput: number;
   onChangeCashPaid: (amount: number) => void;
+  isProcessingPayment?: boolean;
   onExecutePayment: () => void;
   onClose: () => void;
 }
@@ -27,6 +28,7 @@ export function PosPaymentModal({
   onChangePayMethod,
   cashPaidInput,
   onChangeCashPaid,
+  isProcessingPayment = false,
   onExecutePayment,
   onClose,
 }: PosPaymentModalProps) {
@@ -163,10 +165,17 @@ export function PosPaymentModal({
           <button
             type="button"
             onClick={onExecutePayment}
-            disabled={isCashInsufficient}
-            className="flex-1 py-3 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white rounded-full text-xs font-bold shadow-md shadow-[#EA580C]/25 cursor-pointer disabled:cursor-not-allowed"
+            disabled={isCashInsufficient || isProcessingPayment}
+            className="flex-1 py-3 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white rounded-full text-xs font-bold shadow-md shadow-[#EA580C]/25 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
           >
-            Selesaikan Transaksi
+            {isProcessingPayment ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Memproses Pembayaran...</span>
+              </>
+            ) : (
+              <span>Selesaikan Transaksi</span>
+            )}
           </button>
         </div>
       </div>

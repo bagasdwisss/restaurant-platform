@@ -17,6 +17,7 @@ import {
   EyeOff,
   UserPlus,
   ArrowRight,
+  RefreshCw,
 } from "lucide-react";
 
 export default function RegisterPage() {
@@ -233,7 +234,10 @@ export default function RegisterPage() {
               className="w-full py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs sm:text-sm flex items-center justify-center gap-2 shadow-cta transition-all cursor-pointer disabled:opacity-50 mt-2"
             >
               {loading ? (
-                <span>Membuat Akun...</span>
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Membuat Akun...</span>
+                </>
               ) : (
                 <>
                   <UserPlus className="w-4 h-4" />

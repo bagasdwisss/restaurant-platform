@@ -9,6 +9,7 @@ interface PosMoveTableModalProps {
   moveToTableId: string;
   onChangeMoveToTableId: (id: string) => void;
   availableTables: any[];
+  isMovingTable?: boolean;
   onExecuteMoveTable: () => void;
   onClose: () => void;
 }
@@ -19,6 +20,7 @@ export function PosMoveTableModal({
   moveToTableId,
   onChangeMoveToTableId,
   availableTables,
+  isMovingTable = false,
   onExecuteMoveTable,
   onClose,
 }: PosMoveTableModalProps) {
@@ -69,10 +71,17 @@ export function PosMoveTableModal({
           <button
             type="button"
             onClick={onExecuteMoveTable}
-            disabled={!moveToTableId}
-            className="flex-1 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white rounded-full text-xs font-bold cursor-pointer shadow-xs"
+            disabled={!moveToTableId || isMovingTable}
+            className="flex-1 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white rounded-full text-xs font-bold cursor-pointer shadow-xs flex items-center justify-center gap-2 transition-all"
           >
-            Pindahkan
+            {isMovingTable ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Memindahkan Meja...</span>
+              </>
+            ) : (
+              <span>Pindahkan</span>
+            )}
           </button>
         </div>
       </div>

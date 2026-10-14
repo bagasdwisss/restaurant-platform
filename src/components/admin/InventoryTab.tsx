@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AlertTriangle, Plus, X, Package } from "lucide-react";
+import { AlertTriangle, Plus, X, Package, RefreshCw } from "lucide-react";
 
 interface InventoryTabProps {
   ingredients: any[];
@@ -140,9 +140,16 @@ export function InventoryTab({ ingredients, onRestock }: InventoryTabProps) {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold py-3 rounded-full text-xs transition-all shadow-md shadow-[#EA580C]/25 cursor-pointer disabled:opacity-50"
+                className="w-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold py-3 rounded-full text-xs transition-all shadow-md shadow-[#EA580C]/25 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {submitting ? "Memperbarui..." : "Simpan Penambahan Stok"}
+                {submitting ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Memperbarui Stok...</span>
+                  </>
+                ) : (
+                  <span>Simpan Penambahan Stok</span>
+                )}
               </button>
             </form>
           </div>

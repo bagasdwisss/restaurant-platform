@@ -59,76 +59,89 @@ async function handleUpdateStatus(
       );
     }
 
-    // Process update in transaction
-    const updatedOrder = await prisma.$transaction(async (tx) => {
-      // If advancing from pending to confirmed, deduct ingredient stocks according to recipe mapping!
-      if (currentOrder.status === "pending" && status === "confirmed") {
-        for (const item of currentOrder.items) {
-          if (item.isVoided) continue;
-          for (const recipe of item.menu.recipes) {
-            const qtyToDeduct = recipe.quantityNeeded * item.quantity;
-            await tx.ingredient.update({
-              where: { id: recipe.ingredientId },
-              data: {
-                stockQuantity: {
-                  decrement: qtyToDeduct,
-                },
-              },
+    // Process update in transaction with expanded timeout
+    const updatedOrder = await prisma.$transaction(
+      async (tx) => {
+        // If advancing from pending to confirmed, deduct ingredient stocks according to recipe mapping!
+        if (currentOrder.status === "pending" && status === "confirmed") {
+          const ingredientDeductions = new Map<number, number>();
+          for (const item of currentOrder.items) {
+            if (item.isVoided) continue;
+            for (const recipe of item.menu.recipes) {
+              const qty = recipe.quantityNeeded * item.quantity;
+              ingredientDeductions.set(
+                recipe.ingredientId,
+                (ingredientDeductions.get(recipe.ingredientId) || 0) + qty
+              );
+            }
+          }
+
+          if (ingredientDeductions.size > 0) {
+            const promises: Promise<any>[] = [];
+            ingredientDeductions.forEach((qty, ingId) => {
+              promises.push(
+                tx.ingredient
+                  .update({
+                    where: { id: ingId },
+                    data: { stockQuantity: { decrement: qty } },
+                  })
+                  .catch((err) => console.warn(`Skipped ingredient deduction for ${ingId}:`, err.message))
+              );
+            });
+            await Promise.all(promises);
+          }
+        }
+
+        // If completing or cancelling/voiding, update table status if all orders on this table are done
+        if (["completed", "cancelled", "voided"].includes(status) && currentOrder.tableId) {
+          const otherActiveOrders = await tx.order.findFirst({
+            where: {
+              tableId: currentOrder.tableId,
+              id: { not: orderId },
+              status: { in: ["pending", "confirmed", "preparing", "served"] },
+            },
+          });
+
+          if (!otherActiveOrders) {
+            await tx.table.update({
+              where: { id: currentOrder.tableId },
+              data: { status: "available" },
             });
           }
         }
 
-        await tx.auditLog.create({
-          data: {
-            user: "Kasir / Dapur",
-            action: "STOCK_DEDUCTED",
-            details: `Stok bahan baku otomatis terpotong untuk pesanan ${currentOrder.orderNumber} saat status dikonfirmasi.`,
-          },
-        });
-      }
-
-      // If completing or cancelling/voiding, update table status if all orders on this table are done
-      if (["completed", "cancelled", "voided"].includes(status) && currentOrder.tableId) {
-        // Check if there are other active orders on the same table
-        const otherActiveOrders = await tx.order.findFirst({
-          where: {
-            tableId: currentOrder.tableId,
-            id: { not: orderId },
-            status: { in: ["pending", "confirmed", "preparing", "served"] },
-          },
-        });
-
-        if (!otherActiveOrders) {
-          await tx.table.update({
-            where: { id: currentOrder.tableId },
-            data: { status: "available" },
-          });
-        }
-      }
-
-      const order = await tx.order.update({
-        where: { id: orderId },
-        data: { status },
-        include: {
-          table: true,
-          items: {
-            include: {
-              menu: true,
+        const order = await tx.order.update({
+          where: { id: orderId },
+          data: { status },
+          include: {
+            table: true,
+            items: {
+              include: {
+                menu: true,
+              },
             },
+            payments: true,
           },
-        },
-      });
+        });
 
-      await tx.auditLog.create({
+        return order;
+      },
+      {
+        maxWait: 15000,
+        timeout: 30000,
+      }
+    );
+
+    // Record audit log asynchronously outside transaction
+    prisma.auditLog
+      .create({
         data: {
-          user: "Kasir",
+          user: user?.name || "Kasir",
           action: "ORDER_STATUS_CHANGED",
-          details: `Status pesanan ${order.orderNumber} diubah dari ${currentOrder.status} menjadi ${status}.`,
+          details: `Status pesanan ${updatedOrder.orderNumber} diubah dari ${currentOrder.status} menjadi ${status}.`,
         },
-      });
-
-      return order;
-    });
+      })
+      .catch((err) => console.error("Non-fatal audit log error:", err));
 
     return NextResponse.json({
       success: true,

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Coffee, DollarSign, X, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Coffee, DollarSign, X, CheckCircle2, AlertTriangle, RefreshCw } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 
 interface OpenShiftModalProps {
@@ -10,6 +10,7 @@ interface OpenShiftModalProps {
   onChangeCashierName: (val: string) => void;
   startCashInput: string;
   onChangeStartCash: (val: string) => void;
+  isOpeningShift?: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
 }
@@ -20,6 +21,7 @@ export function OpenShiftModal({
   onChangeCashierName,
   startCashInput,
   onChangeStartCash,
+  isOpeningShift = false,
   onSubmit,
   onClose,
 }: OpenShiftModalProps) {
@@ -36,7 +38,8 @@ export function OpenShiftModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-slate-100 text-[#64748B] hover:text-[#18181B] cursor-pointer"
+            disabled={isOpeningShift}
+            className="p-1 rounded-full hover:bg-slate-100 text-[#64748B] hover:text-[#18181B] cursor-pointer disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>
@@ -50,9 +53,10 @@ export function OpenShiftModal({
             <input
               type="text"
               required
+              disabled={isOpeningShift}
               value={cashierNameInput}
               onChange={(e) => onChangeCashierName(e.target.value)}
-              className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl bg-white focus:ring-2 focus:ring-[#EA580C]"
+              className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl bg-white focus:ring-2 focus:ring-[#EA580C] disabled:bg-slate-100"
             />
           </div>
 
@@ -69,9 +73,10 @@ export function OpenShiftModal({
                 required
                 min="0"
                 step="1000"
+                disabled={isOpeningShift}
                 value={startCashInput}
                 onChange={(e) => onChangeStartCash(e.target.value)}
-                className="w-full text-xs pl-10 pr-3 py-3 border border-slate-200/80 rounded-2xl bg-white font-mono font-bold focus:ring-2 focus:ring-[#EA580C]"
+                className="w-full text-xs pl-10 pr-3 py-3 border border-slate-200/80 rounded-2xl bg-white font-mono font-bold focus:ring-2 focus:ring-[#EA580C] disabled:bg-slate-100"
               />
             </div>
             <p className="text-[10px] text-[#64748B] mt-1">
@@ -82,9 +87,17 @@ export function OpenShiftModal({
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold shadow-md shadow-[#EA580C]/25 cursor-pointer"
+              disabled={isOpeningShift}
+              className="w-full py-3 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white rounded-full text-xs font-bold shadow-md shadow-[#EA580C]/25 cursor-pointer flex items-center justify-center gap-2 transition-all"
             >
-              Mulai Sesi Shift Kasir
+              {isOpeningShift ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Membuka Sesi Shift...</span>
+                </>
+              ) : (
+                <span>Mulai Sesi Shift Kasir</span>
+              )}
             </button>
           </div>
         </form>
@@ -99,6 +112,7 @@ interface CloseShiftModalProps {
   endCashActualInput: string;
   onChangeEndCashActual: (val: string) => void;
   closeShiftVariance: number | null;
+  isClosingShift?: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
 }
@@ -109,6 +123,7 @@ export function CloseShiftModal({
   endCashActualInput,
   onChangeEndCashActual,
   closeShiftVariance,
+  isClosingShift = false,
   onSubmit,
   onClose,
 }: CloseShiftModalProps) {
@@ -125,7 +140,8 @@ export function CloseShiftModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-slate-100 text-[#64748B] hover:text-[#18181B] cursor-pointer"
+            disabled={isClosingShift}
+            className="p-1 rounded-full hover:bg-slate-100 text-[#64748B] hover:text-[#18181B] cursor-pointer disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>
@@ -171,10 +187,11 @@ export function CloseShiftModal({
                 required
                 min="0"
                 step="1000"
+                disabled={isClosingShift}
                 value={endCashActualInput}
                 onChange={(e) => onChangeEndCashActual(e.target.value)}
                 placeholder="0"
-                className="w-full text-xs pl-10 pr-3 py-3 border border-slate-200/80 rounded-2xl bg-white font-mono font-bold focus:ring-2 focus:ring-[#EA580C]"
+                className="w-full text-xs pl-10 pr-3 py-3 border border-slate-200/80 rounded-2xl bg-white font-mono font-bold focus:ring-2 focus:ring-[#EA580C] disabled:bg-slate-100"
               />
             </div>
           </div>
@@ -204,15 +221,24 @@ export function CloseShiftModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-[#18181B] rounded-full text-xs font-bold cursor-pointer"
+              disabled={isClosingShift}
+              className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-[#18181B] rounded-full text-xs font-bold cursor-pointer transition-all"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs font-bold shadow-md shadow-rose-600/25 cursor-pointer"
+              disabled={isClosingShift}
+              className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-300 text-white rounded-full text-xs font-bold shadow-md shadow-rose-600/25 cursor-pointer flex items-center justify-center gap-2 transition-all"
             >
-              Tutup Shift Sekarang
+              {isClosingShift ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Menutup Shift...</span>
+                </>
+              ) : (
+                <span>Tutup Shift Sekarang</span>
+              )}
             </button>
           </div>
         </form>

@@ -69,6 +69,7 @@ export default function UserPortalPage() {
 
   // Calling waiter state
   const [isCallingWaiter, setIsCallingWaiter] = useState(false);
+  const [callingWaiterOrderId, setCallingWaiterOrderId] = useState<number | null>(null);
 
   // Sync profile form when user loads
   useEffect(() => {
@@ -209,28 +210,33 @@ export default function UserPortalPage() {
   };
 
   // Handle Waiter Call for Active Order
-  const handleCallWaiter = async (tableId: number, orderNumber: string) => {
+  const handleCallWaiter = async (tableId: number, orderNumber: string, orderId: number, tableNumber?: string) => {
     setIsCallingWaiter(true);
+    setCallingWaiterOrderId(orderId);
     try {
       const res = await fetch("/api/v1/customer/call-waiter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tableId,
+          tableNumber,
+          orderNumber,
+          customerName: user?.name || "Tamu VIP Savoria",
           type: "call",
           notes: `Panggilan pelayan untuk meja reservasi #${orderNumber}`,
         }),
       });
       const data = await res.json();
       if (data.success) {
-        toast.success("Pelayan SAVORIA telah menerima sinyal panggilan dan sedang menuju ke meja Anda.", "Pelayan Dipanggil");
+        toast.success(data.message || "Pelayan SAVORIA telah menerima sinyal panggilan dan sedang menuju ke meja Anda.", "Pelayan Dipanggil");
       } else {
-        toast.info("Permintaan panggilan pelayan telah diteruskan ke stasiun kasir.", "Notifikasi Kasir");
+        toast.info(data.message || "Permintaan panggilan pelayan telah diteruskan ke stasiun kasir.", "Notifikasi Kasir");
       }
     } catch {
       toast.error("Gagal mengirim panggilan pelayan. Silakan hubungi staf kasir langsung.", "Gangguan Jaringan");
     } finally {
       setIsCallingWaiter(false);
+      setCallingWaiterOrderId(null);
     }
   };
 
@@ -636,14 +642,31 @@ export default function UserPortalPage() {
                           <span>Boarding Pass QR</span>
                         </button>
 
-                        {order.tableId && (
+                        {(order.tableId || order.table?.id) && (
                           <button
-                            onClick={() => handleCallWaiter(order.tableId, order.orderNumber)}
-                            disabled={isCallingWaiter}
-                            className="px-3.5 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-[#18181B] font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                            type="button"
+                            onClick={() =>
+                              handleCallWaiter(
+                                order.tableId || order.table?.id,
+                                order.orderNumber,
+                                order.id,
+                                order.table?.tableNumber
+                              )
+                            }
+                            disabled={callingWaiterOrderId === order.id}
+                            className="px-3.5 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-[#18181B] font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
                           >
-                            <BellRing className="w-3.5 h-3.5 text-[#EA580C]" />
-                            <span>Panggil Pelayan</span>
+                            {callingWaiterOrderId === order.id ? (
+                              <>
+                                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#EA580C]" />
+                                <span>Memanggil...</span>
+                              </>
+                            ) : (
+                              <>
+                                <BellRing className="w-3.5 h-3.5 text-[#EA580C]" />
+                                <span>Panggil Pelayan</span>
+                              </>
+                            )}
                           </button>
                         )}
 

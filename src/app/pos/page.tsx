@@ -130,6 +130,15 @@ export default function PosCashierPage() {
   // Print Receipt / Kitchen Ticket state
   const [printData, setPrintData] = useState<{ type: "customer" | "kitchen"; order: any } | null>(null);
 
+  // Operation Loading States
+  const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+  const [isRefreshingOrders, setIsRefreshingOrders] = useState(false);
+  const [isOpeningShift, setIsOpeningShift] = useState(false);
+  const [isClosingShift, setIsClosingShift] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isProcessingVoid, setIsProcessingVoid] = useState(false);
+  const [isMovingTable, setIsMovingTable] = useState(false);
+
   // 1. Fetch current shift
   const fetchShift = useCallback(async () => {
     try {
@@ -194,9 +203,23 @@ export default function PosCashierPage() {
     return () => clearInterval(interval);
   }, [fetchShift, fetchAllData]);
 
+  // REFRESH ORDERS HANDLER
+  const handleRefreshOrders = async () => {
+    setIsRefreshingOrders(true);
+    try {
+      await fetchAllData();
+      toast.success("Data pesanan berhasil disinkronkan secara real-time.", "Sinkronisasi Berhasil");
+    } catch {
+      toast.error("Gagal menyinkronkan data pesanan.", "Gangguan Koneksi");
+    } finally {
+      setIsRefreshingOrders(false);
+    }
+  };
+
   // SHIFT HANDLERS
   const handleOpenShiftSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsOpeningShift(true);
     try {
       const res = await fetch("/api/v1/pos/shifts/start", {
         method: "POST",
@@ -216,12 +239,15 @@ export default function PosCashierPage() {
       }
     } catch {
       toast.error("Terjadi kesalahan saat membuka shift.", "Gangguan Koneksi");
+    } finally {
+      setIsOpeningShift(false);
     }
   };
 
   const handleCloseShiftSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentShift) return;
+    setIsClosingShift(true);
     try {
       const res = await fetch("/api/v1/pos/shifts/end", {
         method: "POST",
@@ -241,6 +267,8 @@ export default function PosCashierPage() {
       }
     } catch {
       toast.error("Terjadi kesalahan saat menutup shift.", "Gangguan Koneksi");
+    } finally {
+      setIsClosingShift(false);
     }
   };
 
@@ -311,6 +339,7 @@ export default function PosCashierPage() {
   // EXECUTE PAYMENT
   const handleExecutePayment = async () => {
     if (!orderToPay) return;
+    setIsProcessingPayment(true);
 
     try {
       if (orderToPay.isDraft) {
@@ -365,11 +394,14 @@ export default function PosCashierPage() {
       }
     } catch {
       toast.error("Terjadi kesalahan saat memproses pembayaran.", "Gangguan Koneksi");
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
   // STATUS UPDATES
   const handleUpdateOrderStatus = async (orderId: number, status: string) => {
+    setUpdatingOrderId(orderId);
     try {
       const res = await fetch(`/api/v1/pos/orders/${orderId}/status`, {
         method: "PUT",
@@ -385,6 +417,8 @@ export default function PosCashierPage() {
       }
     } catch {
       toast.error("Terjadi kesalahan koneksi.", "Gangguan Jaringan");
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -398,6 +432,7 @@ export default function PosCashierPage() {
 
   const handleExecuteVoid = async () => {
     if (!voidTarget || !supervisorPin || !voidReason) return;
+    setIsProcessingVoid(true);
     try {
       const res = await fetch(`/api/v1/pos/orders/${voidTarget.orderId}/void`, {
         method: "POST",
@@ -418,6 +453,8 @@ export default function PosCashierPage() {
       }
     } catch {
       toast.error("Terjadi gangguan koneksi saat void.", "Gangguan Koneksi");
+    } finally {
+      setIsProcessingVoid(false);
     }
   };
 
@@ -430,6 +467,7 @@ export default function PosCashierPage() {
 
   const handleExecuteMoveTable = async () => {
     if (!moveFromTable || !moveToTableId) return;
+    setIsMovingTable(true);
     try {
       const res = await fetch("/api/v1/pos/tables/move", {
         method: "POST",
@@ -449,6 +487,8 @@ export default function PosCashierPage() {
       }
     } catch {
       toast.error("Terjadi gangguan koneksi saat memindahkan meja.", "Gangguan Koneksi");
+    } finally {
+      setIsMovingTable(false);
     }
   };
 
@@ -509,8 +549,10 @@ export default function PosCashierPage() {
       {activeTab === "orders" && (
         <PosOrdersTab
           activeOrders={activeOrders}
-          onRefresh={fetchAllData}
+          onRefresh={handleRefreshOrders}
+          isRefreshing={isRefreshingOrders}
           onUpdateOrderStatus={handleUpdateOrderStatus}
+          updatingOrderId={updatingOrderId}
           onTriggerPrint={triggerPrint}
           onOpenVoidModal={handleOpenVoidModal}
           onOpenPayModalForOrder={(order) => {
@@ -544,6 +586,7 @@ export default function PosCashierPage() {
         onChangePayMethod={setPayMethod}
         cashPaidInput={cashPaidInput}
         onChangeCashPaid={setCashPaidInput}
+        isProcessingPayment={isProcessingPayment}
         onExecutePayment={handleExecutePayment}
         onClose={() => setShowPaymentModal(false)}
       />
@@ -554,6 +597,7 @@ export default function PosCashierPage() {
         onChangeCashierName={setCashierNameInput}
         startCashInput={startCashInput}
         onChangeStartCash={setStartCashInput}
+        isOpeningShift={isOpeningShift}
         onSubmit={handleOpenShiftSubmit}
         onClose={() => setShowOpenShiftModal(false)}
       />
@@ -570,6 +614,7 @@ export default function PosCashierPage() {
           }
         }}
         closeShiftVariance={closeShiftVariance}
+        isClosingShift={isClosingShift}
         onSubmit={handleCloseShiftSubmit}
         onClose={() => setShowCloseShiftModal(false)}
       />
@@ -580,6 +625,7 @@ export default function PosCashierPage() {
         onChangePin={setSupervisorPin}
         voidReason={voidReason}
         onChangeReason={setVoidReason}
+        isProcessingVoid={isProcessingVoid}
         onExecuteVoid={handleExecuteVoid}
         onClose={() => setShowVoidModal(false)}
       />
@@ -592,6 +638,7 @@ export default function PosCashierPage() {
         availableTables={tables.filter(
           (t) => t.id !== moveFromTable?.id && t.status === "available"
         )}
+        isMovingTable={isMovingTable}
         onExecuteMoveTable={handleExecuteMoveTable}
         onClose={() => setShowMoveTableModal(false)}
       />

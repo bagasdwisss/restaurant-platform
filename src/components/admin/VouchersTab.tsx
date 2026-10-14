@@ -651,9 +651,16 @@ export function VouchersTab({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-xl text-xs font-bold shadow-cta transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-xl text-xs font-bold shadow-cta transition-all disabled:opacity-50"
                 >
-                  {isSubmitting ? "Menyimpan..." : "Buat Voucher"}
+                  {isSubmitting ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <span>Buat Voucher</span>
+                  )}
                 </button>
               </div>
             </form>

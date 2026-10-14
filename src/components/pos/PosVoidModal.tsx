@@ -9,6 +9,7 @@ interface PosVoidModalProps {
   onChangePin: (pin: string) => void;
   voidReason: string;
   onChangeReason: (reason: string) => void;
+  isProcessingVoid?: boolean;
   onExecuteVoid: () => void;
   onClose: () => void;
 }
@@ -19,6 +20,7 @@ export function PosVoidModal({
   onChangePin,
   voidReason,
   onChangeReason,
+  isProcessingVoid = false,
   onExecuteVoid,
   onClose,
 }: PosVoidModalProps) {
@@ -87,10 +89,17 @@ export function PosVoidModal({
           <button
             type="button"
             onClick={onExecuteVoid}
-            disabled={!supervisorPin || !voidReason}
-            className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-300 text-white rounded-full text-xs font-bold shadow-xs cursor-pointer"
+            disabled={!supervisorPin || !voidReason || isProcessingVoid}
+            className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-300 text-white rounded-full text-xs font-bold shadow-xs cursor-pointer flex items-center justify-center gap-2 transition-all"
           >
-            Eksekusi Void
+            {isProcessingVoid ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Memproses Void...</span>
+              </>
+            ) : (
+              <span>Eksekusi Void</span>
+            )}
           </button>
         </div>
       </div>
