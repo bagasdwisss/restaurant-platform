@@ -58,27 +58,23 @@ async function main() {
     },
   });
 
-  console.log('--- Seeding Luxury 5-Star Tables & Salons ---');
-  const tablesData = [
-    { tableNumber: 'Meja 01 - Emerald Window', capacity: 2, qrToken: 'savoria-tbl-01', status: 'available', area: 'Grand Salon Royale' },
-    { tableNumber: 'Meja 02 - Baccarat Chandelier', capacity: 4, qrToken: 'savoria-tbl-02', status: 'available', area: 'Grand Salon Royale' },
-    { tableNumber: 'Meja 03 - Velvet Alcove', capacity: 4, qrToken: 'savoria-tbl-03', status: 'occupied', area: 'Grand Salon Royale' },
-    { tableNumber: 'Meja 04 - Imperial Round Table', capacity: 6, qrToken: 'savoria-tbl-04', status: 'available', area: 'Grand Salon Royale' },
-    { tableNumber: 'Meja 05 - Rose Garden Pavilion', capacity: 2, qrToken: 'savoria-tbl-05', status: 'available', area: 'The Glasshouse Veranda' },
-    { tableNumber: 'Meja 06 - Starry Sky Terrace', capacity: 4, qrToken: 'savoria-tbl-06', status: 'available', area: 'The Glasshouse Veranda' },
-    { tableNumber: 'Meja 07 - Courtyard Water Fountain', capacity: 6, qrToken: 'savoria-tbl-07', status: 'available', area: 'The Glasshouse Veranda' },
-    { tableNumber: 'VIP Suite 01 - Salon Impérial', capacity: 8, qrToken: 'savoria-tbl-vip01', status: 'available', area: 'Private Suite Impériale' },
-    { tableNumber: 'VIP Suite 02 - Presidential Chamber', capacity: 12, qrToken: 'savoria-tbl-vip02', status: 'reserved', area: 'Private Suite Impériale' },
-    { tableNumber: 'The Chef\'s Atelier - Omakase Counter', capacity: 6, qrToken: 'savoria-tbl-chef01', status: 'available', area: 'Chef\'s Culinary Theater' },
+  console.log('--- Seeding 8 Exclusive Dining Tables ---');
+  const tableData = [
+    { tableNumber: 'T01', capacity: 2, qrToken: 'qr-table-01', area: 'Indoor Romantic Chamber' },
+    { tableNumber: 'T02', capacity: 2, qrToken: 'qr-table-02', area: 'Indoor Romantic Chamber' },
+    { tableNumber: 'T03', capacity: 4, qrToken: 'qr-table-03', area: 'Grand Salon Dining Room' },
+    { tableNumber: 'T04', capacity: 4, qrToken: 'qr-table-04', area: 'Grand Salon Dining Room' },
+    { tableNumber: 'T05', capacity: 6, qrToken: 'qr-table-05', area: 'Garden Terrace Veranda' },
+    { tableNumber: 'T06', capacity: 6, qrToken: 'qr-table-06', area: 'Garden Terrace Veranda' },
+    { tableNumber: 'T07', capacity: 8, qrToken: 'qr-table-07', area: 'Royal Heritage Mezzanine (Lantai 2)' },
+    { tableNumber: 'T08', capacity: 10, qrToken: 'qr-table-08', area: 'Presidential VIP Salon' },
   ];
 
-  const createdTables = [];
-  for (const t of tablesData) {
-    const table = await prisma.table.create({ data: t });
-    createdTables.push(table);
+  for (const t of tableData) {
+    await prisma.table.create({ data: t });
   }
 
-  console.log('--- Seeding 7 Rich Culinary Categories ---');
+  console.log('--- Seeding 7 Culinary Categories ---');
   const catAppetizers = await prisma.category.create({
     data: { name: 'Premier Appetizers & Starters', slug: 'appetizers', sortOrder: 1 },
   });
@@ -91,7 +87,7 @@ async function main() {
   const catSeafood = await prisma.category.create({
     data: { name: 'Seafood Extravaganza & Ocean Treasures', slug: 'seafood', sortOrder: 4 },
   });
-  const catAsian = await prisma.category.create({
+  const catNusantaraAsia = await prisma.category.create({
     data: { name: 'Asian & Nusantara Heritage Reimagined', slug: 'nusantara-asia', sortOrder: 5 },
   });
   const catDesserts = await prisma.category.create({
@@ -102,690 +98,587 @@ async function main() {
   });
 
   console.log('--- Seeding Raw Ingredients for Recipe BOM ---');
-  const ingWagyuA5 = await prisma.ingredient.create({
-    data: { name: 'Miyazaki Wagyu A5 BMS 12 (g)', unit: 'g', stockQuantity: 25000, minStock: 3000 },
-  });
-  const ingAngus = await prisma.ingredient.create({
-    data: { name: 'Australian Black Angus Beef (g)', unit: 'g', stockQuantity: 40000, minStock: 5000 },
-  });
-  const ingLamb = await prisma.ingredient.create({
-    data: { name: 'NZ Lumina Lamb Rack (g)', unit: 'g', stockQuantity: 20000, minStock: 2500 },
-  });
-  const ingCaviar = await prisma.ingredient.create({
-    data: { name: 'Oscietra Royal Caviar (g)', unit: 'g', stockQuantity: 5000, minStock: 500 },
-  });
-  const ingTruffle = await prisma.ingredient.create({
-    data: { name: 'Périgord Black Truffle (g)', unit: 'g', stockQuantity: 3000, minStock: 300 },
-  });
-  const ingLobster = await prisma.ingredient.create({
-    data: { name: 'Brittany Blue Lobster (ekor)', unit: 'ekor', stockQuantity: 60, minStock: 10 },
-  });
-  const ingKingCrab = await prisma.ingredient.create({
-    data: { name: 'Barents Sea King Crab (g)', unit: 'g', stockQuantity: 15000, minStock: 2000 },
-  });
-  const ingSeaBass = await prisma.ingredient.create({
-    data: { name: 'Chilean Sea Bass Fillet (g)', unit: 'g', stockQuantity: 18000, minStock: 2000 },
-  });
-  const ingScallop = await prisma.ingredient.create({
-    data: { name: 'Hokkaido Scallop Sashimi (g)', unit: 'g', stockQuantity: 12000, minStock: 1500 },
-  });
-  const ingFoieGras = await prisma.ingredient.create({
-    data: { name: 'Rougié Foie Gras (g)', unit: 'g', stockQuantity: 8000, minStock: 1000 },
-  });
-  const ingDuck = await prisma.ingredient.create({
-    data: { name: 'French Magret Duck Breast (g)', unit: 'g', stockQuantity: 14000, minStock: 1500 },
-  });
-  const ingValrhona = await prisma.ingredient.create({
-    data: { name: 'Valrhona Guanaja 70% Dark Chocolate (g)', unit: 'g', stockQuantity: 15000, minStock: 2000 },
-  });
-  const ingChampagne = await prisma.ingredient.create({
-    data: { name: 'Dom Pérignon Vintage Bottles (botol)', unit: 'botol', stockQuantity: 30, minStock: 5 },
-  });
-  const ingCoffeeBeans = await prisma.ingredient.create({
-    data: { name: 'Jamaica Blue Mountain Grade 1 Beans (g)', unit: 'g', stockQuantity: 10000, minStock: 1000 },
-  });
+  const rawIngredients = [
+    { name: 'Miyazaki Wagyu A5 BMS 12 (g)', unit: 'g', stockQuantity: 30000, minStock: 3000 },
+    { name: 'Australian Black Angus MB7 (g)', unit: 'g', stockQuantity: 45000, minStock: 5000 },
+    { name: 'NZ Lumina Lamb Rack (g)', unit: 'g', stockQuantity: 25000, minStock: 2500 },
+    { name: 'Oscietra Royal Caviar (g)', unit: 'g', stockQuantity: 6000, minStock: 500 },
+    { name: 'Périgord Black Truffle (g)', unit: 'g', stockQuantity: 4000, minStock: 300 },
+    { name: 'Brittany Blue Lobster (ekor)', unit: 'ekor', stockQuantity: 80, minStock: 10 },
+    { name: 'Barents Sea King Crab (g)', unit: 'g', stockQuantity: 20000, minStock: 2000 },
+    { name: 'Chilean Sea Bass Fillet (g)', unit: 'g', stockQuantity: 22000, minStock: 2000 },
+    { name: 'Hokkaido Scallop Sashimi (g)', unit: 'g', stockQuantity: 15000, minStock: 1500 },
+    { name: 'Rougié Foie Gras (g)', unit: 'g', stockQuantity: 10000, minStock: 1000 },
+    { name: 'French Magret Duck Breast (g)', unit: 'g', stockQuantity: 18000, minStock: 1500 },
+    { name: 'Valrhona Guanaja 70% Dark Chocolate (g)', unit: 'g', stockQuantity: 20000, minStock: 2000 },
+    { name: 'Dom Pérignon Vintage Bottles (botol)', unit: 'botol', stockQuantity: 40, minStock: 5 },
+    { name: 'Jamaica Blue Mountain Grade 1 Beans (g)', unit: 'g', stockQuantity: 12000, minStock: 1000 },
+    { name: 'Carnaroli Superfino Rice (g)', unit: 'g', stockQuantity: 35000, minStock: 5000 },
+    { name: 'Parmigiano-Reggiano 36 Mo (g)', unit: 'g', stockQuantity: 18000, minStock: 2000 },
+  ];
 
-  console.log('--- Seeding Menus & Modifiers ---');
+  const ingMap = {};
+  for (const ing of rawIngredients) {
+    const created = await prisma.ingredient.create({ data: ing });
+    ingMap[ing.name] = created.id;
+  }
 
-  // ==========================================
-  // CATEGORY 1: APPETIZERS & STARTERS (5 items)
-  // ==========================================
-  const mCaviar = await prisma.menu.create({
-    data: {
+  console.log('--- Seeding 50 Worldwide Gourmet Menus with Modifiers ---');
+
+  // Complete 50 Dishes
+  const dishes = [
+    // 1. APPETIZERS & STARTERS (7 Items)
+    {
       categoryId: catAppetizers.id,
       name: 'Caviar Kristal Oscietra Royal (30g)',
-      country: 'Prancis',
-      description: '30 gram butiran kaviar sturgeon Oscietra royal disajikan di atas mangkuk kristal es, dilengkapi blinis hangat buatan tangan, crème fraîche Normandy, dan cincangan telur puyuh organik.',
+      country: 'Kaspia',
+      description: 'Kaviar sturgeon Oscietra royal dengan blinis hangat buatan tangan, crème fraîche Normandy, dan cincangan telur puyuh organik.',
       price: 850000,
-      image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
+      modifiers: [
+        {
+          name: 'Pilihan Pendamping Blinis',
+          minSelection: 1,
+          maxSelection: 1,
+          options: [
+            { name: 'Traditional Warm Sourdough Blinis', price: 0 },
+            { name: 'Gluten-Free Buckwheat Blinis', price: 25000 },
+          ],
+        },
+      ],
+      recipes: [{ ingName: 'Oscietra Royal Caviar (g)', qty: 30 }],
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mCaviar.id, ingredientId: ingCaviar.id, quantityNeeded: 30 },
-  });
-
-  const mScallop = await prisma.menu.create({
-    data: {
+    {
       categoryId: catAppetizers.id,
-      name: 'Hokkaido Scallop Carpaccio & Yuzu Pearls',
+      name: 'Hokkaido Scallop Carpaccio & Yuzu',
       country: 'Jepang',
-      description: 'Kerang simping Hokkaido segar diiris tipis, disajikan dengan mutiara perasan jeruk yuzu, minyak zaitun Liguria, microgreens, dan taburan sea salt Maldon kristal.',
+      description: 'Kerang simping Hokkaido segar diiris tipis, mutiara jeruk yuzu, minyak zaitun Liguria, dan serpihan sea salt Maldon.',
       price: 320000,
-      image: 'https://images.unsplash.com/photo-1535400255456-984241443b29?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1535400255456-984241443b29?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Hokkaido Scallop Sashimi (g)', qty: 90 }],
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mScallop.id, ingredientId: ingScallop.id, quantityNeeded: 120 },
-  });
-
-  const mEscargot = await prisma.menu.create({
-    data: {
+    {
       categoryId: catAppetizers.id,
       name: 'French Truffle Escargot à la Bourguignonne',
       country: 'Prancis',
-      description: 'Bekicot liar Burgundy Prancis dipanggang dalam cangkangnya dengan mentega herba bawang putih, peterseli segar, percikan anggur putih Chablis, dan irisan sourdough panggang hangat.',
+      description: 'Bekicot liar Burgundy Prancis dipanggang dengan garlic herb butter, percikan Chablis white wine, dan sourdough renyah.',
       price: 260000,
-      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80',
     },
-  });
-
-  const mBeefTartare = await prisma.menu.create({
-    data: {
+    {
       categoryId: catAppetizers.id,
-      name: 'Wagyu Beef Tartare with Quail Egg & Black Truffle',
+      name: 'Wagyu Beef Tartare with Black Truffle',
       country: 'Prancis',
-      description: 'Daging sapi Wagyu segar dicincang pisau tangan, dibumbui capers, mustard dijon, saus Worcestershire, kuning telur puyuh organik, dan serutan truffle Périgord segar di atas roti brioche renyah.',
+      description: 'Daging Wagyu segar cincang halus, bumbu kapulaga dijon, kuning telur puyuh organik, dan serutan truffle Périgord.',
       price: 340000,
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+      recipes: [
+        { ingName: 'Miyazaki Wagyu A5 BMS 12 (g)', qty: 80 },
+        { ingName: 'Périgord Black Truffle (g)', qty: 5 },
+      ],
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mBeefTartare.id, ingredientId: ingWagyuA5.id, quantityNeeded: 100 },
-  });
-
-  const mMushroomVeloute = await prisma.menu.create({
-    data: {
+    {
       categoryId: catAppetizers.id,
-      name: 'Wild Forest Mushroom Velouté with Garlic Brioche',
+      name: 'Wild Forest Porcini Velouté',
       country: 'Italia',
-      description: 'Sup krim kental dari perpaduan jamur Porcini, Morels, dan Chanterelles dengan minyak truffle putih Italia, busa krim susu alpine, dan brioche bawang putih panggang renyah.',
-      price: 180000,
-      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      description: 'Sup krim beludru jamur porcini liar, minyak truffle putih Alba, daun thyme segar, dan crouton brioche renyah.',
+      price: 185000,
+      image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&q=80',
     },
-  });
+    {
+      categoryId: catAppetizers.id,
+      name: 'Foie Gras Poêlé au Vinaigre Balsamique',
+      country: 'Prancis',
+      description: 'Hati angsa Rougié Prancis panggang gurih, saus reduksi cuka balsamik Modena 12 tahun, dan brioche kismis hangat.',
+      price: 420000,
+      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Rougié Foie Gras (g)', qty: 70 }],
+    },
+    {
+      categoryId: catAppetizers.id,
+      name: 'Burrata Pugliese con Pomodorini Confit',
+      country: 'Italia',
+      description: 'Keju Burrata segar lembut dari Puglia, tomat ceri confit karamel madu, minyak zaitun extra virgin, dan daun basil wangi.',
+      price: 210000,
+      image: 'https://images.unsplash.com/photo-1592417817098-8f3d69102a56?auto=format&fit=crop&w=800&q=80',
+    },
 
-  // ==========================================
-  // CATEGORY 2: WORLD SIGNATURE MAINS & STEAKS (5 items)
-  // ==========================================
-  const mWagyuRossini = await prisma.menu.create({
-    data: {
+    // 2. WORLD SIGNATURE MAINS & STEAKS (7 Items)
+    {
       categoryId: catMains.id,
       name: 'Miyazaki Wagyu A5 Tenderloin Rossini',
-      country: 'Prancis',
-      description: 'Daging Wagyu Jepang A5 BMS 12 dipanggang sempurna, dilapisi pan-seared Rougié Foie Gras, irisan Périgord Black Truffle segar, kentang purée mentega Prancis, dan saus jus anggur Madeira.',
+      country: 'Jepang',
+      description: 'Wagyu A5 BMS 12, pan-seared Rougié Foie Gras, Périgord Black Truffle, kentang purée mentega Prancis, dan Madeira jus.',
       price: 1450000,
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+      modifiers: [
+        {
+          name: 'Tingkat Kematangan Daging (Doneness)',
+          minSelection: 1,
+          maxSelection: 1,
+          options: [
+            { name: 'Rare (Dingin di tengah, merah marun)', price: 0 },
+            { name: 'Medium Rare (Rekomendasi Chef - Sangat Empuk & Juicy)', price: 0 },
+            { name: 'Medium (Merah muda hangat di tengah)', price: 0 },
+            { name: 'Medium Well (Matang hampir merata)', price: 0 },
+          ],
+        },
+      ],
+      recipes: [
+        { ingName: 'Miyazaki Wagyu A5 BMS 12 (g)', qty: 200 },
+        { ingName: 'Rougié Foie Gras (g)', qty: 50 },
+        { ingName: 'Périgord Black Truffle (g)', qty: 10 },
+      ],
     },
-  });
-
-  await prisma.modifierGroup.create({
-    data: {
-      menuId: mWagyuRossini.id,
-      name: 'Tingkat Kematangan Daging (Doneness)',
-      minSelection: 1,
-      maxSelection: 1,
-      options: {
-        create: [
-          { name: 'Rare (Warm Red Center)', price: 0 },
-          { name: 'Medium Rare (Rekomendasi Chef)', price: 0 },
-          { name: 'Medium (Pink Tender Center)', price: 0 },
-          { name: 'Medium Well', price: 0 },
-        ],
-      },
-    },
-  });
-
-  await prisma.recipe.createMany({
-    data: [
-      { menuId: mWagyuRossini.id, ingredientId: ingWagyuA5.id, quantityNeeded: 200 },
-      { menuId: mWagyuRossini.id, ingredientId: ingFoieGras.id, quantityNeeded: 60 },
-      { menuId: mWagyuRossini.id, ingredientId: ingTruffle.id, quantityNeeded: 10 },
-    ],
-  });
-
-  const mTomahawk = await prisma.menu.create({
-    data: {
+    {
       categoryId: catMains.id,
-      name: 'Australian Black Angus Tomahawk MB7 (1.2kg Sharing)',
+      name: 'Australian Tomahawk Wagyu MB7 (1.2kg)',
       country: 'Australia',
-      description: 'Steak tomahawk bertulang utuh 1.2 kg dari sapi Black Angus Australia marbling 7, dipanggang di atas arang kayu apel, disajikan dengan roasted garlic bulb, bone marrow butter, dan 3 pilihan saus istimewa.',
+      description: 'Steak tomahawk bertulang utuh panggang arang kayu apel, roasted garlic bulb, bone marrow butter, dan 3 saus signature.',
       price: 1850000,
-      image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=800&q=80',
+      modifiers: [
+        {
+          name: 'Tingkat Kematangan Daging',
+          minSelection: 1,
+          maxSelection: 1,
+          options: [
+            { name: 'Medium Rare (Rekomendasi Chef)', price: 0 },
+            { name: 'Medium', price: 0 },
+            { name: 'Medium Well', price: 0 },
+          ],
+        },
+      ],
+      recipes: [{ ingName: 'Australian Black Angus MB7 (g)', qty: 1200 }],
     },
-  });
-
-  await prisma.modifierGroup.create({
-    data: {
-      menuId: mTomahawk.id,
-      name: 'Pilihan Saus Steak',
-      minSelection: 1,
-      maxSelection: 2,
-      options: {
-        create: [
-          { name: 'Truffle Mushroom Demi-Glace', price: 0 },
-          { name: 'Green Peppercorn Cognac', price: 0 },
-          { name: 'Chimichurri Fresh Herbs', price: 0 },
-          { name: 'Béarnaise Classic Butter', price: 25000 },
-        ],
-      },
-    },
-  });
-
-  await prisma.recipe.create({
-    data: { menuId: mTomahawk.id, ingredientId: ingAngus.id, quantityNeeded: 1200 },
-  });
-
-  const mLambRack = await prisma.menu.create({
-    data: {
+    {
       categoryId: catMains.id,
-      name: 'New Zealand Lumina Lamb Rack with Herb Crust',
+      name: 'NZ Lumina Lamb Rack with Herb Crust',
       country: 'Selandia Baru',
-      description: 'Iga domba Lumina lembut berbalut rempah panko aromatik, disajikan bersama purée kacang polong manis mint, wortel madu panggang, dan saus jus rosemary wangi.',
+      description: 'Iga domba Lumina lembut berbalut rempah panko aromatik, purée kacang polong manis mint, dan saus jus rosemary wangi.',
       price: 680000,
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'NZ Lumina Lamb Rack (g)', qty: 350 }],
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mLambRack.id, ingredientId: ingLamb.id, quantityNeeded: 350 },
-  });
-
-  const mDuckBreast = await prisma.menu.create({
-    data: {
+    {
       categoryId: catMains.id,
-      name: 'Roasted French Duck Breast with Cherry Port Reduction',
-      country: 'Prancis',
-      description: 'Dada bebek Magret Prancis dipanggang medium rare dengan kulit renyah berkilau madu lavender, purée ubi parsnip lembut, dan saus reduksi buah ceri anggur Port asam manis seimbang.',
-      price: 480000,
-      image: 'https://images.unsplash.com/photo-1514944298352-7a8e0f6c2578?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
-    },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mDuckBreast.id, ingredientId: ingDuck.id, quantityNeeded: 280 },
-  });
-
-  const mRibeye = await prisma.menu.create({
-    data: {
-      categoryId: catMains.id,
-      name: 'USDA Prime Dry-Aged Ribeye 350g (45 Days Aged)',
+      name: 'USDA Prime Dry-Aged Ribeye 350g',
       country: 'Amerika Serikat',
-      description: 'Potongan daging ribeye kualitas USDA Prime yang melalui proses dry-aging selama 45 hari untuk cita rasa gurih kacang yang intens, disajikan dengan kentang panggang truffle dan mentega bawang putih herba.',
+      description: 'Potongan ribeye prime berusia 45 hari dry-aged dengan rasa gurih nutty intens, chimichurri segar, dan kentang truffle.',
       price: 890000,
-      image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Australian Black Angus MB7 (g)', qty: 350 }],
     },
-  });
+    {
+      categoryId: catMains.id,
+      name: 'Magret de Canard Rôti au Miel et Cerises',
+      country: 'Prancis',
+      description: 'Dada bebek Prancis kulit krispi terpanggang madu lavender, jus ceri liar asam manis, dan puree ubi jalar beludru.',
+      price: 480000,
+      image: 'https://images.unsplash.com/photo-1514944298352-7a8e0f6c2578?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'French Magret Duck Breast (g)', qty: 280 }],
+    },
+    {
+      categoryId: catMains.id,
+      name: 'Ibérico Pork Pluma & Smoked Apple Purée',
+      country: 'Spanyol',
+      description: 'Daging babi Ibérico acorn-fed bagian sayap yang sangat empuk, purée apel panggang berasap, dan jus sherry Spanyol.',
+      price: 550000,
+      image: 'https://images.unsplash.com/photo-1432139555190-58524dae6a55?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      categoryId: catMains.id,
+      name: 'Slow-Braised Wagyu Beef Cheek Bourguignon',
+      country: 'Prancis',
+      description: 'Pipi sapi Wagyu dimasak lambat 16 jam dalam anggur merah Pinot Noir Burgundy, wortel glacé, jamur mutiara, dan kentang lumer.',
+      price: 410000,
+      image: 'https://images.unsplash.com/photo-1534939561126-855b8675edd7?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Australian Black Angus MB7 (g)', qty: 260 }],
+    },
 
-  // ==========================================
-  // CATEGORY 3: ARTISANAL PASTA & TRUFFLE RISOTTO (5 items)
-  // ==========================================
-  const mRisotto = await prisma.menu.create({
-    data: {
+    // 3. ARTISANAL PASTA & TRUFFLE RISOTTO (7 Items)
+    {
       categoryId: catPasta.id,
-      name: 'Risotto al Tartufo Bianco d\'Alba con Parmigiano 36 Bulan',
+      name: 'Risotto al Tartufo Bianco d\'Alba',
       country: 'Italia',
-      description: 'Beras Carnaroli superfino dimasak perlahan dengan kaldu capon emas, mentega Normandia, keju Parmigiano-Reggiano usia 36 bulan, dan parutan White Truffle segar dari perbukitan Alba, Italia.',
+      description: 'Beras Carnaroli superfino, kaldu capon emas, mentega Normandia, Parmigiano-Reggiano 36 bulan, dan parutan White Truffle segar.',
       price: 690000,
-      image: 'https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=800&q=80',
+      recipes: [
+        { ingName: 'Carnaroli Superfino Rice (g)', qty: 100 },
+        { ingName: 'Parmigiano-Reggiano 36 Mo (g)', qty: 30 },
+      ],
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mRisotto.id, ingredientId: ingTruffle.id, quantityNeeded: 15 },
-  });
-
-  const mTaglioliniLobster = await prisma.menu.create({
-    data: {
+    {
       categoryId: catPasta.id,
-      name: 'Handcrafted Tagliolini with Brittany Blue Lobster',
+      name: 'Handcrafted Tagliolini with Blue Lobster',
       country: 'Italia',
-      description: 'Pasta telur tagliolini buatan tangan setiap pagi, disajikan dengan daging lobster biru Brittany, bisque tomat ceri San Marzano manis, minyak cabai Calabria, dan daun basil segar.',
+      description: 'Pasta telur buatan tangan dengan lobster biru Brittany, bisque tomat ceri San Marzano, minyak cabai Calabria, dan basil.',
       price: 750000,
-      image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Brittany Blue Lobster (ekor)', qty: 1 }],
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mTaglioliniLobster.id, ingredientId: ingLobster.id, quantityNeeded: 1 },
-  });
-
-  const mPappardelleRagu = await prisma.menu.create({
-    data: {
+    {
       categoryId: catPasta.id,
       name: 'Wagyu Beef Cheek Ragù Pappardelle',
       country: 'Italia',
-      description: 'Pasta pipih lebar pappardelle dengan daging pipi sapi Wagyu yang dimasak lambat selama 12 jam bersama anggur Chianti dan sayuran akar, ditaburi keju Pecorino Romano berusia matang.',
+      description: 'Pasta lebar pappardelle dengan daging pipi sapi Wagyu direbus 12 jam bersama anggur Chianti dan keju Pecorino Romano.',
       price: 380000,
-      image: 'https://images.unsplash.com/photo-1621996346565-e3d5d6281699?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1621996346565-e3d5d6281699?auto=format&fit=crop&w=800&q=80',
     },
-  });
-
-  const mRavioli = await prisma.menu.create({
-    data: {
+    {
       categoryId: catPasta.id,
       name: 'Ravioli di Ricotta e Spinaci al Burro e Salvia',
       country: 'Italia',
-      description: 'Bantal pasta ravioli buatan tangan berisi keju ricotta susu kerbau dan bayam liar, disajikan dengan saus mentega Prancis cokelat (beurre noisette), daun sage renyah, dan kacang pinus panggang.',
-      price: 290000,
-      image: 'https://images.unsplash.com/photo-1587740908075-9e245070dfaa?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      description: 'Ravioli buatan tangan isi keju ricotta susu kerbau dan bayam liar dengan siraman mentega herba salvia harum dan pine nuts.',
+      price: 260000,
+      image: 'https://images.unsplash.com/photo-1587740908075-9e245070dfaa?auto=format&fit=crop&w=800&q=80',
     },
-  });
-
-  const mVongole = await prisma.menu.create({
-    data: {
+    {
       categoryId: catPasta.id,
-      name: 'Spaghetti alle Vongole Veraci con Bottarga di Muggine',
+      name: 'Spaghetti alle Vongole Veraci con Bottarga',
       country: 'Italia',
-      description: 'Spaghetti artisanal Gragnano dengan kerang vongole segar, emulsi minyak zaitun extra virgin, bawang putih, peterseli, percikan anggur putih, dan serutan telur ikan Bottarga dari Sardinia.',
-      price: 360000,
-      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      description: 'Spaghetti artisanal Gragnano dengan kerang laut hidup, bawang putih manis, anggur putih, dan serutan telur ikan Bottarga.',
+      price: 350000,
+      image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80',
     },
-  });
+    {
+      categoryId: catPasta.id,
+      name: 'Gnocchi di Patate al Gorgonzola e Noci',
+      country: 'Italia',
+      description: 'Gnocchi kentang lumer berbalut saus krim keju Gorgonzola Dolce DOP, kacang kenari renyah panggang, dan madu akasia.',
+      price: 240000,
+      image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      categoryId: catPasta.id,
+      name: 'Fettuccine ai Funghi Porcini e Tartufo Nero',
+      country: 'Italia',
+      description: 'Fettuccine telur artisanal dengan tumisan jamur porcini segar, minyak zaitun Tuscan, dan serutan truffle hitam Norcia.',
+      price: 310000,
+      image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    },
 
-  // ==========================================
-  // CATEGORY 4: SEAFOOD EXTRAVAGANZA (5 items)
-  // ==========================================
-  const mLobsterThermidor = await prisma.menu.create({
-    data: {
+    // 4. SEAFOOD EXTRAVAGANZA & OCEAN TREASURES (7 Items)
+    {
       categoryId: catSeafood.id,
       name: 'Lobster Thermidor au Hennessy Cognac',
       country: 'Prancis',
-      description: 'Lobster biru utuh dipanggang dalam cangkangnya dengan velouté krim mustard Dijon, keju Gruyère Swiss berusia 18 bulan, dan flambé aroma Hennessy XO Cognac.',
+      description: 'Lobster biru utuh dipanggang dalam cangkang dengan velouté krim Dijon mustard, keju Gruyère Swiss 18 bulan, dan flambé Cognac.',
       price: 920000,
-      image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Brittany Blue Lobster (ekor)', qty: 1 }],
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mLobsterThermidor.id, ingredientId: ingLobster.id, quantityNeeded: 1 },
-  });
-
-  const mKingCrab = await prisma.menu.create({
-    data: {
+    {
       categoryId: catSeafood.id,
       name: 'Barents Sea King Crab au Beurre Fumé',
-      country: 'Skandinavia',
-      description: 'Kaki kepiting raja raksasa dari Laut Barents yang manis gurih, dipanggang dengan mentega asap kayu apel, emulsi daun adas dill Norwegia, dan remah brioche mentega renyah.',
+      country: 'Norwegia',
+      description: 'Kaki kepiting raja raksasa dari Laut Barents dipanggang mentega asap kayu apel, emulsi daun adas dill, dan brioche renyah.',
       price: 980000,
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Barents Sea King Crab (g)', qty: 350 }],
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mKingCrab.id, ingredientId: ingKingCrab.id, quantityNeeded: 300 },
-  });
-
-  const mSeaBass = await prisma.menu.create({
-    data: {
+    {
       categoryId: catSeafood.id,
-      name: 'Chilean Sea Bass en Papillote with Lemongrass Emulsion',
+      name: 'Chilean Sea Bass en Papillote',
       country: 'Chili',
-      description: 'Fillet ikan kakap Chili putih bersisik salju dipanggang dalam bungkusan kertas perkamen dengan jamur shiitake, jahe muda, daun serai wangi, dan kaldu dashi jernih beraroma laut.',
+      description: 'Fillet kakap Chili salju dipanggang dalam kertas perkamen bersama jamur shiitake, jahe muda, serai wangi, dan kaldu dashi.',
       price: 620000,
-      image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Chilean Sea Bass Fillet (g)', qty: 220 }],
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mSeaBass.id, ingredientId: ingSeaBass.id, quantityNeeded: 220 },
-  });
-
-  const mTasmanianSalmon = await prisma.menu.create({
-    data: {
+    {
       categoryId: catSeafood.id,
-      name: 'Crispy Skin Tasmanian Salmon with Saffron Velouté',
+      name: 'Crispy Skin Tasmanian Salmon Saffron',
       country: 'Australia',
-      description: 'Salmon liar Tasmania dengan kulit renyah sempurna, daging lembut lumer berlemak omega, disajikan di atas kentang fondue mentega, asparagus panggang, dan saus beludru saffron emas.',
+      description: 'Salmon liar Tasmania berkulit garing lumer di lidah, kentang fondue mentega, asparagus panggang, dan saus saffron emas.',
       price: 390000,
-      image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80',
     },
-  });
-
-  const mGrilledOctopus = await prisma.menu.create({
-    data: {
+    {
       categoryId: catSeafood.id,
-      name: 'Mediterranean Grilled Octopus with Romesco Sauce',
+      name: 'Mediterranean Grilled Octopus Romesco',
       country: 'Spanyol',
-      description: 'Tentakel gurita Mediterania yang direbus lambat lalu dipanggang arang hingga harum, disajikan dengan saus romesco kacang almond panggang paprika asap, kentang fingerling, dan minyak peterseli.',
-      price: 350000,
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      description: 'Tentakel gurita laut dalam dipanggang empuk dengan saus Romesco kacang almond Catalunya, kentang baby confit, dan paprika.',
+      price: 430000,
+      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
     },
-  });
-
-  // ==========================================
-  // CATEGORY 5: ASIAN & NUSANTARA HERITAGE (6 items)
-  // ==========================================
-  const mRendang = await prisma.menu.create({
-    data: {
-      categoryId: catAsian.id,
-      name: 'Rendang Short Ribs Wagyu 48-Hour Sous Vide',
-      country: 'Nusantara',
-      description: 'Iga pendek Wagyu marbling 9 dimasak lambat metode sous-vide selama 48 jam hingga lumer, dibalut pasta rendang karamel kelapa parut gongseng Payakumbuh, gel santan asam kandis, dan keripik singkong emas.',
-      price: 580000,
-      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
-    },
-  });
-
-  const mBebekBetutu = await prisma.menu.create({
-    data: {
-      categoryId: catAsian.id,
-      name: 'Bebek Betutu Confit aux Epices Nobles',
-      country: 'Nusantara',
-      description: 'Paha bebek Prancis dimasak confit dalam minyak rempah 18 bumbu base genep Bali, disajikan dengan kuah gulai kental saffron kecombrang, lawar kacang panjang asap, dan sambal matah minyak kelapa murni.',
-      price: 450000,
-      image: 'https://images.unsplash.com/photo-1514944298352-7a8e0f6c2578?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
-    },
-  });
-
-  const mSukiyaki = await prisma.menu.create({
-    data: {
-      categoryId: catAsian.id,
-      name: 'Miyazaki Wagyu A5 Sukiyaki Royale BMS 12',
-      country: 'Jepang',
-      description: 'Irisan daging Wagyu A5 bersertifikasi halal dari prefektur Miyazaki direbus perlahan dalam warishita manis-gurih berusia 50 tahun, jamur Matsutake, tahu bakar artisan, dan telur onsen omega berbalut emas.',
-      price: 1250000,
-      image: 'https://images.unsplash.com/photo-1579684947550-22e945225d9a?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
-    },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mSukiyaki.id, ingredientId: ingWagyuA5.id, quantityNeeded: 200 },
-  });
-
-  const mOmakaseNigiri = await prisma.menu.create({
-    data: {
-      categoryId: catAsian.id,
-      name: 'Omakase Nigiri Duo: Hon Maguro Otoro & Uni Hokkaido',
-      country: 'Jepang',
-      description: 'Sajian dua potong nigiri legendaris: tuna Otoro berlemak tebal dibakar tipis aburi dengan kaviar, serta landak laut Uni segar langsung dari perairan dingin Hokkaido di atas nasi cuka merah akazu berumur 3 tahun.',
-      price: 880000,
-      image: 'https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
-    },
-  });
-
-  const mCrabVermicelli = await prisma.menu.create({
-    data: {
-      categoryId: catAsian.id,
-      name: 'Singapore Golden Mud Crab Vermicelli Claypot',
-      country: 'Singapura',
-      description: 'Kepiting lumpur segar montok dimasak di mangkuk tanah liat panas membara bersama bihun lembut yang menyerap kaldu kepiting pekat, jahe iris wangi, bawang daun, dan minyak wijen bakar.',
+    {
+      categoryId: catSeafood.id,
+      name: 'Brittany Turbot Meunière au Beurre Noisette',
+      country: 'Prancis',
+      description: 'Ikan turbot tangkapan liar pesisir Brittany Prancis dimasak meunière mentega cokelat hazelnut, perasan lemon, dan peterseli.',
       price: 720000,
-      image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
     },
-  });
-
-  const mTomYum = await prisma.menu.create({
-    data: {
-      categoryId: catAsian.id,
-      name: 'Thai Royal Tom Yum Goong with Giant River Prawn',
-      country: 'Thailand',
-      description: 'Udang galah sungai raksasa dengan kepala sarat gurih lemak, berpadu dalam kuah tom yum rempah aromatik kaffir lime, serai segar, lengkuas merah, jamur jerami, dan minyak cabai panggang khas istana Siam.',
+    {
+      categoryId: catSeafood.id,
+      name: 'Pan-Seared Yellowfin Tuna Sesame Tataki',
+      country: 'Jepang',
+      description: 'Tuna sirip kuning segar berbalut biji wijen dua warna, irisan lobak daikon renyah, saus ponzu jahe, dan microgreens.',
       price: 360000,
-      image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1501595091296-3aa970afb3ff?auto=format&fit=crop&w=800&q=80',
     },
-  });
 
-  // ==========================================
-  // CATEGORY 6: DESSERTS & PÂTISSERIE (6 items)
-  // ==========================================
-  const mSouffle = await prisma.menu.create({
-    data: {
-      categoryId: catDesserts.id,
-      name: 'Soufflé Chaud au Grand Marnier Cuvée du Centenaire',
-      country: 'Prancis',
-      description: 'Kue soufflé klasik Prancis mengembang lembut dengan aroma kulit jeruk likur Grand Marnier 100th anniversary, disajikan dengan es krim vanila Madagaskar buatan tangan dan lembaran emas murni 24k.',
-      price: 280000,
-      image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+    // 5. ASIAN & NUSANTARA HERITAGE (8 Items)
+    {
+      categoryId: catNusantaraAsia.id,
+      name: 'Rendang Short Ribs Wagyu 48-Hour',
+      country: 'Indonesia',
+      description: 'Iga sapi Wagyu marbling 9 sous-vide 48 jam lumer di lidah, kelapa gongseng Payakumbuh, gel santan asam kandis, dan keripik singkong.',
+      price: 580000,
+      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Australian Black Angus MB7 (g)', qty: 350 }],
     },
-  });
-
-  const mSphere = await prisma.menu.create({
-    data: {
-      categoryId: catDesserts.id,
-      name: 'Sphère Chocolat Noir Valrhona Guanaja 70%',
-      country: 'Prancis',
-      description: 'Bola cokelat hitam Valrhona 70% berkilau yang meleleh saat disiram saus karamel mentega asin Isigny Sainte-Mère panas, mengungkap mousse praline hazelnut Piedmont di dalamnya.',
+    {
+      categoryId: catNusantaraAsia.id,
+      name: 'Miyazaki Wagyu A5 Sukiyaki Royale',
+      country: 'Jepang',
+      description: 'Daging Wagyu A5 Miyazaki direbus perlahan dalam warishita manis-gurih 50 tahun, jamur Matsutake, dan telur onsen emas.',
+      price: 1250000,
+      image: 'https://images.unsplash.com/photo-1579684947550-22e945225d9a?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Miyazaki Wagyu A5 BMS 12 (g)', qty: 180 }],
+    },
+    {
+      categoryId: catNusantaraAsia.id,
+      name: 'Bebek Betutu Confit aux Epices Nobles',
+      country: 'Indonesia',
+      description: 'Paha bebek confit 18 bumbu base genep Bali, kuah gulai saffron kecombrang, lawar asap, dan sambal matah kelapa murni.',
+      price: 450000,
+      image: 'https://images.unsplash.com/photo-1514944298352-7a8e0f6c2578?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'French Magret Duck Breast (g)', qty: 250 }],
+    },
+    {
+      categoryId: catNusantaraAsia.id,
+      name: 'Omakase Nigiri: Otoro & Uni Hokkaido',
+      country: 'Jepang',
+      description: 'Nigiri tuna Otoro aburi bertabur kaviar dan landak laut Uni segar Hokkaido di atas nasi akazu cuka merah 3 tahun.',
+      price: 880000,
+      image: 'https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      categoryId: catNusantaraAsia.id,
+      name: 'Singapore Golden Mud Crab Claypot',
+      country: 'Singapura',
+      description: 'Kepiting lumpur jumbo segar dimasak dalam claypot dengan bihun kaca kaldu kepiting pekat lada hitam Sarawak dan daun ketumbar.',
+      price: 780000,
+      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      categoryId: catNusantaraAsia.id,
+      name: 'Thai Royal Tom Yum River Prawn',
+      country: 'Thailand',
+      description: 'Sup tom yum tradisi istana Thailand dengan udang galah sungai raksasa berlemak manis, galangal, serai segar, dan minyak cabai.',
       price: 320000,
-      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=800&q=80',
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mSphere.id, ingredientId: ingValrhona.id, quantityNeeded: 80 },
-  });
+    {
+      categoryId: catNusantaraAsia.id,
+      name: 'Rawon Sengkel Wagyu Sambal Terasi Bakar',
+      country: 'Indonesia',
+      description: 'Sengkel Wagyu empuk dimasak kuah kluwek hitam legendaris Jawa Timur, tauge pendek renyah, telur bebek asin, dan emping melinjo.',
+      price: 280000,
+      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Australian Black Angus MB7 (g)', qty: 220 }],
+    },
+    {
+      categoryId: catNusantaraAsia.id,
+      name: 'Black Truffle Siew Mai & Xiao Long Bao',
+      country: 'Hong Kong',
+      description: 'Duet dimsum mewah isi daging cincang udang galah dan serutan black truffle dengan kaldu sup harum di dalam kulit tipis halus.',
+      price: 195000,
+      image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=800&q=80',
+    },
 
-  const mCheesecake = await prisma.menu.create({
-    data: {
+    // 6. CHEF'S ATELIER DESSERTS & PÂTISSERIE (7 Items)
+    {
       categoryId: catDesserts.id,
-      name: 'Basque Burnt Cheesecake with White Truffle Honey',
+      name: 'Sphère Chocolat Noir Valrhona 70%',
+      country: 'Prancis',
+      description: 'Bola cokelat hitam Valrhona 70% meleleh tersiram saus karamel mentega asin panas, berisi mousse hazelnut Piedmont.',
+      price: 320000,
+      image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Valrhona Guanaja 70% Dark Chocolate (g)', qty: 80 }],
+    },
+    {
+      categoryId: catDesserts.id,
+      name: 'Soufflé Chaud au Grand Marnier',
+      country: 'Prancis',
+      description: 'Kue soufflé klasik lembut beraroma kulit jeruk Grand Marnier, gelato vanila Tahiti, dan serpihan emas 24k murni.',
+      price: 280000,
+      image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      categoryId: catDesserts.id,
+      name: 'Basque Burnt Cheesecake White Truffle',
       country: 'Spanyol',
-      description: 'Kue keju panggang hangus khas San Sebastián Spanyol bertekstur lava lumer lembut di tengah, disajikan dengan tetesan madu bunga liar beraroma white truffle dan buah beri segar.',
+      description: 'Cheesecake hangus Spanyol bertekstur lava lumer lembut disiram madu bunga liar white truffle dan buah beri segar.',
       price: 220000,
-      image: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=800&q=80',
     },
-  });
-
-  const mMilleFeuille = await prisma.menu.create({
-    data: {
+    {
       categoryId: catDesserts.id,
-      name: 'Classic Tahitian Vanilla Bean Mille-Feuille',
+      name: 'Tahitian Vanilla Bean Mille-Feuille',
       country: 'Prancis',
-      description: 'Lapisan pastry karamel mentega super renyah diselingi krim diplomat vanila Tahiti berbutir hitam wangi harum, glasir gula fondant tradisional, dan stroberi alpine.',
-      price: 190000,
-      image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      description: 'Lapisan puff pastry karamel renyah tipis dengan krim diplomatik vanila polong Tahiti dan glasir gula halus glasir cermin.',
+      price: 195000,
+      image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80',
     },
-  });
-
-  const mParisBrest = await prisma.menu.create({
-    data: {
+    {
       categoryId: catDesserts.id,
-      name: 'Pistachio Paris-Brest with Salted Praline Cream',
+      name: 'Pistachio Paris-Brest Praliné',
       country: 'Prancis',
-      description: 'Kue choux Prancis berbentuk cincin bertabur kacang almond cincang, diisi melimpah dengan krim praline kacang pistachio Sisilia murni dan selai karamel mentega gurih.',
+      description: 'Roda choux pastry khas Prancis diisi mousseline pistachio Sisilia panggang, krim praline hazelnut renyah, dan garam Maldon.',
       price: 210000,
-      image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=800&q=80',
     },
-  });
-
-  const mMatchaLava = await prisma.menu.create({
-    data: {
+    {
       categoryId: catDesserts.id,
-      name: 'Matcha Molten Lava Cake with Black Sesame Gelato',
+      name: 'Kyoto Matcha Molten Lava & Sesame',
       country: 'Jepang',
-      description: 'Kue lava cokelat putih teh hijau matcha Uji Kyoto yang meleleh hangat saat dibelah, dipadukan secara kontras dengan gelato wijen hitam artisanal panggang yang dingin harum.',
-      price: 1850000,
-      image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      description: 'Kue lava hangat matcha ceremonial grade Uji Kyoto berlelehan cokelat putih, disajikan bersama gelato wijen hitam sangrai.',
+      price: 185000,
+      image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=800&q=80',
     },
-  });
+    {
+      categoryId: catDesserts.id,
+      name: 'Tiramisù Tradizionale al Mascarpone',
+      country: 'Italia',
+      description: 'Biskuit savoiardi dicelup kopi espresso murni dan liqueur Marsala, keju mascarpone lembut krimi, dan taburan cokelat Valrhona.',
+      price: 175000,
+      image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=800&q=80',
+    },
 
-  // ==========================================
-  // CATEGORY 7: GRANDS CRUS, ELIXIRS & MOCKTAILS (6 items)
-  // ==========================================
-  const mChampagne = await prisma.menu.create({
-    data: {
+    // 7. GRANDS CRUS, ELIXIRS & MOCKTAILS (7 Items)
+    {
       categoryId: catBeverages.id,
-      name: 'Dom Pérignon Vintage Brut Champagne (Botol 750ml)',
+      name: 'Dom Pérignon Vintage Brut Champagne',
       country: 'Prancis',
-      description: 'Koleksi Champagne legendaris dari Épernay Prancis dengan aroma pir mentega, bunga putih, brioche panggang, dan buih gelembung ultra-halus yang menari di lidah.',
-      price: 4500000,
-      image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      description: 'Sampanye legendaris dari Épernay Prancis dengan buih halus, aroma brioche ragi hangat, almond sangrai, dan buah pir putih.',
+      price: 5500000,
+      image: 'https://images.unsplash.com/photo-1569919659476-f0852f6834b7?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Dom Pérignon Vintage Bottles (botol)', qty: 1 }],
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mChampagne.id, ingredientId: ingChampagne.id, quantityNeeded: 1 },
-  });
-
-  const mYuzuFizz = await prisma.menu.create({
-    data: {
+    {
       categoryId: catBeverages.id,
-      name: 'Royal Passionfruit & Yuzu Sparkling Fizz',
+      name: 'Royal Passionfruit & Yuzu Fizz',
       country: 'Jepang',
-      description: 'Racikan mocktail segar dari sari jeruk yuzu Kochi Jepang, bulir buah markisa segar, sirup bunga elderflower organik, daun mint hancur, dan soda air mineral pegunungan dingin.',
+      description: 'Sari jeruk yuzu Kochi Jepang, bulir buah markisa segar, sirup bunga elderflower organik, daun mint, dan soda dingin.',
       price: 95000,
-      image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+      modifiers: [
+        {
+          name: 'Tingkat Kemanisan & Es',
+          minSelection: 1,
+          maxSelection: 1,
+          options: [
+            { name: 'Normal Sweet & Chilled Ice', price: 0 },
+            { name: 'Less Sweet (50%)', price: 0 },
+            { name: 'No Added Sugar', price: 0 },
+          ],
+        },
+      ],
     },
-  });
-
-  const mEarlGreyColdBrew = await prisma.menu.create({
-    data: {
+    {
       categoryId: catBeverages.id,
-      name: 'Earl Grey Lavender Cold Brew with Rose Smoke',
+      name: 'Earl Grey Lavender with Rose Smoke',
       country: 'Inggris',
-      description: 'Ekstraksi dingin daun teh Earl Grey bergamot murni selama 24 jam dengan kuncup bunga lavender Provence, disajikan di bawah tudung kaca beraroma asap kelopak mawar organik.',
+      description: 'Ekstraksi dingin teh Earl Grey lavender 24 jam disajikan di bawah tudung kaca beraroma asap kelopak mawar organik.',
       price: 110000,
-      image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80',
     },
-  });
-
-  const mDragonFruitElixir = await prisma.menu.create({
-    data: {
+    {
+      categoryId: catBeverages.id,
+      name: 'Ceremonial Uji Matcha Latte 24k Gold',
+      country: 'Jepang',
+      description: 'Bubuk teh hijau matcha kualitas upacara Uji Kyoto dikocok tradisional dengan susu oat gandum dan serpihan emas 24k.',
+      price: 135000,
+      image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=800&q=80',
+    },
+    {
       categoryId: catBeverages.id,
       name: 'Dragon Fruit Lychee Blossom Elixir',
-      country: 'Nusantara',
-      description: 'Jus buah naga merah organik dingin dikocok bersama sari buah leci manis harum, perasan jeruk nipis segar, dan air tebu murni dingin tanpa gula buatan.',
+      country: 'Indonesia',
+      description: 'Campuran sari buah naga merah tropis, buah leci utuh segar, perasan jeruk nipis kaffir, dan sentuhan air mawar Persia.',
       price: 85000,
-      image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      image: 'https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=800&q=80',
     },
-  });
-
-  const mBlueMountainCoffee = await prisma.menu.create({
-    data: {
+    {
       categoryId: catBeverages.id,
-      name: 'Jamaica Blue Mountain Grade 1 Reserve Pour-Over',
-      country: 'Kuba / Karibia',
-      description: 'Biji kopi paling bergengsi di dunia dari lereng berkabut Blue Mountains Jamaika, diseduh manual dengan air mineral mata air pegunungan pada suhu presisi 92°C.',
-      price: 180000,
-      image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      name: 'Jamaica Blue Mountain Grade 1 Pour-Over',
+      country: 'Jamaika',
+      description: 'Biji kopi single origin pegunungan Blue Mountain Jamaika diseduh presisi dengan notes cokelat lembut dan keasaman seimbang.',
+      price: 145000,
+      image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+      recipes: [{ ingName: 'Jamaica Blue Mountain Grade 1 Beans (g)', qty: 18 }],
     },
-  });
-  await prisma.recipe.create({
-    data: { menuId: mBlueMountainCoffee.id, ingredientId: ingCoffeeBeans.id, quantityNeeded: 20 },
-  });
-
-  const mMatchaLatte = await prisma.menu.create({
-    data: {
+    {
       categoryId: catBeverages.id,
-      name: 'Ceremonial Uji Matcha Latte with 24k Gold Flakes',
-      country: 'Jepang',
-      description: 'Bubuk teh hijau matcha kualitas upacara dari perkebunan kuno Uji Kyoto, dikocok bambu chasen tradisional dengan susu oat gandum artisan hangat dan taburan serpihan emas 24 karat murni.',
-      price: 135000,
-      image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=1200&q=80',
-      isAvailable: true,
+      name: 'Smoked Rosemary & Blood Orange Tonic',
+      country: 'Italia',
+      description: 'Sari jeruk darah Sisilia merah segar, air tonik artesius berkarbonasi tinggi, dan tangkai rosemary segar dibakar wangi.',
+      price: 90000,
+      image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80',
     },
-  });
+  ];
 
-  console.log('--- Seeding Sample Active Shift for Maître D\' ---');
-  await prisma.cashierShift.create({
-    data: {
-      cashierName: 'Jean-Luc Laurent (Head Maître D\')',
-      userId: kasirUser.id,
-      startCash: 1000000,
-      status: 'open',
-    },
-  });
-
-  console.log('--- Seeding Initial VIP Reservation Order ---');
-  const sampleOrder = await prisma.order.create({
-    data: {
-      orderNumber: 'ORD-20261014-9901',
-      tableId: createdTables[7].id, // VIP Suite 01
-      userId: customerUser.id,
-      customerName: 'Lord Aditya Pratama (VIP Patron)',
-      customerPhone: '+62 811 9900 3333',
-      reservationDate: '2026-10-14',
-      reservationTime: '19:30 - Grand Dinner Gala',
-      guestCount: 4,
-      specialRequests: 'Perayaan gala dinner VIP, sediakan sommelier untuk wine pairing.',
-      orderType: 'reservation',
-      status: 'confirmed',
-      subtotal: 3220000,
-      taxAmount: 322000,
-      serviceCharge: 161000,
-      totalAmount: 3703000,
-      paymentStatus: 'paid',
-      paymentMethod: 'qris',
-      items: {
-        create: [
-          {
-            menuId: mWagyuRossini.id,
-            quantity: 2,
-            unitPrice: 1450000,
-            subtotal: 2900000,
-            notes: 'Medium Rare, extra Périgord Truffle',
-          },
-          {
-            menuId: mSouffle.id,
-            quantity: 1,
-            unitPrice: 280000,
-            subtotal: 280000,
-            notes: 'Sajikan tepat 20 menit setelah hidangan utama',
-          },
-          {
-            menuId: mBlueMountainCoffee.id,
-            quantity: 2,
-            unitPrice: 180000,
-            subtotal: 360000,
-            notes: 'Single Origin Pour-Over',
-          },
-        ],
+  for (const item of dishes) {
+    const createdMenu = await prisma.menu.create({
+      data: {
+        categoryId: item.categoryId,
+        name: item.name,
+        country: item.country,
+        description: item.description,
+        price: item.price,
+        image: item.image,
+        isAvailable: true,
       },
-    },
-  });
+    });
 
-  await prisma.payment.create({
-    data: {
-      orderId: sampleOrder.id,
-      method: 'qris',
-      amountPaid: 3703000,
-      changeAmount: 0,
-      paymentRef: 'QRIS-SAVORIA-GALA-001',
-    },
-  });
+    // Create modifiers if any
+    if (item.modifiers && item.modifiers.length > 0) {
+      for (const mod of item.modifiers) {
+        await prisma.modifierGroup.create({
+          data: {
+            menuId: createdMenu.id,
+            name: mod.name,
+            minSelection: mod.minSelection,
+            maxSelection: mod.maxSelection,
+            options: {
+              create: mod.options,
+            },
+          },
+        });
+      }
+    }
 
-  console.log('✅ Database Seeding completed successfully with 35+ Worldwide Fine-Dining Menus & 7 Categories!');
+    // Create recipes if any
+    if (item.recipes && item.recipes.length > 0) {
+      for (const rec of item.recipes) {
+        const ingredientId = ingMap[rec.ingName];
+        if (ingredientId) {
+          await prisma.recipe.create({
+            data: {
+              menuId: createdMenu.id,
+              ingredientId: ingredientId,
+              quantityNeeded: rec.qty,
+            },
+          });
+        }
+      }
+    }
+  }
+
+  console.log(`\n🎉 DATABASE SEEDING COMPLETED SUCCESSFULLY!`);
+  console.log(`- 3 Dedicated Role Accounts (admin, kasir, user) with unique keys.`);
+  console.log(`- 8 Exclusive Dining Tables (T01 - T08).`);
+  console.log(`- 7 Culinary Categories.`);
+  console.log(`- ${dishes.length} Haute Cuisine Global Dishes created.`);
 }
 
 main()
   .catch((e) => {
-    console.error('Error during seed:', e);
+    console.error('Seeding error:', e);
     process.exit(1);
   })
   .finally(async () => {

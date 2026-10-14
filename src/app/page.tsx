@@ -92,9 +92,9 @@ const SIGNATURE_POPULAR_DISHES = [
   },
 ];
 
-// Full Menu Items with 7 Filter Categories
+// Full Menu Items with 7 Filter Categories (50 Curated Worldwide Dishes)
 const ALL_CATALOG_DISHES = [
-  // 1. APPETIZERS
+  // 1. APPETIZERS & STARTERS (7 Items)
   {
     id: 201,
     name: "Caviar Kristal Oscietra Royal (30g)",
@@ -103,6 +103,7 @@ const ALL_CATALOG_DISHES = [
     priceUSD: "$56.00",
     priceIDR: 850000,
     rating: 5.0,
+    country: "Kaspia",
     image: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80",
   },
   {
@@ -113,6 +114,7 @@ const ALL_CATALOG_DISHES = [
     priceUSD: "$21.00",
     priceIDR: 320000,
     rating: 4.9,
+    country: "Jepang",
     image: "https://images.unsplash.com/photo-1535400255456-984241443b29?auto=format&fit=crop&w=800&q=80",
   },
   {
@@ -123,6 +125,7 @@ const ALL_CATALOG_DISHES = [
     priceUSD: "$17.00",
     priceIDR: 260000,
     rating: 4.8,
+    country: "Prancis",
     image: "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80",
   },
   {
@@ -133,209 +136,526 @@ const ALL_CATALOG_DISHES = [
     priceUSD: "$23.00",
     priceIDR: 340000,
     rating: 4.9,
+    country: "Prancis",
     image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
   },
-
-  // 2. MAINS & STEAKS
   {
     id: 205,
+    name: "Wild Forest Porcini Velouté",
+    category: "appetizers",
+    description: "Sup krim beludru jamur porcini liar, minyak truffle putih Alba, daun thyme segar, dan crouton brioche renyah.",
+    priceUSD: "$12.50",
+    priceIDR: 185000,
+    rating: 4.8,
+    country: "Italia",
+    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 206,
+    name: "Foie Gras Poêlé au Vinaigre Balsamique",
+    category: "appetizers",
+    description: "Hati angsa Rougié Prancis panggang gurih, saus reduksi cuka balsamik Modena 12 tahun, dan brioche kismis hangat.",
+    priceUSD: "$28.00",
+    priceIDR: 420000,
+    rating: 5.0,
+    country: "Prancis",
+    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 207,
+    name: "Burrata Pugliese con Pomodorini Confit",
+    category: "appetizers",
+    description: "Keju Burrata segar lembut dari Puglia, tomat ceri confit karamel madu, minyak zaitun extra virgin, dan daun basil wangi.",
+    priceUSD: "$14.00",
+    priceIDR: 210000,
+    rating: 4.9,
+    country: "Italia",
+    image: "https://images.unsplash.com/photo-1592417817098-8f3d69102a56?auto=format&fit=crop&w=800&q=80",
+  },
+
+  // 2. WORLD SIGNATURE MAINS & STEAKS (7 Items)
+  {
+    id: 208,
     name: "Miyazaki Wagyu A5 Tenderloin Rossini",
     category: "mains",
     description: "Wagyu A5 BMS 12, pan-seared Rougié Foie Gras, Périgord Black Truffle, kentang purée mentega Prancis, dan Madeira jus.",
     priceUSD: "$95.00",
     priceIDR: 1450000,
     rating: 5.0,
+    country: "Jepang",
     image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 206,
+    id: 209,
     name: "Australian Tomahawk Wagyu MB7 (1.2kg)",
     category: "mains",
     description: "Steak tomahawk bertulang utuh panggang arang kayu apel, roasted garlic bulb, bone marrow butter, dan 3 saus signature.",
     priceUSD: "$125.00",
     priceIDR: 1850000,
     rating: 5.0,
+    country: "Australia",
     image: "https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 207,
+    id: 210,
     name: "NZ Lumina Lamb Rack with Herb Crust",
     category: "mains",
     description: "Iga domba Lumina lembut berbalut rempah panko aromatik, purée kacang polong manis mint, dan saus jus rosemary wangi.",
     priceUSD: "$45.00",
     priceIDR: 680000,
     rating: 4.9,
+    country: "Selandia Baru",
     image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 208,
+    id: 211,
     name: "USDA Prime Dry-Aged Ribeye 350g",
     category: "mains",
     description: "Potongan ribeye prime berusia 45 hari dry-aged dengan rasa gurih nutty intens, chimichurri segar, dan kentang truffle.",
     priceUSD: "$59.00",
     priceIDR: 890000,
     rating: 4.9,
+    country: "Amerika Serikat",
     image: "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=800&q=80",
   },
-
-  // 3. PASTA & RISOTTO
   {
-    id: 209,
+    id: 212,
+    name: "Magret de Canard Rôti au Miel et Cerises",
+    category: "mains",
+    description: "Dada bebek Prancis kulit krispi terpanggang madu lavender, jus ceri liar asam manis, dan puree ubi jalar beludru.",
+    priceUSD: "$32.00",
+    priceIDR: 480000,
+    rating: 4.9,
+    country: "Prancis",
+    image: "https://images.unsplash.com/photo-1514944298352-7a8e0f6c2578?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 213,
+    name: "Ibérico Pork Pluma & Smoked Apple Purée",
+    category: "mains",
+    description: "Daging babi Ibérico acorn-fed bagian sayap yang sangat empuk, purée apel panggang berasap, dan jus sherry Spanyol.",
+    priceUSD: "$36.50",
+    priceIDR: 550000,
+    rating: 4.8,
+    country: "Spanyol",
+    image: "https://images.unsplash.com/photo-1432139555190-58524dae6a55?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 214,
+    name: "Slow-Braised Wagyu Beef Cheek Bourguignon",
+    category: "mains",
+    description: "Pipi sapi Wagyu dimasak lambat 16 jam dalam anggur merah Pinot Noir Burgundy, wortel glacé, jamur mutiara, dan kentang lumer.",
+    priceUSD: "$27.00",
+    priceIDR: 410000,
+    rating: 4.9,
+    country: "Prancis",
+    image: "https://images.unsplash.com/photo-1534939561126-855b8675edd7?auto=format&fit=crop&w=800&q=80",
+  },
+
+  // 3. ARTISANAL PASTA & TRUFFLE RISOTTO (7 Items)
+  {
+    id: 215,
     name: "Risotto al Tartufo Bianco d'Alba",
     category: "pasta-risotto",
-    description: "Beras Carnaroli, kaldu capon emas, mentega Normandia, Parmigiano-Reggiano 36 bulan, dan parutan White Truffle segar.",
+    description: "Beras Carnaroli superfino, kaldu capon emas, mentega Normandia, Parmigiano-Reggiano 36 bulan, dan parutan White Truffle segar.",
     priceUSD: "$46.00",
     priceIDR: 690000,
     rating: 4.9,
+    country: "Italia",
     image: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 210,
+    id: 216,
     name: "Handcrafted Tagliolini with Blue Lobster",
     category: "pasta-risotto",
     description: "Pasta telur buatan tangan dengan lobster biru Brittany, bisque tomat ceri San Marzano, minyak cabai Calabria, dan basil.",
     priceUSD: "$50.00",
     priceIDR: 750000,
     rating: 5.0,
+    country: "Italia",
     image: "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 211,
+    id: 217,
     name: "Wagyu Beef Cheek Ragù Pappardelle",
     category: "pasta-risotto",
     description: "Pasta lebar pappardelle dengan daging pipi sapi Wagyu direbus 12 jam bersama anggur Chianti dan keju Pecorino Romano.",
     priceUSD: "$25.00",
     priceIDR: 380000,
     rating: 4.8,
+    country: "Italia",
     image: "https://images.unsplash.com/photo-1621996346565-e3d5d6281699?auto=format&fit=crop&w=800&q=80",
   },
-
-  // 4. SEAFOOD EXTRAVAGANZA
   {
-    id: 212,
+    id: 218,
+    name: "Ravioli di Ricotta e Spinaci al Burro e Salvia",
+    category: "pasta-risotto",
+    description: "Ravioli buatan tangan isi keju ricotta susu kerbau dan bayam liar dengan siraman mentega herba salvia harum dan pine nuts.",
+    priceUSD: "$17.50",
+    priceIDR: 260000,
+    rating: 4.8,
+    country: "Italia",
+    image: "https://images.unsplash.com/photo-1587740908075-9e245070dfaa?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 219,
+    name: "Spaghetti alle Vongole Veraci con Bottarga",
+    category: "pasta-risotto",
+    description: "Spaghetti artisanal Gragnano dengan kerang laut hidup, bawang putih manis, anggur putih, dan serutan telur ikan Bottarga.",
+    priceUSD: "$23.50",
+    priceIDR: 350000,
+    rating: 4.9,
+    country: "Italia",
+    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 220,
+    name: "Gnocchi di Patate al Gorgonzola e Noci",
+    category: "pasta-risotto",
+    description: "Gnocchi kentang lumer berbalut saus krim keju Gorgonzola Dolce DOP, kacang kenari renyah panggang, dan madu akasia.",
+    priceUSD: "$16.00",
+    priceIDR: 240000,
+    rating: 4.8,
+    country: "Italia",
+    image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 221,
+    name: "Fettuccine ai Funghi Porcini e Tartufo Nero",
+    category: "pasta-risotto",
+    description: "Fettuccine telur artisanal dengan tumisan jamur porcini segar, minyak zaitun Tuscan, dan serutan truffle hitam Norcia.",
+    priceUSD: "$21.00",
+    priceIDR: 310000,
+    rating: 4.9,
+    country: "Italia",
+    image: "https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80",
+  },
+
+  // 4. SEAFOOD EXTRAVAGANZA & OCEAN TREASURES (7 Items)
+  {
+    id: 222,
+    name: "Lobster Thermidor au Hennessy Cognac",
+    category: "seafood",
+    description: "Lobster biru utuh dipanggang dalam cangkang dengan velouté krim Dijon mustard, keju Gruyère Swiss 18 bulan, dan flambé Cognac.",
+    priceUSD: "$62.00",
+    priceIDR: 920000,
+    rating: 5.0,
+    country: "Prancis",
+    image: "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 223,
     name: "Barents Sea King Crab au Beurre Fumé",
     category: "seafood",
     description: "Kaki kepiting raja raksasa dari Laut Barents dipanggang mentega asap kayu apel, emulsi daun adas dill, dan brioche renyah.",
     priceUSD: "$65.00",
     priceIDR: 980000,
     rating: 5.0,
+    country: "Norwegia",
     image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 213,
+    id: 224,
     name: "Chilean Sea Bass en Papillote",
     category: "seafood",
     description: "Fillet kakap Chili salju dipanggang dalam kertas perkamen bersama jamur shiitake, jahe muda, serai wangi, dan kaldu dashi.",
     priceUSD: "$41.00",
     priceIDR: 620000,
     rating: 4.9,
+    country: "Chili",
     image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 214,
+    id: 225,
     name: "Crispy Skin Tasmanian Salmon Saffron",
     category: "seafood",
     description: "Salmon liar Tasmania berkulit garing lumer di lidah, kentang fondue mentega, asparagus panggang, dan saus saffron emas.",
     priceUSD: "$26.00",
     priceIDR: 390000,
     rating: 4.8,
+    country: "Australia",
     image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80",
   },
-
-  // 5. ASIAN & NUSANTARA
   {
-    id: 215,
+    id: 226,
+    name: "Mediterranean Grilled Octopus Romesco",
+    category: "seafood",
+    description: "Tentakel gurita laut dalam dipanggang empuk dengan saus Romesco kacang almond Catalunya, kentang baby confit, dan paprika.",
+    priceUSD: "$28.50",
+    priceIDR: 430000,
+    rating: 4.9,
+    country: "Spanyol",
+    image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 227,
+    name: "Brittany Turbot Meunière au Beurre Noisette",
+    category: "seafood",
+    description: "Ikan turbot tangkapan liar pesisir Brittany Prancis dimasak meunière mentega cokelat hazelnut, perasan lemon, dan peterseli.",
+    priceUSD: "$48.00",
+    priceIDR: 720000,
+    rating: 4.9,
+    country: "Prancis",
+    image: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 228,
+    name: "Pan-Seared Yellowfin Tuna Sesame Tataki",
+    category: "seafood",
+    description: "Tuna sirip kuning segar berbalut biji wijen dua warna, irisan lobak daikon renyah, saus ponzu jahe, dan microgreens.",
+    priceUSD: "$24.00",
+    priceIDR: 360000,
+    rating: 4.8,
+    country: "Jepang",
+    image: "https://images.unsplash.com/photo-1501595091296-3aa970afb3ff?auto=format&fit=crop&w=800&q=80",
+  },
+
+  // 5. ASIAN & NUSANTARA HERITAGE (8 Items)
+  {
+    id: 229,
+    name: "Rendang Short Ribs Wagyu 48-Hour",
+    category: "nusantara-asia",
+    description: "Iga sapi Wagyu marbling 9 sous-vide 48 jam lumer di lidah, kelapa gongseng Payakumbuh, gel santan asam kandis, dan keripik singkong.",
+    priceUSD: "$39.00",
+    priceIDR: 580000,
+    rating: 5.0,
+    country: "Indonesia",
+    image: "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 230,
     name: "Miyazaki Wagyu A5 Sukiyaki Royale",
     category: "nusantara-asia",
     description: "Daging Wagyu A5 Miyazaki direbus perlahan dalam warishita manis-gurih 50 tahun, jamur Matsutake, dan telur onsen emas.",
     priceUSD: "$83.00",
     priceIDR: 1250000,
     rating: 5.0,
+    country: "Jepang",
     image: "https://images.unsplash.com/photo-1579684947550-22e945225d9a?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 216,
+    id: 231,
     name: "Bebek Betutu Confit aux Epices Nobles",
     category: "nusantara-asia",
     description: "Paha bebek confit 18 bumbu base genep Bali, kuah gulai saffron kecombrang, lawar asap, dan sambal matah kelapa murni.",
     priceUSD: "$30.00",
     priceIDR: 450000,
     rating: 4.9,
+    country: "Indonesia",
     image: "https://images.unsplash.com/photo-1514944298352-7a8e0f6c2578?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 217,
+    id: 232,
     name: "Omakase Nigiri: Otoro & Uni Hokkaido",
     category: "nusantara-asia",
     description: "Nigiri tuna Otoro aburi bertabur kaviar dan landak laut Uni segar Hokkaido di atas nasi akazu cuka merah 3 tahun.",
     priceUSD: "$58.00",
     priceIDR: 880000,
     rating: 5.0,
+    country: "Jepang",
     image: "https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&w=800&q=80",
   },
-
-  // 6. DESSERTS & PÂTISSERIE
   {
-    id: 218,
+    id: 233,
+    name: "Singapore Golden Mud Crab Claypot",
+    category: "nusantara-asia",
+    description: "Kepiting lumpur jumbo segar dimasak dalam claypot dengan bihun kaca kaldu kepiting pekat lada hitam Sarawak dan daun ketumbar.",
+    priceUSD: "$52.00",
+    priceIDR: 780000,
+    rating: 4.9,
+    country: "Singapura",
+    image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 234,
+    name: "Thai Royal Tom Yum River Prawn",
+    category: "nusantara-asia",
+    description: "Sup tom yum tradisi istana Thailand dengan udang galah sungai raksasa berlemak manis, galangal, serai segar, dan minyak cabai.",
+    priceUSD: "$21.50",
+    priceIDR: 320000,
+    rating: 4.8,
+    country: "Thailand",
+    image: "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 235,
+    name: "Rawon Sengkel Wagyu Sambal Terasi Bakar",
+    category: "nusantara-asia",
+    description: "Sengkel Wagyu empuk dimasak kuah kluwek hitam legendaris Jawa Timur, tauge pendek renyah, telur bebek asin, dan emping melinjo.",
+    priceUSD: "$18.50",
+    priceIDR: 280000,
+    rating: 4.9,
+    country: "Indonesia",
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 236,
+    name: "Black Truffle Siew Mai & Xiao Long Bao",
+    category: "nusantara-asia",
+    description: "Duet dimsum mewah isi daging cincang udang galah dan serutan black truffle dengan kaldu sup harum di dalam kulit tipis halus.",
+    priceUSD: "$13.00",
+    priceIDR: 195000,
+    rating: 4.9,
+    country: "Hong Kong",
+    image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=800&q=80",
+  },
+
+  // 6. CHEF'S ATELIER DESSERTS & PÂTISSERIE (7 Items)
+  {
+    id: 237,
     name: "Sphère Chocolat Noir Valrhona 70%",
     category: "desserts",
     description: "Bola cokelat hitam Valrhona 70% meleleh tersiram saus karamel mentega asin panas, berisi mousse hazelnut Piedmont.",
     priceUSD: "$21.00",
     priceIDR: 320000,
     rating: 5.0,
+    country: "Prancis",
     image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 219,
+    id: 238,
     name: "Soufflé Chaud au Grand Marnier",
     category: "desserts",
     description: "Kue soufflé klasik lembut beraroma kulit jeruk Grand Marnier, gelato vanila Tahiti, dan serpihan emas 24k murni.",
     priceUSD: "$18.50",
     priceIDR: 280000,
     rating: 4.9,
+    country: "Prancis",
     image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 220,
+    id: 239,
     name: "Basque Burnt Cheesecake White Truffle",
     category: "desserts",
     description: "Cheesecake hangus Spanyol bertekstur lava lumer lembut disiram madu bunga liar white truffle dan buah beri segar.",
     priceUSD: "$14.50",
     priceIDR: 220000,
     rating: 4.9,
+    country: "Spanyol",
     image: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=800&q=80",
   },
-
-  // 7. BEVERAGES & MOCKTAILS
   {
-    id: 221,
+    id: 240,
+    name: "Tahitian Vanilla Bean Mille-Feuille",
+    category: "desserts",
+    description: "Lapisan puff pastry karamel renyah tipis dengan krim diplomatik vanila polong Tahiti dan glasir gula halus glasir cermin.",
+    priceUSD: "$13.00",
+    priceIDR: 195000,
+    rating: 4.8,
+    country: "Prancis",
+    image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 241,
+    name: "Pistachio Paris-Brest Praliné",
+    category: "desserts",
+    description: "Roda choux pastry khas Prancis diisi mousseline pistachio Sisilia panggang, krim praline hazelnut renyah, dan garam Maldon.",
+    priceUSD: "$14.00",
+    priceIDR: 210000,
+    rating: 4.9,
+    country: "Prancis",
+    image: "https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 242,
+    name: "Kyoto Matcha Molten Lava & Sesame",
+    category: "desserts",
+    description: "Kue lava hangat matcha ceremonial grade Uji Kyoto berlelehan cokelat putih, disajikan bersama gelato wijen hitam sangrai.",
+    priceUSD: "$12.50",
+    priceIDR: 185000,
+    rating: 4.9,
+    country: "Jepang",
+    image: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 243,
+    name: "Tiramisù Tradizionale al Mascarpone",
+    category: "desserts",
+    description: "Biskuit savoiardi dicelup kopi espresso murni dan liqueur Marsala, keju mascarpone lembut krimi, dan taburan cokelat Valrhona.",
+    priceUSD: "$11.50",
+    priceIDR: 175000,
+    rating: 4.8,
+    country: "Italia",
+    image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=800&q=80",
+  },
+
+  // 7. GRANDS CRUS, ELIXIRS & MOCKTAILS (7 Items)
+  {
+    id: 244,
+    name: "Dom Pérignon Vintage Brut Champagne",
+    category: "drinks",
+    description: "Sampanye legendaris dari Épernay Prancis dengan buih halus, aroma brioche ragi hangat, almond sangrai, dan buah pir putih.",
+    priceUSD: "$360.00",
+    priceIDR: 5500000,
+    rating: 5.0,
+    country: "Prancis",
+    image: "https://images.unsplash.com/photo-1569919659476-f0852f6834b7?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 245,
     name: "Royal Passionfruit & Yuzu Fizz",
     category: "drinks",
     description: "Sari jeruk yuzu Kochi Jepang, bulir buah markisa segar, sirup bunga elderflower organik, daun mint, dan soda dingin.",
     priceUSD: "$6.50",
     priceIDR: 95000,
     rating: 4.9,
+    country: "Jepang",
     image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 222,
+    id: 246,
     name: "Earl Grey Lavender with Rose Smoke",
     category: "drinks",
     description: "Ekstraksi dingin teh Earl Grey lavender 24 jam disajikan di bawah tudung kaca beraroma asap kelopak mawar organik.",
     priceUSD: "$7.50",
     priceIDR: 110000,
     rating: 4.8,
+    country: "Inggris",
     image: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80",
   },
   {
-    id: 223,
+    id: 247,
     name: "Ceremonial Uji Matcha Latte 24k Gold",
     category: "drinks",
     description: "Bubuk teh hijau matcha kualitas upacara Uji Kyoto dikocok tradisional dengan susu oat gandum dan serpihan emas 24k.",
     priceUSD: "$9.00",
     priceIDR: 135000,
     rating: 5.0,
+    country: "Jepang",
     image: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 248,
+    name: "Dragon Fruit Lychee Blossom Elixir",
+    category: "drinks",
+    description: "Campuran sari buah naga merah tropis, buah leci utuh segar, perasan jeruk nipis kaffir, dan sentuhan air mawar Persia.",
+    priceUSD: "$5.50",
+    priceIDR: 85000,
+    rating: 4.8,
+    country: "Indonesia",
+    image: "https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 249,
+    name: "Jamaica Blue Mountain Grade 1 Pour-Over",
+    category: "drinks",
+    description: "Biji kopi single origin pegunungan Blue Mountain Jamaika diseduh presisi dengan notes cokelat lembut dan keasaman seimbang.",
+    priceUSD: "$9.50",
+    priceIDR: 145000,
+    rating: 4.9,
+    country: "Jamaika",
+    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: 250,
+    name: "Smoked Rosemary & Blood Orange Tonic",
+    category: "drinks",
+    description: "Sari jeruk darah Sisilia merah segar, air tonik artesius berkarbonasi tinggi, dan tangkai rosemary segar dibakar wangi.",
+    priceUSD: "$6.00",
+    priceIDR: 90000,
+    rating: 4.8,
+    country: "Italia",
+    image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80",
   },
 ];
 
@@ -850,14 +1170,14 @@ export default function DribbbleModernLandingPage() {
                       </h3>
 
                       {/* Description */}
-                      <p className="text-xs text-[#64748B] line-clamp-2 mt-1 leading-relaxed">
+                      <p className="text-xs text-[#64748B] line-clamp-2 mt-1 leading-relaxed min-h-[36px]">
                         {dish.description}
                       </p>
                     </div>
 
-                    {/* Card Footer: Price & Add Button */}
-                    <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between">
-                      <div>
+                    {/* Card Footer: Price & Add Button Aligned */}
+                    <div className="pt-4 border-t border-[#E2E8F0] mt-auto flex items-center justify-between gap-2">
+                      <div className="leading-tight">
                         <span className="text-[10px] text-[#64748B] font-mono block">Harga Porsi</span>
                         <div className="flex items-baseline gap-1.5">
                           <span className="font-display text-lg font-bold text-[#18181B]">
@@ -871,10 +1191,11 @@ export default function DribbbleModernLandingPage() {
 
                       <button
                         onClick={() => handleAddToCart(dish.name)}
-                        className="w-10 h-10 rounded-full bg-[#18181B] group-hover:bg-[#EA580C] text-white flex items-center justify-center transition-all shadow-md group-hover:scale-110 cursor-pointer"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-[#18181B] group-hover:bg-[#EA580C] hover:bg-[#EA580C] text-white text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
                         title="Pesan Menu"
                       >
-                        <Plus className="w-5 h-5" />
+                        <Plus className="w-4 h-4 stroke-[2.5] shrink-0" />
+                        <span className="leading-none">Order</span>
                       </button>
                     </div>
                   </div>
@@ -994,49 +1315,69 @@ export default function DribbbleModernLandingPage() {
             ))}
           </div>
 
-          {/* Menu Catalog Grid */}
+          {/* Menu Catalog Grid with Perfectly Aligned Cards and Buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredDishes.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl border border-[#E2E8F0] p-4 flex gap-4 items-center hover:shadow-card hover:border-[#EA580C]/30 transition-all group"
+                className="bg-white rounded-2xl border border-[#E2E8F0] p-4 flex gap-4 items-stretch hover:shadow-card hover:border-[#EA580C]/30 transition-all group h-full"
               >
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden relative shrink-0 bg-stone-100">
+                {/* Image Container with high-res object cover */}
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden relative shrink-0 bg-stone-100 self-center border border-[#E2E8F0]/60">
                   <Image
                     src={item.image}
                     alt={item.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 640px) 96px, 112px"
                   />
                 </div>
 
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-1 text-[11px] text-[#F59E0B]">
-                    <Star className="w-3 h-3 fill-[#F59E0B]" />
-                    <span className="font-bold text-[#18181B]">{item.rating}</span>
+                {/* Content Container: flex flex-col justify-between with mt-auto on action row */}
+                <div className="flex-1 flex flex-col justify-between min-w-0">
+                  <div>
+                    <div className="flex items-center justify-between text-[11px] text-[#F59E0B]">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-[#F59E0B]" />
+                        <span className="font-bold text-[#18181B]">{item.rating}</span>
+                      </div>
+                      {item.country && (
+                        <span className="text-[10px] text-[#64748B] font-medium bg-[#FDFBF7] px-2 py-0.5 rounded-full border border-[#E2E8F0] truncate max-w-[90px]">
+                          {item.country}
+                        </span>
+                      )}
+                    </div>
+
+                    <h3
+                      className="font-display text-base font-bold text-[#18181B] group-hover:text-[#EA580C] transition-colors line-clamp-1 mt-1"
+                      title={item.name}
+                    >
+                      {item.name}
+                    </h3>
+
+                    <p className="text-[11px] text-[#64748B] line-clamp-2 leading-relaxed mt-0.5 min-h-[32px]">
+                      {item.description}
+                    </p>
                   </div>
 
-                  <h3 className="font-display text-base font-bold text-[#18181B] group-hover:text-[#EA580C] transition-colors line-clamp-1">
-                    {item.name}
-                  </h3>
-
-                  <p className="text-[11px] text-[#64748B] line-clamp-2 leading-relaxed">
-                    {item.description}
-                  </p>
-
-                  <div className="pt-2 flex items-center justify-between">
-                    <span className="font-display text-sm font-bold text-[#EA580C]">
-                      {item.priceUSD}{" "}
+                  {/* Aligned Bottom Action Bar (Sejajar Sempurna) */}
+                  <div className="pt-2 border-t border-[#F3EFE6] mt-auto flex items-center justify-between gap-2">
+                    <div className="leading-tight">
+                      <span className="font-display text-sm font-bold text-[#EA580C] block">
+                        {item.priceUSD}
+                      </span>
                       <span className="text-[10px] text-[#64748B] font-mono">
                         ({formatIDR(item.priceIDR)})
                       </span>
-                    </span>
+                    </div>
 
                     <button
                       onClick={() => handleAddToCart(item.name)}
-                      className="px-3 py-1 rounded-full bg-[#18181B] group-hover:bg-[#EA580C] text-white text-[11px] font-bold transition-all shadow-sm"
+                      className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#18181B] group-hover:bg-[#EA580C] hover:bg-[#EA580C] text-white text-[11px] font-bold transition-all shadow-sm shrink-0 active:scale-95 cursor-pointer"
+                      title={`Pesan ${item.name}`}
                     >
-                      + Order
+                      <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                      <span className="leading-none">Order</span>
                     </button>
                   </div>
                 </div>
