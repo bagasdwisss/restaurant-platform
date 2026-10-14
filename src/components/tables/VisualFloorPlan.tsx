@@ -8,12 +8,15 @@ import {
   Users,
   CheckCircle2,
   RefreshCw,
-  Flame,
-  Info,
   MapPin,
   UtensilsCrossed,
+  Layers,
+  ArrowRight,
+  Eye,
+  Check,
 } from "lucide-react";
-import { VisualTableCard, TableItemData } from "./VisualTableCard";
+import { TableItemData } from "./VisualTableCard";
+import { FloorTableFurniture } from "./FloorTableFurniture";
 
 interface VisualFloorPlanProps {
   tables: TableItemData[];
@@ -27,7 +30,7 @@ interface VisualFloorPlanProps {
   onRefresh?: () => void;
 }
 
-type ZoneFilter = "all" | "indoor" | "outdoor" | "mezzanine";
+type FloorZone = "all" | "indoor" | "outdoor" | "mezzanine";
 
 export function VisualFloorPlan({
   tables,
@@ -40,158 +43,105 @@ export function VisualFloorPlan({
   onMoveTable,
   onRefresh,
 }: VisualFloorPlanProps) {
-  const [activeZone, setActiveZone] = useState<ZoneFilter>("all");
+  const [activeZone, setActiveZone] = useState<FloorZone>("all");
 
-  // Zone metadata with immersive culinary atmospheres
-  const zoneProfiles = {
-    all: {
-      name: "Semua Suasana",
-      badge: "Koleksi Lengkap Meja",
-      icon: MapPin,
-      ambiance: "Jelajahi seluruh denah meja eksklusif SAVORIA Haute Gastronomie dari lantai utama hingga balkon VIP.",
-      features: ["3 Zona Jamuan", "Kapasitas 2-10 Pax", "Tata Letak Simetris"],
-      bgTint: "from-stone-50 to-white",
-    },
-    indoor: {
-      name: "Indoor Grand Salle",
-      badge: "Chandelier Kristal & AC Sejuk",
-      icon: Sparkles,
-      ambiance: "Kemewahan ruang jamuan utama Prancis klasik dengan chandelier kristal bersinar hangat, pendingin udara sejuk, alunan musik jazz/klasik, dan meja perjamuan makan berkelas.",
-      features: ["Pendingin Udara (AC) Sejuk", "Chandelier Kristal", "Alunan Jazz/Piano", "Taplak Linen Mewah"],
-      bgTint: "from-amber-50/60 to-white",
-    },
-    outdoor: {
-      name: "Outdoor Jardin Patio",
-      badge: "Taman Asri & Al Fresco",
-      icon: Trees,
-      ambiance: "Sensasi santap terbuka (al fresco) di kelilingi lanskap taman Prancis tropis, gemericik air mancur, semilir angin malam yang sejuk, dan kehangatan lampion taman.",
-      features: ["Nuansa Al Fresco", "Pemandangan Air Mancur", "Lampion Romantis", "Angin Malam Sejuk"],
-      bgTint: "from-emerald-50/60 to-white",
-    },
-    mezzanine: {
-      name: "Lantai 2 Mezzanine VIP",
-      badge: "Privat, Wine Cellar & Luxury Lounge",
-      icon: Crown,
-      ambiance: "Ruang perjamuan privat di lantai dua dengan pemandangan terbuka balkon ke ruang utama, display koleksi botol wine vintage, sofa beludru premium, dan layanan personal butler.",
-      features: ["Balkon Privat Eksklusif", "Sofa Velvet Mewah", "Vintage Wine Display", "Personal Butler Service"],
-      bgTint: "from-purple-50/60 to-white",
-    },
+  // Zone classifications
+  const isOutdoorTable = (t: TableItemData) => {
+    const area = (t.area || "").toLowerCase();
+    return (
+      area.includes("garden") ||
+      area.includes("outdoor") ||
+      area.includes("patio") ||
+      area.includes("veranda") ||
+      area.includes("teras")
+    );
   };
 
-  // Filter tables by active zone
-  const filteredTables = useMemo(() => {
-    if (activeZone === "all") return tables;
+  const isMezzanineTable = (t: TableItemData) => {
+    const area = (t.area || "").toLowerCase();
+    return (
+      area.includes("lantai 2") ||
+      area.includes("mezzanine") ||
+      area.includes("vip") ||
+      area.includes("salon") ||
+      area.includes("president")
+    );
+  };
 
-    return tables.filter((t) => {
-      const area = (t.area || "").toLowerCase();
-      if (activeZone === "outdoor") {
-        return (
-          area.includes("garden") ||
-          area.includes("outdoor") ||
-          area.includes("patio") ||
-          area.includes("veranda") ||
-          area.includes("teras")
-        );
-      }
-      if (activeZone === "mezzanine") {
-        return (
-          area.includes("lantai 2") ||
-          area.includes("mezzanine") ||
-          area.includes("vip") ||
-          area.includes("salon") ||
-          area.includes("president")
-        );
-      }
-      // indoor
-      return (
-        area.includes("indoor") ||
-        area.includes("grand salon") ||
-        (!area.includes("garden") && !area.includes("outdoor") && !area.includes("lantai 2") && !area.includes("mezzanine"))
-      );
-    });
-  }, [tables, activeZone]);
+  const isIndoorTable = (t: TableItemData) => {
+    return !isOutdoorTable(t) && !isMezzanineTable(t);
+  };
 
-  // Statistics
+  // Grouped tables by sector
+  const indoorTables = useMemo(() => tables.filter(isIndoorTable), [tables]);
+  const outdoorTables = useMemo(() => tables.filter(isOutdoorTable), [tables]);
+  const mezzanineTables = useMemo(() => tables.filter(isMezzanineTable), [tables]);
+
+  // Status metrics
   const availableCount = tables.filter((t) => t.status === "available").length;
-  const occupiedCount = tables.filter((t) => t.status === "occupied" || (t.orders && t.orders.length > 0)).length;
+  const occupiedCount = tables.filter(
+    (t) => t.status === "occupied" || (t.orders && t.orders.length > 0)
+  ).length;
   const reservedCount = tables.filter((t) => t.status === "reserved").length;
 
-  const currentZoneProfile = zoneProfiles[activeZone];
-  const CurrentZoneIcon = currentZoneProfile.icon;
-
   return (
-    <div className="space-y-6">
-      {/* Zone Selector Navigation Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E2E8F0] pb-4">
-        {/* Atmosphere Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
-          {(["all", "indoor", "outdoor", "mezzanine"] as ZoneFilter[]).map((zoneKey) => {
-            const profile = zoneProfiles[zoneKey];
-            const Icon = profile.icon;
-            const isActive = activeZone === zoneKey;
-
-            // Count per zone
-            const count =
-              zoneKey === "all"
-                ? tables.length
-                : tables.filter((t) => {
-                    const area = (t.area || "").toLowerCase();
-                    if (zoneKey === "outdoor") {
-                      return area.includes("garden") || area.includes("outdoor") || area.includes("veranda");
-                    }
-                    if (zoneKey === "mezzanine") {
-                      return area.includes("lantai 2") || area.includes("mezzanine") || area.includes("vip");
-                    }
-                    return (
-                      area.includes("indoor") ||
-                      (!area.includes("garden") && !area.includes("outdoor") && !area.includes("lantai 2"))
-                    );
-                  }).length;
-
+    <div className="space-y-4">
+      {/* Floor Plan Header & Navigation Tabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 sm:p-4 rounded-3xl border border-[#E2E8F0] shadow-sm">
+        {/* Floor View Switcher */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+          {[
+            { id: "all" as FloorZone, label: "Semua Denah Lantai", icon: Layers, count: tables.length },
+            { id: "indoor" as FloorZone, label: "Indoor Grand Salle", icon: Sparkles, count: indoorTables.length },
+            { id: "outdoor" as FloorZone, label: "Outdoor Jardin Patio", icon: Trees, count: outdoorTables.length },
+            { id: "mezzanine" as FloorZone, label: "Lantai 2 Mezzanine VIP", icon: Crown, count: mezzanineTables.length },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeZone === tab.id;
             return (
               <button
-                key={zoneKey}
+                key={tab.id}
                 type="button"
-                onClick={() => setActiveZone(zoneKey)}
-                className={`px-3.5 sm:px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap shrink-0 shadow-xs ${
+                onClick={() => setActiveZone(tab.id)}
+                className={`px-3.5 py-2 rounded-2xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   isActive
                     ? "bg-[#14281D] text-white shadow-md shadow-[#14281D]/20 scale-[1.02]"
-                    : "bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#18181B] hover:border-[#EA580C]/40"
+                    : "bg-[#FDFBF7] border border-[#E2E8F0] text-[#64748B] hover:text-[#18181B] hover:border-[#EA580C]/40"
                 }`}
               >
                 <Icon className={`w-3.5 h-3.5 ${isActive ? "text-[#EA580C]" : "text-stone-400"}`} />
-                <span>{profile.name}</span>
+                <span>{tab.label}</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
-                    isActive ? "bg-white/20 text-white font-bold" : "bg-stone-100 text-stone-600"
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                    isActive ? "bg-white/20 text-white font-bold" : "bg-stone-200 text-stone-600"
                   }`}
                 >
-                  {count}
+                  {tab.count}
                 </span>
               </button>
             );
           })}
         </div>
 
-        {/* Legend / Status summary badge */}
+        {/* Status Legend */}
         <div className="flex items-center gap-3 text-xs font-semibold shrink-0">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-200" />
             <span className="text-[#64748B]">Tersedia ({availableCount})</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-rose-200" />
             <span className="text-[#64748B]">Terisi ({occupiedCount})</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+            <span className="w-2.5 h-2.5 rounded-full bg-purple-500 ring-2 ring-purple-200" />
             <span className="text-[#64748B]">Dipesan ({reservedCount})</span>
           </div>
           {onRefresh && (
             <button
               onClick={onRefresh}
-              title="Perbarui Denah Meja"
-              className="p-1.5 rounded-full bg-white border border-[#E2E8F0] hover:text-[#EA580C] text-[#64748B] transition-colors cursor-pointer"
+              title="Perbarui Denah Lantai"
+              className="p-1.5 rounded-full bg-[#FDFBF7] border border-[#E2E8F0] hover:text-[#EA580C] text-[#64748B] transition-colors cursor-pointer shadow-xs"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
@@ -199,101 +149,259 @@ export function VisualFloorPlan({
         </div>
       </div>
 
-      {/* Selected Ambiance Sensory Atmosphere Card */}
-      <div className={`p-4 sm:p-5 rounded-3xl border border-[#E2E8F0] bg-gradient-to-r ${currentZoneProfile.bgTint} shadow-sm space-y-3`}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-white border border-[#E2E8F0] flex items-center justify-center text-[#EA580C] shadow-xs">
-              <CurrentZoneIcon className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="font-serif font-bold text-base text-[#18181B] leading-tight">
-                {currentZoneProfile.name}
-              </h3>
-              <p className="text-[11px] font-mono text-[#EA580C] font-semibold">
-                {currentZoneProfile.badge}
-              </p>
-            </div>
-          </div>
+      {/* CONTINUOUS RESTAURANT FLOOR CANVAS (SATU LANTAI UTUH TANPA CARD) */}
+      <div className="relative rounded-3xl border-2 border-[#DCD5C5] bg-[#F7F4EE] shadow-2xl p-4 sm:p-8 overflow-hidden">
+        {/* Subtle Architectural Blueprint Grid Lines Pattern */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-40 bg-[linear-gradient(to_right,#E5DEC8_1px,transparent_1px),linear-gradient(to_bottom,#E5DEC8_1px,transparent_1px)] bg-[size:32px_32px]"
+        />
 
-          {/* Key ambiance feature pills */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {currentZoneProfile.features.map((feat, i) => (
-              <span
-                key={i}
-                className="text-[10px] font-medium bg-white/90 border border-stone-200/80 px-2.5 py-1 rounded-full text-stone-700 shadow-xs"
-              >
-                ✓ {feat}
-              </span>
-            ))}
+        {/* Ambient Top Border Wall */}
+        <div className="relative z-10 flex items-center justify-between border-b-2 border-stone-300/80 pb-3 mb-6 text-xs text-stone-500 font-mono">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#EA580C]" />
+            <span className="font-bold uppercase tracking-wider text-[#18181B]">
+              DENAH TATA RUANG RESTORAN SAVORIA
+            </span>
+          </div>
+          <div className="hidden sm:flex items-center gap-4 text-[11px]">
+            <span>🏢 Tata Letak Meja Skala Nyata</span>
+            <span>📍 Klik Langsung Meja di Lantai</span>
           </div>
         </div>
 
-        <p className="text-xs text-[#64748B] leading-relaxed max-w-3xl">
-          {currentZoneProfile.ambiance}
-        </p>
+        {/* FLOOR SECTORS CONTAINER */}
+        <div className="relative z-10 space-y-10">
+          {/* SECTOR 1: INDOOR GRAND SALLE */}
+          {(activeZone === "all" || activeZone === "indoor") && indoorTables.length > 0 && (
+            <div className="relative rounded-3xl p-5 sm:p-7 border border-[#E0D8C8] bg-gradient-to-b from-[#FAF7F0] to-[#F5EFE4] shadow-sm">
+              {/* Sector Architectural Title & Landmarks */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-200/90 pb-3 mb-6">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center text-xs">
+                      🏛️
+                    </span>
+                    <h3 className="font-serif font-black text-base sm:text-lg text-[#18181B] tracking-tight">
+                      Lantai 1 • Grand Salle (Indoor Utama)
+                    </h3>
+                  </div>
+                  <p className="text-[11px] text-[#64748B] mt-0.5">
+                    Lantai marmer Prancis dengan chandelier kristal bersinar hangat, AC sejuk & alunan musik jazz.
+                  </p>
+                </div>
+
+                {/* Architectural Landmarks in this room */}
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-stone-500">
+                  <span className="px-2.5 py-1 rounded-full bg-white border border-stone-200 shadow-xs flex items-center gap-1">
+                    🚪 Pintu Masuk / Welcome Foyer
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full bg-white border border-stone-200 shadow-xs flex items-center gap-1">
+                    🍷 Sommelier Wine Bar
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full bg-white border border-stone-200 shadow-xs flex items-center gap-1">
+                    🪟 Dinding Kaca Taman
+                  </span>
+                </div>
+              </div>
+
+              {/* Furniture Arranged Directly on the Floor (Tanpa Card) */}
+              <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 py-4">
+                {indoorTables.map((tbl) => (
+                  <FloorTableFurniture
+                    key={tbl.id}
+                    table={tbl}
+                    mode={mode}
+                    isSelected={selectedTable?.id === tbl.id}
+                    guestCount={guestCount}
+                    onSelect={onSelectTable}
+                    onOpenBill={onOpenBill}
+                    onPayOrder={onPayOrder}
+                    onMoveTable={onMoveTable}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* SECTOR 2: OUTDOOR JARDIN PATIO */}
+          {(activeZone === "all" || activeZone === "outdoor") && outdoorTables.length > 0 && (
+            <div className="relative rounded-3xl p-5 sm:p-7 border border-emerald-200/80 bg-gradient-to-b from-[#F2F8F4] to-[#E9F3EC] shadow-sm">
+              {/* Sector Architectural Title & Landmarks */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-3 mb-6">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs">
+                      🌿
+                    </span>
+                    <h3 className="font-serif font-black text-base sm:text-lg text-[#18181B] tracking-tight">
+                      Area Terbuka • Jardin Patio (Outdoor Al Fresco)
+                    </h3>
+                  </div>
+                  <p className="text-[11px] text-[#64748B] mt-0.5">
+                    Teras taman terbuka di kelilingi tanaman hijau eksotis, gemericik air mancur & semilir angin malam.
+                  </p>
+                </div>
+
+                {/* Architectural Landmarks in this room */}
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-stone-500">
+                  <span className="px-2.5 py-1 rounded-full bg-white border border-emerald-200 shadow-xs flex items-center gap-1 text-emerald-800">
+                    ⛲ Air Mancur Marmer Sentral
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full bg-white border border-emerald-200 shadow-xs flex items-center gap-1 text-emerald-800">
+                    🪴 Palem & Tanaman Tropis
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full bg-white border border-emerald-200 shadow-xs flex items-center gap-1 text-emerald-800">
+                    🏮 Lampion Romantis
+                  </span>
+                </div>
+              </div>
+
+              {/* Furniture Arranged Directly on the Floor (Tanpa Card) */}
+              <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 py-4">
+                {outdoorTables.map((tbl) => (
+                  <FloorTableFurniture
+                    key={tbl.id}
+                    table={tbl}
+                    mode={mode}
+                    isSelected={selectedTable?.id === tbl.id}
+                    guestCount={guestCount}
+                    onSelect={onSelectTable}
+                    onOpenBill={onOpenBill}
+                    onPayOrder={onPayOrder}
+                    onMoveTable={onMoveTable}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* SECTOR 3: LANTAI 2 MEZZANINE VIP */}
+          {(activeZone === "all" || activeZone === "mezzanine") && mezzanineTables.length > 0 && (
+            <div className="relative rounded-3xl p-5 sm:p-7 border border-purple-200/80 bg-gradient-to-b from-[#F7F2FA] to-[#EFE7F5] shadow-sm">
+              {/* Sector Architectural Title & Landmarks */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200 pb-3 mb-6">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-purple-100 text-purple-800 flex items-center justify-center text-xs">
+                      👑
+                    </span>
+                    <h3 className="font-serif font-black text-base sm:text-lg text-[#18181B] tracking-tight">
+                      Lantai 2 • Mezzanine & VIP Presidential Salon
+                    </h3>
+                  </div>
+                  <p className="text-[11px] text-[#64748B] mt-0.5">
+                    Suite perjamuan privat eksklusif dengan pemandangan terbuka balkon ke ruang utama & personal butler.
+                  </p>
+                </div>
+
+                {/* Architectural Landmarks in this room */}
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-stone-500">
+                  <span className="px-2.5 py-1 rounded-full bg-white border border-purple-200 shadow-xs flex items-center gap-1 text-purple-800">
+                    🏰 Railing Balkon ke Grand Salle
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full bg-white border border-purple-200 shadow-xs flex items-center gap-1 text-purple-800">
+                    🍾 Private Vintage Wine Vault
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full bg-white border border-purple-200 shadow-xs flex items-center gap-1 text-purple-800">
+                    🛋️ Sofa Velvet Lounge
+                  </span>
+                </div>
+              </div>
+
+              {/* Furniture Arranged Directly on the Floor (Tanpa Card) */}
+              <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 py-4">
+                {mezzanineTables.map((tbl) => (
+                  <FloorTableFurniture
+                    key={tbl.id}
+                    table={tbl}
+                    mode={mode}
+                    isSelected={selectedTable?.id === tbl.id}
+                    guestCount={guestCount}
+                    onSelect={onSelectTable}
+                    onOpenBill={onOpenBill}
+                    onPayOrder={onPayOrder}
+                    onMoveTable={onMoveTable}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Tables Grid with Architectural Chairs Layout */}
-      {filteredTables.length === 0 ? (
-        <div className="bg-white rounded-3xl border border-[#E2E8F0] p-12 text-center text-[#64748B] shadow-sm">
-          <UtensilsCrossed className="w-10 h-10 mx-auto mb-2 text-stone-300" />
-          <h4 className="font-serif font-bold text-base text-[#18181B]">
-            Tidak ada meja di zona suasana ini
-          </h4>
-          <p className="text-xs text-[#64748B] mt-1">
-            Silakan pilih tab &ldquo;Semua Suasana&rdquo; untuk melihat seluruh denah meja restoran.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-          {filteredTables.map((tbl) => (
-            <VisualTableCard
-              key={tbl.id}
-              table={tbl}
-              mode={mode}
-              isSelected={selectedTable?.id === tbl.id}
-              guestCount={guestCount}
-              onSelect={onSelectTable}
-              onOpenBill={onOpenBill}
-              onPayOrder={onPayOrder}
-              onMoveTable={onMoveTable}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Selected Table Floating Summary Bar for Reservation Mode */}
-      {mode === "reservation" && selectedTable && (
-        <div className="sticky bottom-4 z-30 bg-[#14281D] text-white p-3.5 sm:p-4 rounded-2xl sm:rounded-full shadow-2xl border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-serif font-black text-sm shrink-0 shadow-cta">
+      {/* DOCK / INSPECTOR PANEL DI BAWAH DENAH */}
+      {selectedTable ? (
+        <div className="bg-[#14281D] text-white p-4 sm:p-5 rounded-3xl shadow-2xl border border-emerald-500/30 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-3">
+          <div className="flex items-center gap-3.5 w-full md:w-auto">
+            <div className="w-12 h-12 rounded-2xl bg-[#EA580C] text-white flex items-center justify-center font-serif font-black text-lg shadow-cta shrink-0">
               {selectedTable.tableNumber}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-serif font-bold text-sm text-white">
-                  Meja {selectedTable.tableNumber} Terpilih
-                </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <h4 className="font-serif font-bold text-base text-white">
+                  Meja {selectedTable.tableNumber}
+                </h4>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold border border-emerald-500/30">
                   {selectedTable.capacity} Kursi
                 </span>
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-white/10 text-stone-300">
+                  {selectedTable.status === "available" ? "Tersedia" : selectedTable.status}
+                </span>
               </div>
-              <p className="text-[11px] text-stone-300 font-light">
-                Area: {selectedTable.area} • Suasana Terkonfirmasi
+              <p className="text-xs text-stone-300 mt-0.5 font-light">
+                Area: <strong className="text-white font-medium">{selectedTable.area}</strong> • Terkoneksi Real-Time ke Sistem Restoran
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <span className="text-xs text-stone-300 hidden md:inline">
-              Siap untuk melanjutkan ke tahap Pembayaran
-            </span>
-            <div className="px-4 py-2 rounded-full bg-[#EA580C] text-white text-xs font-bold flex items-center gap-1.5 shadow-cta">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Meja Terkunci untuk Anda</span>
+          {/* Action buttons depending on mode */}
+          {mode === "reservation" && (
+            <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+              <span className="text-xs text-stone-300 hidden lg:inline">
+                Meja siap dikunci untuk reservasi jamuan Anda
+              </span>
+              <button
+                type="button"
+                onClick={() => onSelectTable && onSelectTable(selectedTable)}
+                className="w-full md:w-auto px-6 py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta cursor-pointer transition-all"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Pilih Meja {selectedTable.tableNumber}</span>
+              </button>
             </div>
-          </div>
+          )}
+
+          {mode === "pos" && (
+            <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+              {selectedTable.status === "available" ? (
+                <button
+                  type="button"
+                  onClick={() => onOpenBill && onOpenBill(selectedTable)}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-bold shadow-cta cursor-pointer"
+                >
+                  + Buka Bill Baru Meja {selectedTable.tableNumber}
+                </button>
+              ) : selectedTable.orders && selectedTable.orders.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => onPayOrder && onPayOrder(selectedTable.orders![0])}
+                  className="px-6 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold shadow-cta cursor-pointer"
+                >
+                  Bayar Tagihan ({selectedTable.orders[0].customerName})
+                </button>
+              ) : (
+                <span className="text-xs text-stone-300 font-mono">Meja Telah Direservasi</span>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-stone-200 text-center text-xs text-[#64748B] flex items-center justify-center gap-2">
+          <Eye className="w-4 h-4 text-[#EA580C]" />
+          <span>
+            Klik langsung pada meja di atas denah lantai untuk memilih dan melihat detail kapasitas serta suasana meja.
+          </span>
         </div>
       )}
     </div>
