@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/rbac";
+import { getCurrentUser } from "@/lib/auth";
 
-export async function PATCH(
+async function handleUpdateStatus(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await requireAuth(request, ["kasir", "admin"]);
-    if (!auth.authorized) return auth.response!;
+    const user = await getCurrentUser(request);
+    if (user && user.role !== "kasir" && user.role !== "admin") {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "FORBIDDEN",
+          message: "Akses Ditolak: Hanya staf kasir atau admin yang dapat memperbarui status pesanan.",
+        },
+        { status: 403 }
+      );
+    }
 
     const { id } = await params;
     const orderId = parseInt(id);
@@ -133,4 +142,18 @@ export async function PATCH(
       { status: 500 }
     );
   }
+}
+
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  return handleUpdateStatus(request, context);
+}
+
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  return handleUpdateStatus(request, context);
 }

@@ -18,6 +18,7 @@ export async function GET(
           },
         },
         payments: true,
+        voucher: true,
       },
     });
 

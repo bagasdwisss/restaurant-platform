@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
           },
         },
         payments: true,
+        voucher: true,
       },
       orderBy: { createdAt: "desc" },
     });

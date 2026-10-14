@@ -189,6 +189,16 @@ export function PosOrdersTab({
                     Tandai Telah Disajikan
                   </button>
                 )}
+                {order.status === "served" && (
+                  <button
+                    type="button"
+                    onClick={() => onUpdateOrderStatus(order.id, "completed")}
+                    className="flex-1 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Selesai & Bebaskan Meja</span>
+                  </button>
+                )}
                 {order.paymentStatus !== "paid" && (
                   <button
                     type="button"

@@ -44,3 +44,7 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
+
+export async function PUT(request: NextRequest) {
+  return PATCH(request);
+}

@@ -77,6 +77,21 @@ export default function PosCashierPage() {
     }
   }, [user]);
 
+  // Dynamically calculate shift variance when cashier inputs cash in drawer
+  useEffect(() => {
+    if (!currentShift || !endCashActualInput) {
+      setCloseShiftVariance(null);
+      return;
+    }
+    const actual = Number(endCashActualInput);
+    if (isNaN(actual)) {
+      setCloseShiftVariance(null);
+    } else {
+      const expected = currentShift.expectedCash ?? (currentShift.startCash + (currentShift.netCashSales || 0));
+      setCloseShiftVariance(actual - expected);
+    }
+  }, [endCashActualInput, currentShift]);
+
   // Tab & View state
   const [activeTab, setActiveTab] = useState<"pos" | "orders" | "tables">("pos");
   const [mobilePosView, setMobilePosView] = useState<"catalog" | "bill">("catalog");
@@ -304,6 +319,7 @@ export default function PosCashierPage() {
           customerName: orderToPay.customerName,
           orderType: orderToPay.orderType,
           paymentMethod: payMethod,
+          amountPaid: cashPaidInput,
           isPaid: true,
           items: posCart.map((i) => ({
             menuId: i.menuId,

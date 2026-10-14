@@ -138,17 +138,22 @@ export function CloseShiftModal({
               <span className="font-bold text-[#18181B]">{currentShift.cashierName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#64748B]">Kas Awal:</span>
+              <span className="text-[#64748B]">Kas Awal (Modal):</span>
               <span className="font-mono text-[#18181B]">{formatIDR(currentShift.startCash)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#64748B]">Total Tunai Masuk:</span>
-              <span className="font-mono text-[#18181B]">{formatIDR(currentShift.totalCashReceived || 0)}</span>
+              <span className="text-[#64748B]">Penjualan Tunai Bersih:</span>
+              <span className="font-mono text-[#18181B]">
+                {formatIDR(currentShift.netCashSales ?? currentShift.totalCashReceived ?? 0)}
+              </span>
             </div>
             <div className="flex justify-between font-bold pt-1 border-t border-slate-200">
               <span className="text-[#18181B]">Ekspektasi Kas Laci:</span>
               <span className="font-mono text-[#EA580C]">
-                {formatIDR(currentShift.startCash + (currentShift.totalCashReceived || 0))}
+                {formatIDR(
+                  currentShift.expectedCash ??
+                    currentShift.startCash + (currentShift.netCashSales ?? 0)
+                )}
               </span>
             </div>
           </div>
