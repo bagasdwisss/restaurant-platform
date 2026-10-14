@@ -7,28 +7,57 @@ export async function GET(request: NextRequest) {
     const auth = await requireAuth(request, ["admin"]);
     if (!auth.authorized) return auth.response!;
 
-    const allOrders = await prisma.order.findMany({
-      where: {
-        paymentStatus: "paid",
-      },
-      include: {
-        items: {
-          include: {
-            menu: true,
-          },
+    const [aggregates, payments, topItemGroups, recentOrders, allMenus] = await Promise.all([
+      prisma.order.aggregate({
+        where: { paymentStatus: "paid" },
+        _sum: {
+          totalAmount: true,
+          subtotal: true,
+          taxAmount: true,
+          serviceCharge: true,
         },
-        payments: true,
-      },
-    });
+        _count: {
+          id: true,
+        },
+      }),
+      prisma.payment.findMany({
+        where: { order: { paymentStatus: "paid" } },
+        select: { method: true, amountPaid: true, changeAmount: true },
+      }),
+      prisma.orderItem.groupBy({
+        by: ["menuId"],
+        where: { order: { paymentStatus: "paid" }, isVoided: false },
+        _sum: { quantity: true, subtotal: true },
+        orderBy: { _sum: { quantity: "desc" } },
+        take: 10,
+      }),
+      prisma.order.findMany({
+        where: { paymentStatus: "paid" },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        select: {
+          id: true,
+          orderNumber: true,
+          customerName: true,
+          totalAmount: true,
+          paymentMethod: true,
+          createdAt: true,
+          status: true,
+        },
+      }),
+      prisma.menu.findMany({
+        select: { id: true, name: true, price: true, image: true },
+      }),
+    ]);
 
-    const totalRevenue = allOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-    const totalSubtotal = allOrders.reduce((sum, o) => sum + o.subtotal, 0);
-    const totalTax = allOrders.reduce((sum, o) => sum + o.taxAmount, 0);
-    const totalService = allOrders.reduce((sum, o) => sum + o.serviceCharge, 0);
-    const totalOrdersCount = allOrders.length;
+    const totalRevenue = aggregates._sum.totalAmount || 0;
+    const totalSubtotal = aggregates._sum.subtotal || 0;
+    const totalTax = aggregates._sum.taxAmount || 0;
+    const totalService = aggregates._sum.serviceCharge || 0;
+    const totalOrdersCount = aggregates._count.id || 0;
     const avgOrderValue = totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount) : 0;
 
-    // Estimated Gross Profit: Subtotal - Estimated COGS (approx. 35% food cost)
+    // COGS & Profit estimation
     const estimatedCOGS = Math.round(totalSubtotal * 0.35);
     const grossProfit = totalRevenue - estimatedCOGS;
 
@@ -37,52 +66,30 @@ export async function GET(request: NextRequest) {
     let qrisTotal = 0;
     let debitTotal = 0;
 
-    for (const order of allOrders) {
-      for (const p of order.payments) {
-        if (p.method === "cash") cashTotal += p.amountPaid - p.changeAmount;
-        else if (p.method === "qris") qrisTotal += p.amountPaid;
-        else if (p.method === "debit") debitTotal += p.amountPaid;
-      }
+    for (const p of payments) {
+      if (p.method === "cash") cashTotal += p.amountPaid - p.changeAmount;
+      else if (p.method === "qris") qrisTotal += p.amountPaid;
+      else if (p.method === "debit") debitTotal += p.amountPaid;
     }
 
-    // Top selling items ranking
-    const itemSalesMap = new Map<number, { name: string; quantity: number; revenue: number; image?: string | null }>();
+    // Map top selling items
+    const menuMap = new Map(allMenus.map((m) => [m.id, m]));
+    const topSellingItems = topItemGroups.map((g) => {
+      const menu = menuMap.get(g.menuId);
+      return {
+        name: menu ? menu.name : `Menu #${g.menuId}`,
+        quantity: g._sum.quantity || 0,
+        revenue: g._sum.subtotal || 0,
+        image: menu?.image || null,
+      };
+    });
 
-    for (const order of allOrders) {
-      for (const item of order.items) {
-        if (item.isVoided) continue;
-        const existing = itemSalesMap.get(item.menuId) || {
-          name: item.menu.name,
-          quantity: 0,
-          revenue: 0,
-          image: item.menu.image,
-        };
-        existing.quantity += item.quantity;
-        existing.revenue += item.subtotal;
-        itemSalesMap.set(item.menuId, existing);
-      }
-    }
-
-    const topSellingItems = Array.from(itemSalesMap.values())
-      .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 10);
-
-    // All active menus to find Dead Stock (items with 0 sales)
-    const allMenus = await prisma.menu.findMany({ select: { id: true, name: true, price: true } });
+    // Dead stock items
+    const activeSoldMenuIds = new Set(topItemGroups.map((g) => g.menuId));
     const deadStockItems = allMenus
-      .filter((m) => !itemSalesMap.has(m.id))
+      .filter((m) => !activeSoldMenuIds.has(m.id))
+      .slice(0, 10)
       .map((m) => ({ name: m.name, price: m.price, sales: 0 }));
-
-    // Recent orders table for audit/reporting
-    const recentOrders = allOrders.slice(0, 50).map((o) => ({
-      id: o.id,
-      orderNumber: o.orderNumber,
-      customerName: o.customerName,
-      totalAmount: o.totalAmount,
-      paymentMethod: o.paymentMethod,
-      createdAt: o.createdAt,
-      status: o.status,
-    }));
 
     return NextResponse.json({
       success: true,

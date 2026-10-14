@@ -143,6 +143,7 @@ export default function CustomerTablePage({
   // Polling for live status updates if there is an active order
   useEffect(() => {
     const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
       if (token) {
         fetch(`/api/v1/customer/table/${token}`)
           .then((res) => res.json())
@@ -153,7 +154,7 @@ export default function CustomerTablePage({
           })
           .catch(() => {});
       }
-    }, 4000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [token]);

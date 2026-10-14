@@ -1,73 +1,32 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
-import { formatIDR, formatDate } from "@/lib/utils";
-import { VisualFloorPlan } from "@/components/tables/VisualFloorPlan";
 import { isTableCapacityEligible } from "@/components/tables/FloorTableFurniture";
-import { DishImage } from "@/components/ui/DishImage";
-import {
-  PAYMENT_CHANNELS,
-  PaymentMethodId,
-} from "@/components/ui/PaymentLogos";
-import {
-  Calendar,
-  Clock,
-  Users,
-  UtensilsCrossed,
-  MapPin,
-  CreditCard,
-  QrCode,
-  CheckCircle2,
-  Printer,
-  Sparkles,
-  ChevronRight,
-  ChevronLeft,
-  Plus,
-  Minus,
-  X,
-  ShieldCheck,
-  Star,
-  Receipt,
-  ArrowRight,
-  Award,
-  Smartphone,
-  Info,
-  Lock,
-} from "lucide-react";
+import { PaymentMethodId } from "@/components/ui/PaymentLogos";
 
-interface MenuItem {
-  id: number;
-  name: string;
-  description: string | null;
-  price: number;
-  image: string | null;
-  isAvailable: boolean;
-  modifierGroups: any[];
-}
+// Sub-components
+import { MenuItem, TableItem, CartItem, TimeSlotOption } from "@/components/reservation/types";
+import { ReservationStepsNav } from "@/components/reservation/ReservationStepsNav";
+import { ReservationScheduleStep } from "@/components/reservation/ReservationScheduleStep";
+import { ReservationMenuStep } from "@/components/reservation/ReservationMenuStep";
+import { ReservationFloorPlanStep } from "@/components/reservation/ReservationFloorPlanStep";
+import { ReservationPaymentStep } from "@/components/reservation/ReservationPaymentStep";
+import { ReservationReceiptStep } from "@/components/reservation/ReservationReceiptStep";
+import { MenuCustomizationModal } from "@/components/reservation/MenuCustomizationModal";
 
-interface TableItem {
-  id: number;
-  tableNumber: string;
-  capacity: number;
-  qrToken: string;
-  status: string;
-  area: string;
-}
-
-interface CartItem {
-  menuId: number;
-  name: string;
-  price: number;
-  quantity: number;
-  selectedVariants: { group: string; option: string; extraPrice: number }[];
-  notes: string;
-}
+const TIME_SLOTS: TimeSlotOption[] = [
+  { label: "12:00 PM - Luncheon Soirée", desc: "Sesi siang segar & elegan" },
+  { label: "01:30 PM - Midday Gourmet", desc: "Santap siang tenang & privat" },
+  { label: "05:30 PM - Sunset & Aperitivo", desc: "Golden hour starter & mocktail" },
+  { label: "06:30 PM - Romantic Dinner", desc: "Suasana romantis lilin malam" },
+  { label: "07:30 PM - Prime Evening Gala", desc: "Sesi makan malam utama terfavorit" },
+  { label: "08:30 PM - Late Night Soirée", desc: "Makan malam intim eksklusif" },
+];
 
 export default function SavoriaReservationPage() {
   const router = useRouter();
@@ -77,19 +36,15 @@ export default function SavoriaReservationPage() {
   // Wizard Step: 1 (Date/Time/Pax), 2 (Menu), 3 (Table), 4 (Payment), 5 (Receipt)
   const [currentStep, setCurrentStep] = useState<number>(1);
 
-  // STEP 1 STATE: Date, Time Session, Guests
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().slice(0, 10)
-  );
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>(
-    "07:30 PM - Prime Evening Gala"
-  );
+  // STEP 1 STATE: Date, Time Session, Guests, Contact
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("07:30 PM - Prime Evening Gala");
   const [guestCount, setGuestCount] = useState<number>(2);
   const [specialRequests, setSpecialRequests] = useState<string>("");
   const [customerName, setCustomerName] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
 
-  // STEP 2 STATE: Menu Selection
+  // STEP 2 STATE: Menu Selection & Cart
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -120,7 +75,6 @@ export default function SavoriaReservationPage() {
 
   // Fetch initial data: Menus & Tables
   useEffect(() => {
-    // Menus
     fetch("/api/v1/customer/menus")
       .then((res) => res.json())
       .then((data) => {
@@ -128,7 +82,6 @@ export default function SavoriaReservationPage() {
       })
       .catch(() => {});
 
-    // Tables
     fetch("/api/v1/pos/tables")
       .then((res) => res.json())
       .then((data) => {
@@ -137,20 +90,23 @@ export default function SavoriaReservationPage() {
       .catch(() => {});
   }, []);
 
-  // Time Slots Available
-  const timeSlots = [
-    { label: "12:00 PM - Luncheon Soirée", desc: "Sesi siang segar & elegan" },
-    { label: "01:30 PM - Midday Gourmet", desc: "Santap siang tenang & privat" },
-    { label: "05:30 PM - Sunset & Aperitivo", desc: "Golden hour starter & mocktail" },
-    { label: "06:30 PM - Romantic Dinner", desc: "Suasana romantis lilin malam" },
-    { label: "07:30 PM - Prime Evening Gala", desc: "Sesi makan malam utama terfavorit" },
-    { label: "08:30 PM - Late Night Soirée", desc: "Makan malam intim eksklusif" },
-  ];
+  // Auto-check table capacity eligibility when guest count changes
+  useEffect(() => {
+    if (selectedTable) {
+      const eligibility = isTableCapacityEligible(selectedTable.capacity, guestCount);
+      if (!eligibility.eligible) {
+        setSelectedTable(null);
+        toast.info(
+          `Pilihan meja di-reset karena jumlah tamu diubah menjadi ${guestCount} orang. Silakan pilih meja berkapasitas yang sesuai pada denah lantai.`,
+          "Kapasitas Tamu Disesuaikan"
+        );
+      }
+    }
+  }, [guestCount]);
 
   // Cart Operations
-  const addToCart = (menu: MenuItem) => {
+  const handleAddToCart = (menu: MenuItem) => {
     if (menu.modifierGroups && menu.modifierGroups.length > 0) {
-      // Pre-select first option for single choice groups to provide frictionless UX
       const initialMods: Record<number, number[]> = {};
       menu.modifierGroups.forEach((g) => {
         if (g.options && g.options.length > 0) {
@@ -186,7 +142,7 @@ export default function SavoriaReservationPage() {
     toast.success(`"${menu.name}" berhasil ditambahkan ke keranjang.`, "Menu Ditambahkan");
   };
 
-  const toggleModifier = (groupId: number, optionId: number, maxSelection: number) => {
+  const handleToggleModifier = (groupId: number, optionId: number, maxSelection: number) => {
     const current = selectedModifiers[groupId] || [];
     if (maxSelection === 1) {
       setSelectedModifiers({
@@ -212,10 +168,9 @@ export default function SavoriaReservationPage() {
     }
   };
 
-  const confirmCustomization = () => {
+  const handleConfirmCustomization = () => {
     if (!customizingMenu) return;
 
-    // Validate required selections
     if (customizingMenu.modifierGroups) {
       for (const group of customizingMenu.modifierGroups) {
         const selected = selectedModifiers[group.id] || [];
@@ -272,21 +227,7 @@ export default function SavoriaReservationPage() {
     setCustomizingMenu(null);
   };
 
-  // Auto-check table capacity eligibility when guest count changes
-  useEffect(() => {
-    if (selectedTable) {
-      const eligibility = isTableCapacityEligible(selectedTable.capacity, guestCount);
-      if (!eligibility.eligible) {
-        setSelectedTable(null);
-        toast.info(
-          `Pilihan meja di-reset karena jumlah tamu diubah menjadi ${guestCount} orang. Silakan pilih meja berkapasitas yang sesuai pada denah lantai.`,
-          "Kapasitas Tamu Disesuaikan"
-        );
-      }
-    }
-  }, [guestCount]);
-
-  const updateCartQty = (menuId: number, delta: number) => {
+  const handleUpdateCartQty = (menuId: number, delta: number) => {
     const updated = cart
       .map((item) => {
         if (item.menuId === menuId) {
@@ -298,11 +239,12 @@ export default function SavoriaReservationPage() {
     setCart(updated);
   };
 
-  // Financial Computations
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const taxAmount = Math.round(subtotal * 0.1); // PB1 10%
-  const serviceCharge = Math.round(subtotal * 0.05); // Service 5%
-  const totalAmount = subtotal + taxAmount + serviceCharge;
+  // Table confirmation & advance directly to Payment
+  const handleConfirmTableAndAdvance = (table: TableItem) => {
+    setSelectedTable(table);
+    toast.success(`Meja ${table.tableNumber} dikonfirmasi! Lanjut ke pembayaran.`, "Meja Dipilih");
+    setCurrentStep(4);
+  };
 
   // Process Complete Reservation & Payment
   const handleExecutePayment = async () => {
@@ -369,7 +311,7 @@ export default function SavoriaReservationPage() {
         setReceiptQrDataUrl(qrUrl);
 
         toast.success("Reservasi & Pembayaran berhasil dikonfirmasi!", "Pembayaran Diterima");
-        setCurrentStep(5); // Go to Receipt step!
+        setCurrentStep(5);
       } else {
         toast.error(data.message || "Gagal memproses reservasi & pembayaran.", "Transaksi Gagal");
       }
@@ -380,8 +322,25 @@ export default function SavoriaReservationPage() {
     }
   };
 
-  // Filter Menus
-  const allMenus = categories.flatMap((c) => c.menus || []);
+  const handleResetReservation = () => {
+    setCart([]);
+    setSelectedTable(null);
+    setCompletedOrder(null);
+    setReceiptQrDataUrl("");
+    setCurrentStep(1);
+  };
+
+  // Nav validation
+  const canNavigateTo = (step: number): boolean => {
+    if (step === 1) return true;
+    if (step === 2) return Boolean(customerName && customerPhone);
+    if (step === 3) return Boolean(cart.length > 0);
+    if (step === 4) return Boolean(selectedTable);
+    if (step === 5) return Boolean(completedOrder);
+    return false;
+  };
+
+  const allMenus: MenuItem[] = categories.flatMap((c) => c.menus || []);
   const displayedMenus = allMenus.filter((m) => {
     if (selectedCategory === "all") return true;
     return categories.find((c) => String(c.id) === selectedCategory)?.menus?.some((item: any) => item.id === m.id);
@@ -389,16 +348,16 @@ export default function SavoriaReservationPage() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] selection:bg-[#EA580C] selection:text-white flex flex-col justify-between font-sans antialiased">
-      {/* MODERN RESTAURANT HEADER */}
+      {/* RESTAURANT HEADER */}
       <header className="border-b border-[#E2E8F0] bg-white/90 backdrop-blur-md sticky top-0 z-50 px-3 sm:px-6 py-3.5 sm:py-4">
         <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-2">
           <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group min-w-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-display font-black text-lg sm:text-xl shadow-cta group-hover:scale-105 transition-transform shrink-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-serif font-black text-lg sm:text-xl shadow-md shadow-[#EA580C]/25 group-hover:scale-105 transition-transform shrink-0">
               S
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="font-display tracking-tight text-lg sm:text-xl font-bold text-[#18181B]">
+                <span className="font-serif tracking-tight text-lg sm:text-xl font-bold text-[#18181B]">
                   SAVOR<span className="text-[#EA580C]">IA</span>
                 </span>
                 <span className="hidden xs:inline-block text-[10px] bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">
@@ -422,7 +381,7 @@ export default function SavoriaReservationPage() {
                 </div>
                 <Link
                   href="/user"
-                  className="px-3 sm:px-4 py-2 rounded-full bg-white border border-[#E2E8F0] text-[#18181B] hover:border-[#EA580C] text-xs font-semibold transition-all shadow-sm"
+                  className="px-3 sm:px-4 py-2 rounded-full bg-white border border-[#E2E8F0] text-[#18181B] hover:border-[#EA580C] text-xs font-semibold transition-all shadow-xs"
                 >
                   Pesanan Saya
                 </Link>
@@ -430,7 +389,7 @@ export default function SavoriaReservationPage() {
             ) : (
               <Link
                 href="/login?redirect=/reservation"
-                className="px-3 sm:px-4 py-2 rounded-full bg-white border border-[#E2E8F0] text-[#18181B] hover:text-[#EA580C] text-xs font-bold transition-all shadow-sm"
+                className="px-3 sm:px-4 py-2 rounded-full bg-white border border-[#E2E8F0] text-[#18181B] hover:text-[#EA580C] text-xs font-bold transition-all shadow-xs"
               >
                 <span className="hidden xs:inline">Masuk ke </span>Akun
               </Link>
@@ -440,1047 +399,109 @@ export default function SavoriaReservationPage() {
       </header>
 
       {/* 5-STEP JOURNEY STEPPER BAR */}
-      <div className="border-b border-[#E2E8F0] bg-white px-3 sm:px-6 py-3 sm:py-4 shadow-sm overflow-x-auto scrollbar-none">
-        <div className="max-w-4xl mx-auto flex items-center justify-between min-w-[280px]">
-          {[
-            { step: 1, label: "Jadwal & Tamu", icon: Calendar },
-            { step: 2, label: "Pilih Menu", icon: UtensilsCrossed },
-            { step: 3, label: "Pilih Meja", icon: MapPin },
-            { step: 4, label: "Pembayaran", icon: CreditCard },
-            { step: 5, label: "Struk & QR Pass", icon: Receipt },
-          ].map((item, idx) => {
-            const isDone = currentStep > item.step;
-            const isCurrent = currentStep === item.step;
+      <ReservationStepsNav
+        currentStep={currentStep}
+        onSelectStep={setCurrentStep}
+        canNavigateTo={canNavigateTo}
+      />
 
-            return (
-              <React.Fragment key={item.step}>
-                <button
-                  type="button"
-                  disabled={currentStep < item.step}
-                  onClick={() => currentStep > item.step && setCurrentStep(item.step)}
-                  className={`flex items-center gap-1.5 sm:gap-2 transition-all ${
-                    isCurrent
-                      ? "text-[#EA580C] scale-105 font-bold"
-                      : isDone
-                      ? "text-[#14281D] hover:text-[#EA580C] cursor-pointer"
-                      : "text-stone-400 cursor-not-allowed"
-                  }`}
-                >
-                  <div
-                    className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[11px] sm:text-xs transition-all shrink-0 ${
-                      isCurrent
-                        ? "bg-[#EA580C] text-white font-bold shadow-cta"
-                        : isDone
-                        ? "bg-[#14281D] text-white"
-                        : "bg-[#F3EFE6] text-stone-400"
-                    }`}
-                  >
-                    {isDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : item.step}
-                  </div>
-                  <span className="hidden md:inline text-xs tracking-wide">{item.label}</span>
-                </button>
-                {idx < 4 && (
-                  <div
-                    className={`flex-1 h-0.5 mx-1 sm:mx-2 rounded-full transition-all ${
-                      currentStep > idx + 1 ? "bg-[#14281D]" : "bg-[#E2E8F0]"
-                    }`}
-                  />
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* MAIN CONTENT CONTAINER */}
-      <main className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12 py-6 sm:py-8 w-full flex-1">
-        {/* ============================================================== */}
-        {/* STEP 1: PILIH TANGGAL, SESI WAKTU & JUMLAH TAMU */}
-        {/* ============================================================== */}
+      {/* MAIN STEP CONTENT */}
+      <main className="max-w-[1280px] w-full mx-auto p-4 sm:p-6 md:p-8 flex-1">
         {currentStep === 1 && (
-          <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in zoom-in-95 duration-300">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Tahap 1: Konfigurasi Kehadiran & Sesi Jamuan</span>
-              </div>
-              <h2 className="text-2xl sm:text-4xl font-display font-bold tracking-tight text-[#18181B]">
-                Rencanakan Kehadiran Istimewa Anda
-              </h2>
-              <p className="text-xs sm:text-sm text-[#64748B] max-w-xl mx-auto">
-                Tentukan tanggal jamuan, pilih sesi waktu yang diinginkan, dan jumlah tamu yang akan hadir menikmati perjamuan adiboga di Savoria.
-              </p>
-            </div>
-
-            <div className="bg-white border border-[#E2E8F0] rounded-card p-4 sm:p-8 space-y-6 shadow-float">
-              {/* VIP Authentication Guard Status */}
-              {!user ? (
-                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center shrink-0 shadow-cta">
-                      <Lock className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-[#18181B] flex items-center gap-1.5">
-                        <span>Wajib Masuk (Login) untuk Membooking Meja</span>
-                        <span className="text-[10px] bg-[#EA580C] text-white px-2 py-0.5 rounded-full font-mono uppercase font-bold">VIP</span>
-                      </h4>
-                      <p className="text-xs text-[#64748B] mt-0.5">
-                        Demi kepastian reservasi dan keamanan data jamuan, pemesan wajib masuk ke akun terlebih dahulu.
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    href="/login?redirect=/reservation"
-                    className="px-5 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold transition-all shadow-cta whitespace-nowrap self-stretch sm:self-auto text-center cursor-pointer"
-                  >
-                    Masuk / Buat Akun Dulu →
-                  </Link>
-                </div>
-              ) : (
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-center justify-between gap-3 shadow-xs">
-                  <div className="flex items-center gap-2.5">
-                    <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-                    <div className="text-xs">
-                      <span className="font-bold text-emerald-900">Akun Terverifikasi:</span>{" "}
-                      <span className="font-semibold">{user.name}</span>{" "}
-                      <span className="text-[#64748B]">({user.email})</span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-600 text-white font-bold uppercase">
-                    VIP Patron
-                  </span>
-                </div>
-              )}
-
-              {/* Data Tamu Pemesan */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6 border-b border-[#E2E8F0]">
-                <div>
-                  <label className="text-xs font-bold text-[#18181B] block mb-1.5">
-                    Nama Pemesan / Atas Nama Reservasi
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Contoh: Lord Aditya Pratama"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl text-xs text-[#18181B] placeholder:text-stone-400 focus:outline-none focus:border-[#EA580C]"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-[#18181B] block mb-1.5">
-                    Nomor WhatsApp / Kontak Konfirmasi
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="08123456789"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl text-xs text-[#18181B] placeholder:text-stone-400 focus:outline-none focus:border-[#EA580C]"
-                  />
-                </div>
-              </div>
-
-              {/* Tanggal & Jumlah Tamu */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-xs font-bold text-[#18181B] block mb-2 flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-[#EA580C]" />
-                    <span>Pilih Tanggal Jamuan</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    min={new Date().toISOString().slice(0, 10)}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl text-xs text-[#18181B] focus:outline-none focus:border-[#EA580C] font-medium"
-                  />
-                  <p className="text-[11px] text-[#64748B] mt-1">
-                    *Reservasi dibuka hingga 30 hari ke depan.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-[#18181B] block mb-2 flex items-center gap-1.5">
-                    <Users className="w-4 h-4 text-[#EA580C]" />
-                    <span>Jumlah Tamu (Party Size)</span>
-                  </label>
-                  <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2.5 xs:gap-3">
-                    <div className="flex items-center bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl p-1 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-                        className="w-9 h-9 rounded-lg bg-white text-[#18181B] border border-[#E2E8F0] font-bold flex items-center justify-center hover:bg-stone-50 cursor-pointer shadow-sm"
-                      >
-                        -
-                      </button>
-                      <span className="w-12 text-center text-sm font-black text-[#EA580C] font-mono">
-                        {guestCount}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setGuestCount(Math.min(16, guestCount + 1))}
-                        className="w-9 h-9 rounded-lg bg-white text-[#18181B] border border-[#E2E8F0] font-bold flex items-center justify-center hover:bg-stone-50 cursor-pointer shadow-sm"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <span className="text-xs text-[#64748B]">
-                      {guestCount === 2 ? "Intimate Couple Table" : guestCount <= 4 ? "Family Table" : "Grand Banquet / VIP Chamber"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sesi Waktu */}
-              <div>
-                <label className="text-xs font-bold text-[#18181B] block mb-2 flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-[#EA580C]" />
-                  <span>Pilih Sesi Jamuan Makan (Dining Session)</span>
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
-                  {timeSlots.map((slot) => {
-                    const isSelected = selectedTimeSlot === slot.label;
-                    return (
-                      <button
-                        key={slot.label}
-                        type="button"
-                        onClick={() => setSelectedTimeSlot(slot.label)}
-                        className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                          isSelected
-                            ? "bg-[#EA580C]/10 border-[#EA580C] text-[#EA580C] shadow-sm"
-                            : "bg-[#FDFBF7] border-[#E2E8F0] hover:bg-white text-[#18181B]"
-                        }`}
-                      >
-                        <span className="text-xs font-bold block">{slot.label}</span>
-                        <span className="text-[10px] text-[#64748B] block mt-0.5">{slot.desc}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Permintaan Khusus */}
-              <div>
-                <label className="text-xs font-bold text-[#18181B] block mb-1.5">
-                  Permintaan Khusus & Preferensi Jamuan (Opsional)
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Contoh: Merayakan Wedding Anniversary, preferensi pemandangan taman, alergi kacang/seafood..."
-                  value={specialRequests}
-                  onChange={(e) => setSpecialRequests(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl text-xs text-[#18181B] placeholder:text-stone-400 focus:outline-none focus:border-[#EA580C]"
-                />
-              </div>
-
-              {/* Navigasi Selanjutnya */}
-              <div className="pt-4 border-t border-[#E2E8F0] flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!user) {
-                      toast.warning("Silakan masuk (login) ke akun Anda terlebih dahulu untuk membooking meja.", "Wajib Login");
-                      router.push("/login?redirect=/reservation");
-                      return;
-                    }
-                    if (!customerName.trim()) {
-                      toast.warning("Harap masukkan nama pemesan terlebih dahulu.", "Nama Pemesan Diperlukan");
-                      return;
-                    }
-                    setCurrentStep(2);
-                  }}
-                  className="w-full sm:w-auto px-8 py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta transition-all cursor-pointer"
-                >
-                  <span>Lanjut ke Pemilihan Menu</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
+          <ReservationScheduleStep
+            selectedDate={selectedDate}
+            onChangeDate={setSelectedDate}
+            selectedTimeSlot={selectedTimeSlot}
+            onChangeTimeSlot={setSelectedTimeSlot}
+            timeSlots={TIME_SLOTS}
+            guestCount={guestCount}
+            onChangeGuestCount={setGuestCount}
+            specialRequests={specialRequests}
+            onChangeSpecialRequests={setSpecialRequests}
+            customerName={customerName}
+            onChangeCustomerName={setCustomerName}
+            customerPhone={customerPhone}
+            onChangeCustomerPhone={setCustomerPhone}
+            onNext={() => {
+              if (!customerName.trim() || !customerPhone.trim()) {
+                toast.warning("Lengkapi nama tamu dan nomor telepon untuk melanjutkan.", "Data Pemesan Diperlukan");
+                return;
+              }
+              setCurrentStep(2);
+            }}
+          />
         )}
 
-        {/* ============================================================== */}
-        {/* STEP 2: MEMILIH MENU KULINER */}
-        {/* ============================================================== */}
         {currentStep === 2 && (
-          <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Tahap 2: Pemilihan Menu Mahakarya</span>
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-display font-bold text-[#18181B] mt-1">
-                  Pilih Menu Perjamuan Bintang Lima
-                </h2>
-                <p className="text-xs text-[#64748B]">
-                  Dipersiapkan langsung oleh Executive Chef dengan bahan baku segar berstandar internasional.
-                </p>
-              </div>
-
-              {/* Category Filter */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
-                <button
-                  onClick={() => setSelectedCategory("all")}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-sm shrink-0 ${
-                    selectedCategory === "all"
-                      ? "bg-[#EA580C] text-white shadow-cta"
-                      : "bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#18181B]"
-                  }`}
-                >
-                  Semua ({allMenus.length})
-                </button>
-                {categories.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedCategory(String(c.id))}
-                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-sm shrink-0 ${
-                      selectedCategory === String(c.id)
-                        ? "bg-[#EA580C] text-white shadow-cta"
-                        : "bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#18181B]"
-                    }`}
-                  >
-                    {c.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Menu Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {displayedMenus.map((m) => {
-                const inCart = cart.find((i) => i.menuId === m.id);
-                return (
-                  <div
-                    key={m.id}
-                    className="bg-white rounded-card border border-[#E2E8F0] overflow-hidden shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between group"
-                  >
-                    <div className="h-44 w-full relative bg-stone-100 overflow-hidden">
-                      <DishImage
-                        src={m.image}
-                        alt={m.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      />
-                      <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] text-[#EA580C] font-bold shadow-sm">
-                        Chef&apos;s Pick
-                      </div>
-                    </div>
-
-                    <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
-                      <div>
-                        <h4 className="font-display font-bold text-base text-[#18181B] group-hover:text-[#EA580C] transition-colors">
-                          {m.name}
-                        </h4>
-                        <p className="text-xs text-[#64748B] mt-1 line-clamp-2 leading-relaxed">
-                          {m.description || "Hidangan haute cuisine racikan Executive Chef."}
-                        </p>
-                      </div>
-
-                      <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between gap-2">
-                        <span className="font-display font-bold text-base text-[#18181B]">
-                          {formatIDR(m.price)}
-                        </span>
-
-                        {inCart ? (
-                          <div className="flex items-center gap-1.5 sm:gap-2 bg-[#FDFBF7] border border-[#E2E8F0] rounded-full p-1">
-                            <button
-                              type="button"
-                              onClick={() => updateCartQty(m.id, -1)}
-                              className="w-7 h-7 rounded-full bg-white text-[#18181B] border border-[#E2E8F0] flex items-center justify-center text-xs font-bold hover:bg-stone-100 cursor-pointer shadow-sm"
-                            >
-                              -
-                            </button>
-                            <span className="w-6 text-center text-xs font-bold text-[#EA580C]">
-                              {inCart.quantity}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => updateCartQty(m.id, 1)}
-                              className="w-7 h-7 rounded-full bg-[#EA580C] text-white flex items-center justify-center text-xs font-bold hover:bg-[#C2410C] cursor-pointer shadow-sm"
-                            >
-                              +
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => addToCart(m)}
-                            className="px-3.5 sm:px-4 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold flex items-center gap-1.5 shadow-cta transition-all cursor-pointer shrink-0"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>
-                              {m.modifierGroups && m.modifierGroups.length > 0
-                                ? "Pilih Variasi"
-                                : "Pilih Menu"}
-                            </span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Sticky Floating Bottom Bar for Cart Summary */}
-            <div className="sticky bottom-4 sm:bottom-6 z-30 max-w-2xl mx-auto bg-[#14281D] text-white p-3 sm:p-4 rounded-2xl sm:rounded-full shadow-2xl border border-emerald-500/30 flex items-center justify-between gap-2 mx-1 sm:mx-auto">
-              <div className="pl-2 sm:pl-3 min-w-0">
-                <span className="text-[10px] sm:text-[11px] text-stone-300 block font-mono truncate">
-                  {cart.length} Jenis Menu Dipilih
-                </span>
-                <span className="font-display text-base sm:text-lg font-bold text-[#F59E0B]">
-                  {formatIDR(subtotal)}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(1)}
-                  className="px-3 sm:px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer"
-                >
-                  ← Kembali
-                </button>
-                <button
-                  type="button"
-                  disabled={cart.length === 0}
-                  onClick={() => setCurrentStep(3)}
-                  className="px-4 sm:px-6 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs flex items-center gap-1.5 shadow-cta disabled:opacity-40 cursor-pointer"
-                >
-                  <span>Pilih Meja</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
+          <ReservationMenuStep
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+            displayedMenus={displayedMenus}
+            cart={cart}
+            onAddToCart={handleAddToCart}
+            onUpdateCartQty={handleUpdateCartQty}
+            onPrev={() => setCurrentStep(1)}
+            onNext={() => {
+              if (cart.length === 0) {
+                toast.warning("Silakan pilih minimal 1 hidangan untuk jamuan Anda.", "Menu Belum Dipilih");
+                return;
+              }
+              setCurrentStep(3);
+            }}
+          />
         )}
 
-        {/* ============================================================== */}
-        {/* STEP 3: MEMILIH MEJA DENGAN DENAH VISUAL KURSI & SUASANA */}
-        {/* ============================================================== */}
         {currentStep === 3 && (
-          <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Tahap 3: Denah Meja & Suasana Jamuan</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-display font-bold text-[#18181B]">
-                Pilih Meja Eksklusif Favorit Anda
-              </h2>
-              <p className="text-xs sm:text-sm text-[#64748B] max-w-xl mx-auto">
-                Pilih meja berdasarkan denah visual kursi dan kapasitas tamu, sesuaikan dengan suasana pilihan Anda di Grand Salle, Jardin Patio, atau Mezzanine VIP.
-              </p>
-            </div>
-
-            {/* Interactive Visual Floor Plan */}
-            <VisualFloorPlan
-              tables={tables}
-              mode="reservation"
-              selectedTable={selectedTable}
-              guestCount={guestCount}
-              onSelectTable={(tbl) => {
-                setSelectedTable(tbl);
-                toast.success(
-                  `Meja ${tbl.tableNumber} (${tbl.capacity} Kursi - ${tbl.area}) dipilih. Klik tombol lanjut untuk konfirmasi.`,
-                  "Meja Terpilih"
-                );
-              }}
-              onConfirmTable={(tbl) => {
-                setSelectedTable(tbl);
-                setCurrentStep(4);
-                toast.success(
-                  `Meja ${tbl.tableNumber} dikonfirmasi! Melanjutkan ke pembayaran...`,
-                  "Meja Dikonfirmasi"
-                );
-              }}
-              onRefresh={() => {
-                fetch("/api/v1/pos/tables")
-                  .then((res) => res.json())
-                  .then((data) => {
-                    if (data.success) {
-                      setTables(data.data);
-                      toast.info("Denah ketersediaan meja berhasil diperbarui.", "Status Meja Terkini");
-                    }
-                  })
-                  .catch(() => {});
-              }}
-            />
-
-            {/* Navigation buttons */}
-            <div className="pt-6 border-t border-[#E2E8F0] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                className="px-6 py-3 rounded-full border border-[#E2E8F0] bg-white text-[#18181B] text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-[#F3EFE6] cursor-pointer shadow-sm"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Kembali ke Menu</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={
-                  !selectedTable ||
-                  !isTableCapacityEligible(selectedTable.capacity, guestCount).eligible
-                }
-                onClick={() => {
-                  if (!selectedTable) {
-                    toast.warning("Silakan pilih salah satu meja yang tersedia terlebih dahulu.", "Meja Belum Dipilih");
-                    return;
-                  }
-                  const eligibility = isTableCapacityEligible(selectedTable.capacity, guestCount);
-                  if (!eligibility.eligible) {
-                    toast.warning(eligibility.reason, "Kapasitas Meja Tidak Sesuai");
-                    return;
-                  }
-                  setCurrentStep(4);
-                }}
-                className="px-8 py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta disabled:opacity-50 cursor-pointer"
-              >
-                <span>Lanjut ke Pembayaran</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          <ReservationFloorPlanStep
+            tables={tables}
+            selectedTable={selectedTable}
+            guestCount={guestCount}
+            onSelectTable={setSelectedTable}
+            onConfirmTableAndAdvance={handleConfirmTableAndAdvance}
+            onPrev={() => setCurrentStep(2)}
+          />
         )}
 
-        {/* ============================================================== */}
-        {/* STEP 4: RINGKASAN & PEMBAYARAN */}
-        {/* ============================================================== */}
         {currentStep === 4 && (
-          <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-300">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Tahap 4: Pembayaran & Konfirmasi Resmi</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-display font-bold text-[#18181B]">
-                Konfirmasi Jamuan & Selesaikan Pembayaran
-              </h2>
-              <p className="text-xs text-[#64748B]">
-                Selesaikan pembayaran secara aman untuk langsung mengamankan meja dan menerbitkan struk digital ber-QR code resmi.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6 items-start">
-              {/* Order & Booking Summary */}
-              <div className="md:col-span-7 bg-white border border-[#E2E8F0] rounded-card p-4 sm:p-7 space-y-4 shadow-float">
-                <div className="border-b border-[#E2E8F0] pb-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#EA580C] font-mono">
-                    Ringkasan Pemesanan Meja
-                  </span>
-                  <h3 className="text-lg font-display font-bold text-[#18181B] mt-0.5">
-                    {selectedTable?.tableNumber}
-                  </h3>
-                  <p className="text-xs text-[#64748B] flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
-                    <span>{selectedDate}</span> • <span>{selectedTimeSlot}</span> • <span>{guestCount} Tamu</span>
-                  </p>
-                </div>
-
-                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                  {cart.map((item) => (
-                    <div key={item.menuId} className="flex items-center justify-between text-xs py-1.5 border-b border-[#E2E8F0]/60 gap-2">
-                      <div className="min-w-0">
-                        <span className="font-bold text-[#18181B] truncate block">{item.name}</span>
-                        <span className="text-[11px] text-[#64748B]">x{item.quantity}</span>
-                      </div>
-                      <span className="font-mono font-bold text-[#18181B] shrink-0">
-                        {formatIDR(item.price * item.quantity)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Subtotal, Pajak, Service, Total */}
-                <div className="pt-3 border-t border-[#E2E8F0] space-y-1.5 text-xs">
-                  <div className="flex justify-between text-[#64748B]">
-                    <span>Subtotal Menu:</span>
-                    <span className="font-mono">{formatIDR(subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between text-[#64748B]">
-                    <span>Pajak Restoran PB1 (10%):</span>
-                    <span className="font-mono">{formatIDR(taxAmount)}</span>
-                  </div>
-                  <div className="flex justify-between text-[#64748B]">
-                    <span>Service Charge (5%):</span>
-                    <span className="font-mono">{formatIDR(serviceCharge)}</span>
-                  </div>
-                  <div className="flex justify-between text-base font-bold text-[#18181B] pt-2 border-t border-[#E2E8F0]">
-                    <span>Total Pembayaran:</span>
-                    <span className="text-[#EA580C] font-display text-lg">{formatIDR(totalAmount)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Methods */}
-              <div className="md:col-span-5 bg-white border border-[#E2E8F0] rounded-card p-4 sm:p-6 space-y-4 shadow-float">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-display font-bold text-base text-[#18181B]">
-                      Pilihan Saluran Pembayaran
-                    </h4>
-                    <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
-                      ✓ Enkripsi SSL 256-Bit
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#64748B] mt-0.5">
-                    Pilih metode resmi instan untuk mengamankan reservasi:
-                  </p>
-                </div>
-
-                {/* Category Filter Tabs */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                  {[
-                    { id: "all", label: "Semua" },
-                    { id: "qris", label: "QRIS" },
-                    { id: "va", label: "Virtual Account" },
-                    { id: "ewallet", label: "E-Wallet" },
-                    { id: "card", label: "Kartu" },
-                    { id: "cash", label: "Kasir" },
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setPaymentCategory(tab.id)}
-                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
-                        paymentCategory === tab.id
-                          ? "bg-[#14281D] text-white shadow-xs"
-                          : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Payment Channels List */}
-                <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
-                  {PAYMENT_CHANNELS.filter(
-                    (c) => paymentCategory === "all" || c.category === paymentCategory
-                  ).map((channel) => {
-                    const isSelected = paymentMethod === channel.id;
-                    return (
-                      <div
-                        key={channel.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setPaymentMethod(channel.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            setPaymentMethod(channel.id);
-                          }
-                        }}
-                        className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all select-none ${
-                          isSelected
-                            ? "bg-[#EA580C]/10 border-[#EA580C] shadow-xs ring-1 ring-[#EA580C]"
-                            : "bg-[#FDFBF7] border-[#E2E8F0] hover:bg-white hover:border-[#EA580C]/40"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-12 h-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center p-1 shadow-2xs shrink-0">
-                            {channel.logo}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs font-bold text-[#18181B] block truncate">
-                                {channel.name}
-                              </span>
-                              {channel.badge && (
-                                <span className="text-[9px] font-bold text-[#EA580C] bg-[#EA580C]/10 px-1.5 py-0.2 rounded-full">
-                                  {channel.badge}
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[10px] text-[#64748B] block truncate mt-0.5">
-                              {channel.description}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0 ml-2">
-                          <div
-                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
-                              isSelected
-                                ? "border-[#EA580C] bg-[#EA580C]"
-                                : "border-stone-300 bg-white"
-                            }`}
-                          >
-                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Instant Single-Click Payment Button */}
-                <button
-                  type="button"
-                  disabled={isProcessingPayment}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleExecutePayment();
-                  }}
-                  className="w-full py-4 bg-[#EA580C] hover:bg-[#C2410C] active:scale-[0.99] text-white font-bold rounded-full text-xs sm:text-sm flex items-center justify-center gap-2 shadow-cta transition-all cursor-pointer disabled:opacity-50"
-                >
-                  {isProcessingPayment ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Memverifikasi Pembayaran Resmi...</span>
-                    </div>
-                  ) : (
-                    <>
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>Konfirmasi & Bayar ({formatIDR(totalAmount)})</span>
-                    </>
-                  )}
-                </button>
-                <p className="text-[10px] text-center text-[#64748B]">
-                  Transaksi langsung tercatat aman di database sistem & menerbitkan e-Receipt resmi ber-QR.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ReservationPaymentStep
+            cart={cart}
+            selectedTable={selectedTable}
+            selectedDate={selectedDate}
+            selectedTimeSlot={selectedTimeSlot}
+            guestCount={guestCount}
+            customerName={customerName}
+            customerPhone={customerPhone}
+            paymentMethod={paymentMethod}
+            onChangePaymentMethod={setPaymentMethod}
+            paymentCategory={paymentCategory}
+            onChangePaymentCategory={setPaymentCategory}
+            isProcessingPayment={isProcessingPayment}
+            onExecutePayment={handleExecutePayment}
+            onPrev={() => setCurrentStep(3)}
+          />
         )}
 
-        {/* ============================================================== */}
-        {/* STEP 5: DIGITAL RECEIPT & QR ENTRY PASS */}
-        {/* ============================================================== */}
-        {currentStep === 5 && completedOrder && (
-          <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-500">
-            <div className="text-center space-y-2">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-md">
-                <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-display font-bold text-[#18181B]">
-                Pembayaran Berhasil & Terkonfirmasi
-              </h2>
-              <p className="text-xs text-[#64748B]">
-                Tanda terima resmi jamuan Anda telah diterbitkan. Tunjukkan kode QR ini saat tiba di restoran.
-              </p>
-            </div>
-
-            {/* LUXURY OFFICIAL RECEIPT CARD */}
-            <div
-              id="printable-receipt"
-              className="bg-white text-[#18181B] rounded-card p-4 sm:p-8 space-y-6 shadow-float border border-[#E2E8F0] relative overflow-hidden"
-            >
-              {/* Receipt Brand Banner */}
-              <div className="text-center space-y-1.5 border-b-2 border-dashed border-[#E2E8F0] pb-4">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#EA580C] font-mono">
-                  ★ Savoria Haute Restaurant ★
-                </span>
-                <h3 className="font-display font-black text-xl sm:text-2xl tracking-tight text-[#18181B]">
-                  SAVORIA RESTAURANT
-                </h3>
-                <p className="text-xs text-[#64748B] italic">
-                  The Grand Pavilion • SCBD Financial District, Jakarta
-                </p>
-                <div className="inline-block mt-1 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase font-mono tracking-wider">
-                  STATUS: LUNAS / PAID IN FULL
-                </div>
-              </div>
-
-              {/* Booking & Schedule Identification */}
-              <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-3 text-xs font-mono bg-[#FDFBF7] p-3.5 sm:p-4 rounded-xl border border-[#E2E8F0]">
-                <div>
-                  <span className="text-[#64748B] block text-[10px]">No. Bukti Reservasi:</span>
-                  <span className="font-bold text-[#18181B]">{completedOrder.orderNumber}</span>
-                </div>
-                <div>
-                  <span className="text-[#64748B] block text-[10px]">Tanggal & Waktu Jamuan:</span>
-                  <span className="font-bold text-[#18181B]">
-                    {completedOrder.reservationDate || selectedDate}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[#64748B] block text-[10px]">Meja & Area:</span>
-                  <span className="font-bold text-[#EA580C]">
-                    {completedOrder.table?.tableNumber || selectedTable?.tableNumber}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[#64748B] block text-[10px]">Sesi Waktu:</span>
-                  <span className="font-bold text-[#18181B]">
-                    {completedOrder.reservationTime || selectedTimeSlot}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[#64748B] block text-[10px]">Atas Nama Tamu:</span>
-                  <span className="font-bold text-[#18181B]">{completedOrder.customerName}</span>
-                </div>
-                <div>
-                  <span className="text-[#64748B] block text-[10px]">Jumlah Tamu:</span>
-                  <span className="font-bold text-[#18181B]">
-                    {completedOrder.guestCount || guestCount} Orang
-                  </span>
-                </div>
-                <div className="xs:col-span-2 border-t border-dashed border-[#E2E8F0] pt-2 mt-1">
-                  <span className="text-[#64748B] block text-[10px]">Metode Pembayaran Resmi:</span>
-                  <span className="font-bold text-[#EA580C] uppercase text-xs flex items-center gap-1.5 mt-0.5">
-                    <span>✓</span>
-                    <span>
-                      {PAYMENT_CHANNELS.find((c) => c.id === completedOrder.paymentMethod)?.name ||
-                        completedOrder.paymentMethod ||
-                        "QRIS Dinamis"}
-                    </span>
-                  </span>
-                </div>
-              </div>
-
-              {/* Items Breakdown Table */}
-              <div className="space-y-2">
-                <span className="text-xs font-bold text-[#18181B] block uppercase tracking-wider">
-                  Rincian Pesanan Hidangan:
-                </span>
-                <div className="border-t border-b border-dashed border-[#E2E8F0] py-3 space-y-2 text-xs font-mono">
-                  {completedOrder.items?.map((it: any) => (
-                    <div key={it.id} className="flex justify-between items-start">
-                      <div>
-                        <span className="font-bold text-[#18181B]">
-                          {it.quantity}x {it.menu?.name}
-                        </span>
-                        {it.notes && (
-                          <p className="text-[10px] text-[#EA580C] italic">Catatan: {it.notes}</p>
-                        )}
-                      </div>
-                      <span className="font-bold text-[#18181B] whitespace-nowrap pl-4">
-                        {formatIDR(it.subtotal)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Financial Calculation Breakdown */}
-              <div className="space-y-1.5 text-xs font-mono">
-                <div className="flex justify-between text-[#64748B]">
-                  <span>Subtotal:</span>
-                  <span>{formatIDR(completedOrder.subtotal)}</span>
-                </div>
-                <div className="flex justify-between text-[#64748B]">
-                  <span>PB1 / Pajak Restoran (10%):</span>
-                  <span>{formatIDR(completedOrder.taxAmount)}</span>
-                </div>
-                <div className="flex justify-between text-[#64748B]">
-                  <span>Service Charge (5%):</span>
-                  <span>{formatIDR(completedOrder.serviceCharge)}</span>
-                </div>
-                <div className="flex justify-between text-base font-bold text-[#18181B] pt-2 border-t-2 border-[#18181B]">
-                  <span>TOTAL DIBAYAR:</span>
-                  <span className="text-[#EA580C] font-display text-lg">{formatIDR(completedOrder.totalAmount)}</span>
-                </div>
-              </div>
-
-              {/* QR Code Entry Pass */}
-              {receiptQrDataUrl && (
-                <div className="text-center pt-2 border-t border-dashed border-[#E2E8F0] space-y-2">
-                  <div className="w-40 h-40 mx-auto relative p-2 bg-[#FDFBF7] rounded-xl border border-[#E2E8F0]">
-                    <Image
-                      src={receiptQrDataUrl}
-                      alt="Receipt QR Entry Pass"
-                      fill
-                      className="object-contain p-2"
-                    />
-                  </div>
-                  <span className="text-[11px] text-[#64748B] block font-mono">
-                    Scan QR ini di meja atau tunjukkan ke Maître D&apos; kasir.
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="flex-1 py-3.5 bg-white border border-[#E2E8F0] text-[#18181B] hover:bg-[#F3EFE6] font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
-              >
-                <Printer className="w-4 h-4 text-[#EA580C]" />
-                <span>Cetak Struk Resmi (PDF / Thermal)</span>
-              </button>
-
-              <Link
-                href="/user"
-                className="flex-1 py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta transition-all"
-              >
-                <span>Buka Portal Tamu VIP</span>
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
+        {currentStep === 5 && (
+          <ReservationReceiptStep
+            completedOrder={completedOrder}
+            receiptQrDataUrl={receiptQrDataUrl}
+            onResetReservation={handleResetReservation}
+          />
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[#E2E8F0] px-6 py-6 text-center text-xs text-[#64748B] bg-white mt-12">
-        <p>© 2026 Savoria Modern Restaurant • Reservation & Dining System</p>
-      </footer>
-
-      {/* Modal Kustomisasi Variasi Menu */}
+      {/* MODAL: CUSTOMIZATION */}
       {customizingMenu && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-stone-200 animate-in zoom-in-95 my-auto">
-            {/* Header Modal */}
-            <div className="relative p-5 sm:p-6 border-b border-stone-100 flex items-start gap-4">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden relative shrink-0 bg-stone-100 border border-stone-200">
-                <DishImage
-                  src={customizingMenu.image}
-                  alt={customizingMenu.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="flex-1 pr-6">
-                <span className="text-[10px] uppercase font-mono font-bold tracking-wider text-[#EA580C] bg-[#EA580C]/10 px-2 py-0.5 rounded-full inline-block mb-1">
-                  Kustomisasi Porsi & Rasa
-                </span>
-                <h3 className="font-display font-bold text-base sm:text-lg text-[#18181B] leading-snug">
-                  {customizingMenu.name}
-                </h3>
-                <p className="text-xs text-[#64748B] line-clamp-1 mt-0.5">
-                  {customizingMenu.description || "Hidangan haute cuisine racikan Executive Chef."}
-                </p>
-                <span className="font-display font-bold text-sm text-[#EA580C] mt-1 block">
-                  Harga Dasar: {formatIDR(customizingMenu.price)}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setCustomizingMenu(null)}
-                className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-700 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
-                title="Tutup Modal"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Body: Modifier Groups & Options */}
-            <div className="overflow-y-auto p-5 sm:p-6 space-y-5 flex-1">
-              {customizingMenu.modifierGroups?.map((group) => {
-                const isSingle = group.maxSelection === 1;
-                const currentSelected = selectedModifiers[group.id] || [];
-
-                return (
-                  <div key={group.id} className="space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-xs sm:text-sm font-bold text-[#18181B]">
-                          {group.name}
-                        </h4>
-                        <span className="text-[10px] text-[#64748B]">
-                          {isSingle ? "Pilih salah satu" : `Pilih hingga ${group.maxSelection} opsi`}
-                          {group.minSelection > 0 && " • Wajib"}
-                        </span>
-                      </div>
-                      {group.minSelection > 0 && currentSelected.length === 0 && (
-                        <span className="text-[10px] text-[#EA580C] font-semibold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                          Wajib Pilih
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-2">
-                      {group.options.map((opt: any) => {
-                        const isChecked = currentSelected.includes(opt.id);
-                        return (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() => toggleModifier(group.id, opt.id, group.maxSelection)}
-                            className={`w-full p-3 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
-                              isChecked
-                                ? "bg-[#EA580C]/5 border-[#EA580C] text-[#EA580C] shadow-xs"
-                                : "bg-white border-stone-200 text-[#18181B] hover:border-stone-300 hover:bg-stone-50/50"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={`w-5 h-5 rounded-${isSingle ? "full" : "lg"} border flex items-center justify-center transition-colors ${
-                                  isChecked
-                                    ? "bg-[#EA580C] border-[#EA580C] text-white"
-                                    : "border-stone-300 bg-white"
-                                }`}
-                              >
-                                {isChecked && <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />}
-                              </div>
-                              <span className="text-xs font-semibold">{opt.name}</span>
-                            </div>
-                            <span className="text-xs font-mono font-bold text-stone-600">
-                              {opt.price > 0 ? `+${formatIDR(opt.price)}` : "Termasuk"}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Special Instructions / Notes */}
-              <div className="space-y-1.5 pt-2 border-t border-stone-100">
-                <label className="text-xs font-bold text-[#18181B] block">
-                  Catatan Khusus untuk Kitchen / Chef (Opsional)
-                </label>
-                <textarea
-                  rows={2}
-                  value={itemNotes}
-                  onChange={(e) => setItemNotes(e.target.value)}
-                  placeholder="Contoh: Saus dipisah di mangkuk kecil, daging dipanggang medium-well, minim garam..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-[#18181B] placeholder:text-stone-400 focus:outline-none focus:border-[#EA580C]"
-                />
-              </div>
-            </div>
-
-            {/* Footer Modal */}
-            <div className="p-4 sm:p-5 border-t border-stone-100 bg-stone-50/70 flex items-center justify-between gap-3">
-              <div>
-                <span className="text-[10px] text-stone-400 block font-mono">Total Hidangan</span>
-                <span className="font-display font-bold text-base sm:text-lg text-[#18181B]">
-                  {formatIDR(
-                    customizingMenu.price +
-                      (customizingMenu.modifierGroups || []).reduce((sum, g) => {
-                        const sel = selectedModifiers[g.id] || [];
-                        return (
-                          sum +
-                          sel.reduce((optSum, oId) => {
-                            const opt = g.options?.find((o: any) => o.id === oId);
-                            return optSum + (opt?.price || 0);
-                          }, 0)
-                        );
-                      }, 0)
-                  )}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCustomizingMenu(null)}
-                  className="px-4 py-2.5 rounded-full border border-stone-200 bg-white text-stone-600 text-xs font-bold hover:bg-stone-100 cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="button"
-                  onClick={confirmCustomization}
-                  className="px-5 sm:px-6 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold shadow-cta flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Tambah ke Keranjang</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MenuCustomizationModal
+          customizingMenu={customizingMenu}
+          selectedModifiers={selectedModifiers}
+          itemNotes={itemNotes}
+          onToggleModifier={handleToggleModifier}
+          onChangeNotes={setItemNotes}
+          onConfirm={handleConfirmCustomization}
+          onClose={() => setCustomizingMenu(null)}
+        />
       )}
     </div>
   );

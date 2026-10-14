@@ -92,7 +92,10 @@ export default function UserPortalPage() {
   useEffect(() => {
     if (user) {
       fetchMyOrders();
-      const interval = setInterval(fetchMyOrders, 10000);
+      const interval = setInterval(() => {
+        if (typeof document !== "undefined" && document.hidden) return;
+        fetchMyOrders();
+      }, 30000);
       return () => clearInterval(interval);
     }
   }, [user, fetchMyOrders]);

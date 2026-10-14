@@ -123,16 +123,35 @@ export default function AdminDashboardPage() {
     toast.info("Seluruh data dashboard berhasil diperbarui.", "Data Terkini");
   }, [fetchSalesSummary, fetchMenus, fetchTables, fetchIngredients, fetchShiftsAndLogs, fetchUsers, toast]);
 
+  // Initial load: Only fetch Overview sales summary for instant sub-second response
   useEffect(() => {
     if (user && user.role === "admin") {
       fetchSalesSummary();
-      fetchMenus();
-      fetchTables();
-      fetchIngredients();
-      fetchShiftsAndLogs();
-      fetchUsers();
     }
-  }, [user, fetchSalesSummary, fetchMenus, fetchTables, fetchIngredients, fetchShiftsAndLogs, fetchUsers]);
+  }, [user, fetchSalesSummary]);
+
+  // Lazy-load tabs on-demand when the admin navigates to them
+  useEffect(() => {
+    if (!user || user.role !== "admin") return;
+    if ((activeTab === "menus") && menus.length === 0) fetchMenus();
+    if ((activeTab === "tables") && tables.length === 0) fetchTables();
+    if ((activeTab === "inventory") && ingredients.length === 0) fetchIngredients();
+    if ((activeTab === "shifts") && shiftHistory.length === 0) fetchShiftsAndLogs();
+    if ((activeTab === "users") && usersList.length === 0) fetchUsers();
+  }, [
+    activeTab,
+    user,
+    menus.length,
+    tables.length,
+    ingredients.length,
+    shiftHistory.length,
+    usersList.length,
+    fetchMenus,
+    fetchTables,
+    fetchIngredients,
+    fetchShiftsAndLogs,
+    fetchUsers,
+  ]);
 
   // MENU ACTIONS
   const handleCreateMenu = async (form: any): Promise<boolean> => {
