@@ -73,11 +73,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Find table by qrToken or tableId
+    const parsedTableId = tableId ? parseInt(tableId) : null;
     const table = await prisma.table.findFirst({
       where: {
         OR: [
           ...(qrToken ? [{ qrToken }] : []),
-          ...(tableId ? [{ id: parseInt(tableId) }] : []),
+          ...(parsedTableId && !isNaN(parsedTableId) ? [{ id: parsedTableId }] : []),
         ],
       },
     });
@@ -89,11 +90,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (guestCount && table.capacity < parseInt(guestCount)) {
+    const parsedGuests = parseInt(guestCount) || 2;
+    if (parsedGuests && table.capacity < parsedGuests) {
       return NextResponse.json(
         {
           success: false,
-          message: `Kapasitas meja (${table.capacity} kursi) tidak mencukupi untuk jumlah tamu (${guestCount} orang).`,
+          message: `Kapasitas meja (${table.capacity} kursi) tidak mencukupi untuk jumlah tamu (${parsedGuests} orang).`,
         },
         { status: 400 }
       );
@@ -137,8 +139,11 @@ export async function POST(request: NextRequest) {
       orderBy: { openedAt: "desc" },
     });
 
-    // Fetch menus for price verification
-    const menuIds = items.map((i: any) => i.menuId);
+    // Fetch menus for price verification (safely parse integers)
+    const menuIds = items
+      .map((i: any) => parseInt(i.menuId))
+      .filter((id: number) => !isNaN(id) && id > 0);
+
     const menus = await prisma.menu.findMany({
       where: { id: { in: menuIds } },
       include: {
@@ -149,14 +154,25 @@ export async function POST(request: NextRequest) {
 
     let calculatedSubtotal = 0;
     const orderItemsData: any[] = [];
+    const ingredientDeductions = new Map<number, number>();
 
     for (const item of items) {
-      const menu = menuMap.get(item.menuId);
+      const numericMenuId = parseInt(item.menuId);
+      const menu = menuMap.get(numericMenuId);
       if (!menu) continue;
 
       let variantExtra = 0;
-      if (item.selectedVariants && Array.isArray(item.selectedVariants)) {
-        for (const v of item.selectedVariants) {
+      let safeVariants = item.selectedVariants;
+      if (typeof safeVariants === "string") {
+        try {
+          safeVariants = JSON.parse(safeVariants);
+        } catch {
+          safeVariants = [];
+        }
+      }
+
+      if (Array.isArray(safeVariants)) {
+        for (const v of safeVariants) {
           variantExtra += Number(v.extraPrice || 0);
         }
       }
@@ -172,9 +188,108 @@ export async function POST(request: NextRequest) {
         unitPrice,
         subtotal: itemSubtotal,
         notes: item.notes || null,
-        selectedVariants: item.selectedVariants ? JSON.stringify(item.selectedVariants) : null,
+        selectedVariants: safeVariants ? JSON.stringify(safeVariants) : null,
       });
+
+      // Aggregate recipe deductions
+      if (menu.recipes && menu.recipes.length > 0) {
+        for (const r of menu.recipes) {
+          const qty = r.quantityNeeded * quantity;
+          ingredientDeductions.set(
+            r.ingredientId,
+            (ingredientDeductions.get(r.ingredientId) || 0) + qty
+          );
+        }
+      }
     }
+
+    if (orderItemsData.length === 0) {
+      return NextResponse.json(
+        { success: false, message: "Pilihan menu tidak valid atau tidak ditemukan dalam katalog restoran." },
+        { status: 400 }
+      );
+    }
+
+    // Pre-validate voucher if provided before entering ACID transaction
+    let preValidatedVoucher: any = null;
+    let calculatedDiscount = 0;
+
+    if (voucherCode && String(voucherCode).trim()) {
+      const vCode = String(voucherCode).trim().toUpperCase().replace(/\s+/g, "-");
+      preValidatedVoucher = await prisma.voucher.findUnique({
+        where: { code: vCode },
+      });
+
+      if (!preValidatedVoucher || !preValidatedVoucher.isActive) {
+        return NextResponse.json(
+          {
+            success: false,
+            code: "VOUCHER_INVALID",
+            message: `Kode voucher "${vCode}" tidak valid atau sudah dinonaktifkan.`,
+          },
+          { status: 400 }
+        );
+      }
+
+      const now = new Date();
+      if (now < preValidatedVoucher.validFrom) {
+        return NextResponse.json(
+          {
+            success: false,
+            code: "VOUCHER_NOT_YET_VALID",
+            message: `Voucher promo "${preValidatedVoucher.code}" belum mulai berlaku.`,
+          },
+          { status: 400 }
+        );
+      }
+      if (now > preValidatedVoucher.validUntil) {
+        return NextResponse.json(
+          {
+            success: false,
+            code: "VOUCHER_EXPIRED",
+            message: `Voucher promo "${preValidatedVoucher.code}" telah melewati batas masa berlaku (kadaluarsa).`,
+          },
+          { status: 400 }
+        );
+      }
+
+      if (preValidatedVoucher.usedCount >= preValidatedVoucher.maxUsage) {
+        return NextResponse.json(
+          {
+            success: false,
+            code: "VOUCHER_QUOTA_EXCEEDED",
+            message: `Kuota voucher "${preValidatedVoucher.code}" sudah habis terpakai (Maksimal ${preValidatedVoucher.maxUsage} penggunaan). Penukaran voucher ditolak.`,
+          },
+          { status: 400 }
+        );
+      }
+
+      if (preValidatedVoucher.minSpend > 0 && calculatedSubtotal < preValidatedVoucher.minSpend) {
+        return NextResponse.json(
+          {
+            success: false,
+            code: "MIN_SPEND_NOT_MET",
+            message: `Minimal pembelanjaan untuk voucher "${preValidatedVoucher.code}" adalah Rp ${preValidatedVoucher.minSpend.toLocaleString("id-ID")}. Total menu Anda saat ini Rp ${calculatedSubtotal.toLocaleString("id-ID")}.`,
+          },
+          { status: 400 }
+        );
+      }
+
+      if (preValidatedVoucher.discountType === "percentage") {
+        calculatedDiscount = Math.round((calculatedSubtotal * preValidatedVoucher.discountValue) / 100);
+        if (preValidatedVoucher.maxDiscount && calculatedDiscount > preValidatedVoucher.maxDiscount) {
+          calculatedDiscount = preValidatedVoucher.maxDiscount;
+        }
+      } else {
+        calculatedDiscount = Math.min(calculatedSubtotal, preValidatedVoucher.discountValue);
+      }
+    }
+
+    const netSubtotal = Math.max(0, calculatedSubtotal - calculatedDiscount);
+    const taxAmount = Math.round(netSubtotal * 0.1);
+    const serviceCharge = Math.round(netSubtotal * 0.05);
+    const totalAmount = netSubtotal + taxAmount + serviceCharge;
+    const paidNum = parseFloat(amountPaid) || totalAmount;
 
     const prefix = orderType === "reservation" ? "RES" : "ORD";
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -190,179 +305,129 @@ export async function POST(request: NextRequest) {
           where: { id: parsedUserId },
           select: { id: true },
         });
-        if (existingUser) {
-          validUserId = existingUser.id;
-        }
+        if (existingUser) validUserId = existingUser.id;
       }
     }
 
-    // Database transaction
-    const newOrder = await prisma.$transaction(async (tx) => {
-      let appliedVoucher = null;
-      let calculatedDiscount = 0;
+    const safePaymentMethod = String(paymentMethod || "qris").toLowerCase();
 
-      if (voucherCode) {
-        const vCode = String(voucherCode).trim().toUpperCase();
-        appliedVoucher = await tx.voucher.findUnique({
-          where: { code: vCode },
-        });
-
-        if (!appliedVoucher || !appliedVoucher.isActive) {
-          throw new Error(`Kode voucher "${vCode}" tidak valid atau sudah dinonaktifkan.`);
+    // Database transaction with expanded timeout for serverless connection pooler
+    const newOrder = await prisma.$transaction(
+      async (tx) => {
+        // If voucher used, increment usage count
+        if (preValidatedVoucher) {
+          await tx.voucher.update({
+            where: { id: preValidatedVoucher.id },
+            data: { usedCount: { increment: 1 } },
+          });
         }
 
-        const now = new Date();
-        if (now < appliedVoucher.validFrom) {
-          throw new Error(`Voucher "${appliedVoucher.code}" belum mulai berlaku.`);
-        }
-        if (now > appliedVoucher.validUntil) {
-          throw new Error(`Voucher "${appliedVoucher.code}" telah melewati batas masa berlaku (kadaluarsa).`);
-        }
-
-        // STRICT QUOTA CHECK (e.g. 10th user succeeds, 11th user gets clear rejection message)
-        if (appliedVoucher.usedCount >= appliedVoucher.maxUsage) {
-          throw new Error(
-            `Kuota voucher "${appliedVoucher.code}" sudah habis terpakai (Maksimal ${appliedVoucher.maxUsage} penggunaan). Penukaran voucher ditolak.`
-          );
-        }
-
-        if (calculatedSubtotal < appliedVoucher.minSpend) {
-          throw new Error(
-            `Minimal pembelanjaan untuk voucher "${appliedVoucher.code}" adalah Rp ${appliedVoucher.minSpend.toLocaleString("id-ID")}`
-          );
-        }
-
-        if (appliedVoucher.discountType === "percentage") {
-          calculatedDiscount = Math.round((calculatedSubtotal * appliedVoucher.discountValue) / 100);
-          if (appliedVoucher.maxDiscount && calculatedDiscount > appliedVoucher.maxDiscount) {
-            calculatedDiscount = appliedVoucher.maxDiscount;
-          }
-        } else {
-          calculatedDiscount = Math.min(calculatedSubtotal, appliedVoucher.discountValue);
-        }
-
-        // Increment quota used count
-        await tx.voucher.update({
-          where: { id: appliedVoucher.id },
+        const order = await tx.order.create({
           data: {
-            usedCount: { increment: 1 },
-          },
-        });
-      }
-
-      // Net subtotal after voucher discount
-      const netSubtotal = Math.max(0, calculatedSubtotal - calculatedDiscount);
-      const taxAmount = Math.round(netSubtotal * 0.1);
-      const serviceCharge = Math.round(netSubtotal * 0.05);
-      const totalAmount = netSubtotal + taxAmount + serviceCharge;
-      const paidNum = parseFloat(amountPaid) || totalAmount;
-
-      const order = await tx.order.create({
-        data: {
-          orderNumber,
-          tableId: table.id,
-          shiftId: activeShift ? activeShift.id : null,
-          userId: validUserId,
-          customerName: customerName || `Tamu ${table.tableNumber}`,
-          customerPhone: customerPhone || null,
-          reservationDate: reservationDate || new Date().toISOString().slice(0, 10),
-          reservationTime: reservationTime || "19:00 - Grand Dinner Session",
-          guestCount: parseInt(guestCount) || 2,
-          specialRequests: specialRequests || null,
-          orderType: orderType || "dine_in",
-          status: isDirect ? "confirmed" : "pending",
-          subtotal: calculatedSubtotal,
-          taxAmount,
-          serviceCharge,
-          totalAmount,
-          voucherId: appliedVoucher ? appliedVoucher.id : null,
-          discountAmount: calculatedDiscount,
-          paymentStatus: isDirect ? "paid" : "unpaid",
-          paymentMethod: isDirect ? paymentMethod : null,
-          items: {
-            create: orderItemsData,
-          },
-        },
-        include: {
-          items: {
-            include: {
-              menu: true,
+            orderNumber,
+            tableId: table.id,
+            shiftId: activeShift ? activeShift.id : null,
+            userId: validUserId,
+            customerName: customerName || `Tamu ${table.tableNumber}`,
+            customerPhone: customerPhone || null,
+            reservationDate: reservationDate || new Date().toISOString().slice(0, 10),
+            reservationTime: reservationTime || "19:00 - Grand Dinner Session",
+            guestCount: parsedGuests,
+            specialRequests: specialRequests || null,
+            orderType: orderType || "dine_in",
+            status: isDirect ? "confirmed" : "pending",
+            subtotal: calculatedSubtotal,
+            taxAmount,
+            serviceCharge,
+            totalAmount,
+            voucherId: preValidatedVoucher ? preValidatedVoucher.id : null,
+            discountAmount: calculatedDiscount,
+            paymentStatus: isDirect ? "paid" : "unpaid",
+            paymentMethod: isDirect ? safePaymentMethod : null,
+            items: {
+              create: orderItemsData,
             },
           },
-          table: true,
-          payments: true,
-          voucher: true,
-        },
-      });
-
-      // If direct payment completed, create Payment record
-      if (isDirect) {
-        const paymentRef =
-          paymentMethod === "qris"
-            ? `QRIS-ETOILE-${Date.now()}`
-            : paymentMethod === "credit_card"
-            ? `CARD-ROYALE-${Date.now()}`
-            : `TRX-${Date.now()}`;
-
-        await tx.payment.create({
-          data: {
-            orderId: order.id,
-            method: paymentMethod,
-            amountPaid: paidNum,
-            changeAmount: Math.max(0, paidNum - totalAmount),
-            paymentRef,
+          include: {
+            items: {
+              include: {
+                menu: true,
+              },
+            },
+            table: true,
+            voucher: true,
           },
         });
 
-        // Deduct recipe ingredient stocks
-        for (const item of items) {
-          const menu = menuMap.get(item.menuId);
-          if (menu && menu.recipes) {
-            for (const r of menu.recipes) {
-              const qtyToDeduct = r.quantityNeeded * (parseInt(item.quantity) || 1);
-              await tx.ingredient.update({
-                where: { id: r.ingredientId },
-                data: {
-                  stockQuantity: {
-                    decrement: qtyToDeduct,
-                  },
-                },
-              });
-            }
+        let createdPayment = null;
+        if (isDirect) {
+          const paymentRef =
+            safePaymentMethod === "qris"
+              ? `QRIS-ETOILE-${Date.now()}`
+              : safePaymentMethod === "credit_card" || safePaymentMethod === "card"
+              ? `CARD-ROYALE-${Date.now()}`
+              : `TRX-${Date.now()}`;
+
+          createdPayment = await tx.payment.create({
+            data: {
+              orderId: order.id,
+              method: safePaymentMethod,
+              amountPaid: paidNum,
+              changeAmount: Math.max(0, paidNum - totalAmount),
+              paymentRef,
+            },
+          });
+
+          // Parallel stock deduction for all distinct ingredients
+          if (ingredientDeductions.size > 0) {
+            const deductionPromises: Promise<any>[] = [];
+            ingredientDeductions.forEach((qty, ingredientId) => {
+              deductionPromises.push(
+                tx.ingredient
+                  .update({
+                    where: { id: ingredientId },
+                    data: { stockQuantity: { decrement: qty } },
+                  })
+                  .catch((err) => {
+                    console.warn(`Ingredient ${ingredientId} stock deduction skipped:`, err.message);
+                  })
+              );
+            });
+            await Promise.all(deductionPromises);
           }
         }
-      }
 
-      // Only update physical table status if it's an immediate dine-in order or today's current session
-      const todayDate = new Date().toISOString().slice(0, 10);
-      const isImmediateSession = !isReservation || reservationDate === todayDate;
-      if (isImmediateSession) {
-        await tx.table.update({
-          where: { id: table.id },
-          data: { status: isDirect ? "occupied" : "reserved" },
-        });
-      }
+        // Update physical table status if today's session
+        const todayDate = new Date().toISOString().slice(0, 10);
+        const isImmediateSession = !isReservation || reservationDate === todayDate;
+        if (isImmediateSession) {
+          await tx.table.update({
+            where: { id: table.id },
+            data: { status: isDirect ? "occupied" : "reserved" },
+          });
+        }
 
-      await tx.auditLog.create({
+        return {
+          ...order,
+          payments: createdPayment ? [createdPayment] : [],
+        };
+      },
+      {
+        maxWait: 15000,
+        timeout: 30000,
+      }
+    );
+
+    // Asynchronously log audit outside the transaction to preserve fast ACID completion
+    prisma.auditLog
+      .create({
         data: {
           user: customerName || `Tamu ${table.tableNumber}`,
           action: isDirect ? "RESERVATION_PAID" : "RESERVATION_CREATED",
-          details: `Pesanan/Reservasi ${orderNumber} di ${table.tableNumber} senilai Rp ${totalAmount.toLocaleString("id-ID")}${isDirect ? ` (Lunas via ${paymentMethod.toUpperCase()})` : ""}`,
+          details: `Pesanan/Reservasi ${orderNumber} di ${table.tableNumber} senilai Rp ${totalAmount.toLocaleString("id-ID")}${isDirect ? ` (Lunas via ${safePaymentMethod.toUpperCase()})` : ""}`,
         },
-      });
-
-      // Fetch freshly with payments
-      return await tx.order.findUnique({
-        where: { id: order.id },
-        include: {
-          items: {
-            include: { menu: true },
-          },
-          table: true,
-          payments: true,
-        },
-      });
-    });
+      })
+      .catch((err) => console.error("Non-fatal audit log error:", err));
 
     return NextResponse.json({
       success: true,
@@ -373,8 +438,19 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error("Error creating customer reservation/order:", error);
+    const isTimeout =
+      error.message &&
+      (error.message.includes("Transaction already closed") ||
+        error.message.includes("timeout") ||
+        error.message.includes("P2028"));
+
     return NextResponse.json(
-      { success: false, message: error.message || "Gagal memproses pesanan." },
+      {
+        success: false,
+        message: isTimeout
+          ? "Sistem sedang padat antrean pemrosesan transaksi. Mohon ulangi kembali pembayaran dalam beberapa saat."
+          : error.message || "Gagal memproses pesanan.",
+      },
       { status: 500 }
     );
   }

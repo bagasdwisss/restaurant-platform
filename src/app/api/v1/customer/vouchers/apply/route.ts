@@ -114,6 +114,13 @@ export async function POST(request: NextRequest) {
         discountAmount,
         newSubtotal,
         remainingQuota: voucher.maxUsage - voucher.usedCount,
+        voucher: {
+          id: voucher.id,
+          code: voucher.code,
+          name: voucher.name,
+          discountType: voucher.discountType,
+          discountValue: voucher.discountValue,
+        },
       },
     });
   } catch (error: any) {

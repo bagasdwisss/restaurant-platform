@@ -107,8 +107,8 @@ export function ReservationPaymentStep({
         setAppliedVoucher(null);
         setVoucherDiscount(0);
       } else {
-        setAppliedVoucher(data.data.voucher);
-        setVoucherDiscount(data.data.discountAmount);
+        setAppliedVoucher(data.data.voucher || data.data);
+        setVoucherDiscount(data.data.discountAmount || 0);
         setVoucherError("");
       }
     } catch (err: any) {
