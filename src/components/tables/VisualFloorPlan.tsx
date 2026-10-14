@@ -21,6 +21,7 @@ interface VisualFloorPlanProps {
   selectedTable?: TableItemData | null;
   guestCount?: number;
   onSelectTable?: (table: TableItemData) => void;
+  onConfirmTable?: (table: TableItemData) => void;
   onOpenBill?: (table: TableItemData) => void;
   onPayOrder?: (order: any) => void;
   onMoveTable?: (table: TableItemData) => void;
@@ -35,6 +36,7 @@ export function VisualFloorPlan({
   selectedTable,
   guestCount = 2,
   onSelectTable,
+  onConfirmTable,
   onOpenBill,
   onPayOrder,
   onMoveTable,
@@ -243,7 +245,14 @@ export function VisualFloorPlan({
                 <button
                   type="button"
                   disabled={!dockEligibility.eligible}
-                  onClick={() => onSelectTable && onSelectTable(selectedTable)}
+                  onClick={() => {
+                    if (!dockEligibility.eligible) return;
+                    if (onConfirmTable) {
+                      onConfirmTable(selectedTable);
+                    } else if (onSelectTable) {
+                      onSelectTable(selectedTable);
+                    }
+                  }}
                   className={`w-full md:w-auto px-6 py-3 font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta transition-all ${
                     dockEligibility.eligible
                       ? "bg-[#EA580C] hover:bg-[#C2410C] text-white cursor-pointer"
@@ -253,7 +262,7 @@ export function VisualFloorPlan({
                   {dockEligibility.eligible ? (
                     <>
                       <CheckCircle2 className="w-4 h-4" />
-                      <span>Pilih Meja {selectedTable.tableNumber} & Lanjut</span>
+                      <span>Pilih Meja {selectedTable.tableNumber} & Lanjut ke Pembayaran</span>
                     </>
                   ) : (
                     <>

@@ -12,6 +12,10 @@ import { VisualFloorPlan } from "@/components/tables/VisualFloorPlan";
 import { isTableCapacityEligible } from "@/components/tables/FloorTableFurniture";
 import { DishImage } from "@/components/ui/DishImage";
 import {
+  PAYMENT_CHANNELS,
+  PaymentMethodId,
+} from "@/components/ui/PaymentLogos";
+import {
   Calendar,
   Clock,
   Users,
@@ -98,9 +102,9 @@ export default function SavoriaReservationPage() {
   const [selectedTable, setSelectedTable] = useState<TableItem | null>(null);
 
   // STEP 4 STATE: Payment
-  const [paymentMethod, setPaymentMethod] = useState<"qris" | "card" | "cash">("qris");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodId>("qris");
+  const [paymentCategory, setPaymentCategory] = useState<string>("all");
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
-  const [qrisSimulatorStep, setQrisSimulatorStep] = useState<"scan" | "success">("scan");
 
   // STEP 5 STATE: Final Completed Order & QR Receipt
   const [completedOrder, setCompletedOrder] = useState<any>(null);
@@ -883,8 +887,16 @@ export default function SavoriaReservationPage() {
               onSelectTable={(tbl) => {
                 setSelectedTable(tbl);
                 toast.success(
-                  `Meja ${tbl.tableNumber} (${tbl.capacity} Kursi - ${tbl.area}) berhasil dipilih!`,
+                  `Meja ${tbl.tableNumber} (${tbl.capacity} Kursi - ${tbl.area}) dipilih. Klik tombol lanjut untuk konfirmasi.`,
                   "Meja Terpilih"
+                );
+              }}
+              onConfirmTable={(tbl) => {
+                setSelectedTable(tbl);
+                setCurrentStep(4);
+                toast.success(
+                  `Meja ${tbl.tableNumber} dikonfirmasi! Melanjutkan ke pembayaran...`,
+                  "Meja Dikonfirmasi"
                 );
               }}
               onRefresh={() => {
@@ -1007,107 +1019,122 @@ export default function SavoriaReservationPage() {
               </div>
 
               {/* Payment Methods */}
-              <div className="md:col-span-5 bg-white border border-[#E2E8F0] rounded-card p-4 sm:p-7 space-y-5 shadow-float">
+              <div className="md:col-span-5 bg-white border border-[#E2E8F0] rounded-card p-4 sm:p-6 space-y-4 shadow-float">
                 <div>
-                  <h4 className="font-display font-bold text-base text-[#18181B]">
-                    Metode Pembayaran
-                  </h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-display font-bold text-base text-[#18181B]">
+                      Pilihan Saluran Pembayaran
+                    </h4>
+                    <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
+                      ✓ Enkripsi SSL 256-Bit
+                    </span>
+                  </div>
                   <p className="text-xs text-[#64748B] mt-0.5">
-                    Pilih saluran pembayaran resmi instan:
+                    Pilih metode resmi instan untuk mengamankan reservasi:
                   </p>
                 </div>
 
-                <div className="space-y-2.5">
-                  {/* QRIS */}
-                  <label
-                    onClick={() => setPaymentMethod("qris")}
-                    className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                      paymentMethod === "qris"
-                        ? "bg-[#EA580C]/10 border-[#EA580C] shadow-sm"
-                        : "bg-[#FDFBF7] border-[#E2E8F0] hover:bg-white"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-[#EA580C]/15 text-[#EA580C] flex items-center justify-center font-bold">
-                        <QrCode className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-[#18181B] block">QRIS Dinamis</span>
-                        <span className="text-[10px] text-[#64748B]">BCA, Mandiri, GoPay, OVO</span>
-                      </div>
-                    </div>
-                    <input
-                      type="radio"
-                      name="pay"
-                      checked={paymentMethod === "qris"}
-                      onChange={() => setPaymentMethod("qris")}
-                      className="accent-[#EA580C]"
-                    />
-                  </label>
-
-                  {/* Credit Card */}
-                  <label
-                    onClick={() => setPaymentMethod("card")}
-                    className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                      paymentMethod === "card"
-                        ? "bg-[#EA580C]/10 border-[#EA580C] shadow-sm"
-                        : "bg-[#FDFBF7] border-[#E2E8F0] hover:bg-white"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-[#14281D]/15 text-[#14281D] flex items-center justify-center font-bold">
-                        <CreditCard className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-[#18181B] block">Kartu Kredit / Debit</span>
-                        <span className="text-[10px] text-[#64748B]">Visa, Mastercard, JCB</span>
-                      </div>
-                    </div>
-                    <input
-                      type="radio"
-                      name="pay"
-                      checked={paymentMethod === "card"}
-                      onChange={() => setPaymentMethod("card")}
-                      className="accent-[#EA580C]"
-                    />
-                  </label>
-
-                  {/* Cash */}
-                  <label
-                    onClick={() => setPaymentMethod("cash")}
-                    className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                      paymentMethod === "cash"
-                        ? "bg-[#EA580C]/10 border-[#EA580C] shadow-sm"
-                        : "bg-[#FDFBF7] border-[#E2E8F0] hover:bg-white"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-[#F59E0B]/20 text-[#F59E0B] flex items-center justify-center font-bold">
-                        <Smartphone className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-[#18181B] block">Concierge Cash</span>
-                        <span className="text-[10px] text-[#64748B]">Bayar saat tiba di kasir</span>
-                      </div>
-                    </div>
-                    <input
-                      type="radio"
-                      name="pay"
-                      checked={paymentMethod === "cash"}
-                      onChange={() => setPaymentMethod("cash")}
-                      className="accent-[#EA580C]"
-                    />
-                  </label>
+                {/* Category Filter Tabs */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                  {[
+                    { id: "all", label: "Semua" },
+                    { id: "qris", label: "QRIS" },
+                    { id: "va", label: "Virtual Account" },
+                    { id: "ewallet", label: "E-Wallet" },
+                    { id: "card", label: "Kartu" },
+                    { id: "cash", label: "Kasir" },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setPaymentCategory(tab.id)}
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                        paymentCategory === tab.id
+                          ? "bg-[#14281D] text-white shadow-xs"
+                          : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
                 </div>
 
+                {/* Payment Channels List */}
+                <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+                  {PAYMENT_CHANNELS.filter(
+                    (c) => paymentCategory === "all" || c.category === paymentCategory
+                  ).map((channel) => {
+                    const isSelected = paymentMethod === channel.id;
+                    return (
+                      <div
+                        key={channel.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setPaymentMethod(channel.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setPaymentMethod(channel.id);
+                          }
+                        }}
+                        className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all select-none ${
+                          isSelected
+                            ? "bg-[#EA580C]/10 border-[#EA580C] shadow-xs ring-1 ring-[#EA580C]"
+                            : "bg-[#FDFBF7] border-[#E2E8F0] hover:bg-white hover:border-[#EA580C]/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-12 h-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center p-1 shadow-2xs shrink-0">
+                            {channel.logo}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs font-bold text-[#18181B] block truncate">
+                                {channel.name}
+                              </span>
+                              {channel.badge && (
+                                <span className="text-[9px] font-bold text-[#EA580C] bg-[#EA580C]/10 px-1.5 py-0.2 rounded-full">
+                                  {channel.badge}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-[#64748B] block truncate mt-0.5">
+                              {channel.description}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0 ml-2">
+                          <div
+                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? "border-[#EA580C] bg-[#EA580C]"
+                                : "border-stone-300 bg-white"
+                            }`}
+                          >
+                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Instant Single-Click Payment Button */}
                 <button
                   type="button"
                   disabled={isProcessingPayment}
-                  onClick={handleExecutePayment}
-                  className="w-full py-4 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs sm:text-sm flex items-center justify-center gap-2 shadow-cta transition-all cursor-pointer disabled:opacity-50"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleExecutePayment();
+                  }}
+                  className="w-full py-4 bg-[#EA580C] hover:bg-[#C2410C] active:scale-[0.99] text-white font-bold rounded-full text-xs sm:text-sm flex items-center justify-center gap-2 shadow-cta transition-all cursor-pointer disabled:opacity-50"
                 >
                   {isProcessingPayment ? (
-                    <span>Memverifikasi Pembayaran...</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Memverifikasi Pembayaran Resmi...</span>
+                    </div>
                   ) : (
                     <>
                       <ShieldCheck className="w-4 h-4" />
@@ -1115,6 +1142,9 @@ export default function SavoriaReservationPage() {
                     </>
                   )}
                 </button>
+                <p className="text-[10px] text-center text-[#64748B]">
+                  Transaksi langsung tercatat aman di database sistem & menerbitkan e-Receipt resmi ber-QR.
+                </p>
               </div>
             </div>
           </div>
@@ -1190,6 +1220,17 @@ export default function SavoriaReservationPage() {
                   <span className="text-[#64748B] block text-[10px]">Jumlah Tamu:</span>
                   <span className="font-bold text-[#18181B]">
                     {completedOrder.guestCount || guestCount} Orang
+                  </span>
+                </div>
+                <div className="xs:col-span-2 border-t border-dashed border-[#E2E8F0] pt-2 mt-1">
+                  <span className="text-[#64748B] block text-[10px]">Metode Pembayaran Resmi:</span>
+                  <span className="font-bold text-[#EA580C] uppercase text-xs flex items-center gap-1.5 mt-0.5">
+                    <span>✓</span>
+                    <span>
+                      {PAYMENT_CHANNELS.find((c) => c.id === completedOrder.paymentMethod)?.name ||
+                        completedOrder.paymentMethod ||
+                        "QRIS Dinamis"}
+                    </span>
                   </span>
                 </div>
               </div>
