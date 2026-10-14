@@ -14,13 +14,13 @@ import {
   CheckCircle2,
   Clock,
   ChefHat,
-  Bike,
   Sparkles,
   X,
   AlertCircle,
   Receipt,
   User,
   Coffee,
+  ArrowRight,
 } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { useCartStore, SelectedVariant } from "@/lib/cart-store";
@@ -204,10 +204,8 @@ export default function CustomerTablePage({
   const toggleModifierOption = (group: ModifierGroup, optionId: number) => {
     const current = customModifiers[group.id] || [];
     if (group.maxSelection === 1) {
-      // Single choice
       setCustomModifiers({ ...customModifiers, [group.id]: [optionId] });
     } else {
-      // Multi choice
       if (current.includes(optionId)) {
         setCustomModifiers({
           ...customModifiers,
@@ -324,50 +322,53 @@ export default function CustomerTablePage({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50">
-        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-slate-600 font-medium">Menghubungkan ke meja restoran...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#FDFBF7] text-[#18181B]">
+        <div className="w-12 h-12 border-4 border-[#EA580C] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="font-serif text-sm font-semibold">Menghubungkan ke Meja SAVORIA...</p>
       </div>
     );
   }
 
   if (error || !table) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-slate-50">
-        <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-[#FDFBF7] text-[#18181B]">
+        <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-4">
           <AlertCircle className="w-8 h-8" />
         </div>
-        <h1 className="text-xl font-bold text-slate-900 mb-2">QR Code Tidak Valid</h1>
-        <p className="text-slate-600 max-w-sm mb-6">
-          {error || "Token QR meja tidak dikenali. Silakan pindai ulang QR fisik di meja restoran Anda."}
+        <h1 className="font-serif text-2xl font-bold mb-2">QR Code Tidak Dikenali</h1>
+        <p className="text-xs text-[#64748B] max-w-sm mb-6 leading-relaxed">
+          {error || "Token QR meja tidak valid. Silakan pindai ulang barcode QR fisik di meja restoran Anda."}
         </p>
-        <a
+        <Link
           href="/"
-          className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl shadow-sm text-sm"
+          className="px-6 py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full shadow-md text-xs transition-all"
         >
-          Kembali ke Portal
-        </a>
+          Kembali ke Beranda
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 pb-28">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] pb-28 selection:bg-[#EA580C] selection:text-white">
       {/* Top Header */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-xs">
+      <header className="sticky top-0 z-30 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-3.5 shadow-2xs">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center shadow-md shadow-orange-500/20 font-black text-lg">
-              RS
-            </div>
+            <Link
+              href="/"
+              className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center shadow-md shadow-[#EA580C]/20 font-serif font-black text-lg"
+            >
+              S
+            </Link>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-bold text-slate-900 leading-tight">RestoSync</h1>
-                <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-bold rounded-full">
+                <h1 className="font-serif font-bold text-[#18181B] text-base leading-tight">SAVORIA</h1>
+                <span className="px-2.5 py-0.5 bg-[#EA580C]/10 text-[#EA580C] text-[10px] font-bold rounded-full font-mono uppercase">
                   {table.tableNumber}
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-[11px] text-[#64748B]">
                 Area: {table.area} • Kapasitas {table.capacity} Orang
               </p>
             </div>
@@ -377,36 +378,36 @@ export default function CustomerTablePage({
           <button
             onClick={handleCallWaiter}
             disabled={callingWaiter || waiterCalledSuccess}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all shadow-sm cursor-pointer ${
               waiterCalledSuccess
-                ? "bg-emerald-500 text-white"
-                : "bg-amber-100 hover:bg-amber-200 text-amber-900 active:scale-95"
+                ? "bg-emerald-600 text-white"
+                : "bg-white hover:bg-amber-50 text-amber-900 border border-amber-200 active:scale-95"
             }`}
           >
-            <BellRing className={`w-3.5 h-3.5 ${callingWaiter ? "animate-bounce" : ""}`} />
-            <span>{waiterCalledSuccess ? "Pelayan Dipanggil!" : "Panggil Pelayan"}</span>
+            <BellRing className={`w-3.5 h-3.5 ${callingWaiter ? "animate-bounce" : "text-[#EA580C]"}`} />
+            <span>{waiterCalledSuccess ? "Pelayan Menuju Meja!" : "Panggil Pelayan"}</span>
           </button>
         </div>
       </header>
 
       {/* User Session Bar */}
-      <div className="bg-slate-900 text-white text-xs px-4 py-2 border-b border-slate-800">
+      <div className="bg-[#14281D] text-white text-xs px-4 py-2.5">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           {user ? (
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
               <span>
-                Masuk sebagai: <strong>{user.name}</strong>
+                Tamu: <strong className="text-amber-300">{user.name}</strong>
               </span>
             </div>
           ) : (
-            <div className="text-slate-400">Sesi Tamu Mandiri (Scan QR)</div>
+            <div className="text-slate-300">Sesi Pemesanan Meja Mandiri</div>
           )}
           <Link
             href={user ? "/user" : "/login"}
-            className="text-orange-400 hover:text-orange-300 font-bold flex items-center gap-1"
+            className="text-amber-300 hover:text-white font-bold flex items-center gap-1 transition-colors"
           >
-            <span>{user ? "Portal Pesanan Saya →" : "Masuk / Login →"}</span>
+            <span>{user ? "Lihat Riwayat Sesi →" : "Masuk / Login →"}</span>
           </Link>
         </div>
       </div>
@@ -415,16 +416,16 @@ export default function CustomerTablePage({
       <main className="max-w-lg mx-auto px-4 pt-4 space-y-4">
         {/* Active Order Stepper Tracker Banner */}
         {activeOrder && (
-          <div className="bg-white border-2 border-orange-400/40 rounded-2xl p-4 shadow-sm space-y-3">
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-[#18181B] font-mono">
                   Pesanan Aktif ({activeOrder.orderNumber})
                 </h2>
               </div>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800">
-                {activeOrder.status.toUpperCase()}
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#EA580C]/10 text-[#EA580C] uppercase font-mono">
+                {activeOrder.status}
               </span>
             </div>
 
@@ -447,11 +448,11 @@ export default function CustomerTablePage({
                 return (
                   <div key={step.key} className="flex flex-col items-center">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                      className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                         isCurrent
-                          ? "bg-orange-500 text-white ring-4 ring-orange-200 scale-105"
+                          ? "bg-[#EA580C] text-white ring-4 ring-[#EA580C]/20 scale-105"
                           : isPassed
-                          ? "bg-emerald-500 text-white"
+                          ? "bg-emerald-600 text-white"
                           : "bg-slate-100 text-slate-400"
                       }`}
                     >
@@ -460,10 +461,10 @@ export default function CustomerTablePage({
                     <span
                       className={`text-[10px] mt-1.5 font-medium ${
                         isCurrent
-                          ? "text-orange-600 font-bold"
+                          ? "text-[#EA580C] font-bold"
                           : isPassed
-                          ? "text-slate-800"
-                          : "text-slate-400"
+                          ? "text-[#18181B] font-semibold"
+                          : "text-[#64748B]"
                       }`}
                     >
                       {step.label}
@@ -473,9 +474,9 @@ export default function CustomerTablePage({
               })}
             </div>
 
-            <div className="text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg flex justify-between items-center">
-              <span>{activeOrder.items?.length || 0} Menu • {formatIDR(activeOrder.totalAmount)}</span>
-              <span className="text-orange-600 font-medium">Bisa pesan menu tambahan di bawah 👇</span>
+            <div className="text-[11px] text-[#64748B] bg-[#FDFBF7] p-3 rounded-2xl border border-slate-200/80 flex justify-between items-center">
+              <span>{activeOrder.items?.length || 0} Menu • <strong className="text-[#18181B] font-mono">{formatIDR(activeOrder.totalAmount)}</strong></span>
+              <span className="text-[#EA580C] font-semibold">Pesan hidangan tambahan 👇</span>
             </div>
           </div>
         )}
@@ -485,15 +486,15 @@ export default function CustomerTablePage({
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Cari makanan, kopi, atau snack..."
+            placeholder="Cari menu adiboga, mocktail, dessert..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-2xs"
+            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200/80 rounded-full text-xs text-[#18181B] focus:outline-none focus:ring-2 focus:ring-[#EA580C] shadow-2xs"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
             >
               <X className="w-4 h-4" />
             </button>
@@ -504,10 +505,10 @@ export default function CustomerTablePage({
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button
             onClick={() => setActiveCategory("all")}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+            className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               activeCategory === "all"
-                ? "bg-orange-500 text-white shadow-sm shadow-orange-500/20"
-                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                ? "bg-[#EA580C] text-white shadow-sm shadow-[#EA580C]/25"
+                : "bg-white text-[#64748B] border border-slate-200/80 hover:bg-slate-50"
             }`}
           >
             Semua Menu
@@ -516,10 +517,10 @@ export default function CustomerTablePage({
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.slug)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 activeCategory === cat.slug
-                  ? "bg-orange-500 text-white shadow-sm shadow-orange-500/20"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                  ? "bg-[#EA580C] text-white shadow-sm shadow-[#EA580C]/25"
+                  : "bg-white text-[#64748B] border border-slate-200/80 hover:bg-slate-50"
               }`}
             >
               {cat.name}
@@ -530,24 +531,24 @@ export default function CustomerTablePage({
         {/* Menu Items List */}
         <div className="space-y-3 pt-1">
           {displayedMenus.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 p-6">
+            <div className="text-center py-12 bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm">
               <UtensilsCrossed className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-              <p className="text-slate-500 text-sm font-medium">Menu tidak ditemukan.</p>
-              <p className="text-xs text-slate-400 mt-1">Coba gunakan kata kunci pencarian yang lain.</p>
+              <p className="font-serif text-base font-bold text-[#18181B]">Menu tidak ditemukan.</p>
+              <p className="text-xs text-[#64748B] mt-1">Coba gunakan kata kunci pencarian yang lain.</p>
             </div>
           ) : (
             displayedMenus.map((menu) => (
               <div
                 key={menu.id}
                 onClick={() => openCustomizer(menu)}
-                className={`bg-white rounded-2xl border border-slate-200/80 p-3.5 flex gap-3.5 shadow-2xs transition-all ${
+                className={`bg-white rounded-3xl border border-slate-200/80 p-4 flex gap-4 shadow-sm transition-all ${
                   menu.isAvailable
-                    ? "cursor-pointer hover:border-orange-300 hover:shadow-sm active:scale-[0.99]"
+                    ? "cursor-pointer hover:border-[#EA580C] hover:shadow-md active:scale-[0.99]"
                     : "opacity-60 cursor-not-allowed"
                 }`}
               >
                 {/* Menu Image */}
-                <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
                   {menu.image ? (
                     <Image
                       src={menu.image}
@@ -571,22 +572,22 @@ export default function CustomerTablePage({
                 {/* Details */}
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="font-bold text-slate-900 text-sm leading-tight line-clamp-1">
+                    <h3 className="font-serif font-bold text-[#18181B] text-sm leading-tight line-clamp-1">
                       {menu.name}
                     </h3>
-                    <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                    <p className="text-xs text-[#64748B] line-clamp-2 mt-1 leading-relaxed">
                       {menu.description}
                     </p>
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
-                    <span className="font-extrabold text-orange-600 text-sm">
+                    <span className="font-serif font-bold text-[#EA580C] text-sm">
                       {formatIDR(menu.price)}
                     </span>
                     {menu.isAvailable && (
                       <button
                         type="button"
-                        className="px-2.5 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg text-xs font-bold flex items-center gap-1 border border-orange-200/60"
+                        className="px-3 py-1.5 bg-[#EA580C]/10 hover:bg-[#EA580C] hover:text-white text-[#EA580C] rounded-full text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Pilih</span>
@@ -602,60 +603,60 @@ export default function CustomerTablePage({
 
       {/* Floating Bottom Cart Bar */}
       {cart.items.length > 0 && (
-        <div className="fixed bottom-4 left-0 right-0 z-40 px-4">
+        <div className="fixed bottom-5 left-0 right-0 z-40 px-4">
           <div className="max-w-lg mx-auto">
             <button
               onClick={() => setIsCartOpen(true)}
-              className="w-full bg-slate-900 text-white rounded-2xl p-3.5 px-5 flex items-center justify-between shadow-xl shadow-slate-900/30 active:scale-[0.98] transition-transform"
+              className="w-full bg-[#14281D] text-white rounded-full p-3.5 px-6 flex items-center justify-between shadow-xl shadow-[#14281D]/30 active:scale-[0.98] transition-transform cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <ShoppingBag className="w-6 h-6 text-orange-400" />
-                  <span className="absolute -top-1.5 -right-2 bg-orange-500 text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center">
+                  <ShoppingBag className="w-6 h-6 text-[#EA580C]" />
+                  <span className="absolute -top-1.5 -right-2 bg-[#EA580C] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center font-mono">
                     {cart.items.reduce((s, i) => s + i.quantity, 0)}
                   </span>
                 </div>
                 <div className="text-left">
-                  <p className="text-xs text-slate-300">Total Keranjang</p>
-                  <p className="font-extrabold text-base leading-tight text-white">
+                  <p className="text-[10px] text-slate-300 uppercase tracking-wider">Total Keranjang</p>
+                  <p className="font-serif font-bold text-base leading-tight text-white">
                     {formatIDR(cart.getTotal())}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 text-orange-400 text-sm font-bold">
-                <span>Lihat Pesanan</span>
-                <span className="text-lg">→</span>
+              <div className="flex items-center gap-1.5 text-amber-300 text-xs font-bold">
+                <span>Rincian Pesanan</span>
+                <ArrowRight className="w-4 h-4" />
               </div>
             </button>
           </div>
         </div>
       )}
 
-      {/* Modal Customizer (FR-CUS-002) */}
+      {/* Modal Customizer */}
       {selectedMenu && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
             {/* Header */}
-            <div className="relative p-4 border-b border-slate-100 flex items-start justify-between">
+            <div className="relative p-5 border-b border-slate-100 flex items-start justify-between">
               <div>
-                <h3 className="font-bold text-slate-900 text-base">{selectedMenu.name}</h3>
-                <p className="text-orange-600 font-extrabold text-sm mt-0.5">
+                <h3 className="font-serif font-bold text-[#18181B] text-base">{selectedMenu.name}</h3>
+                <p className="font-serif font-bold text-[#EA580C] text-base mt-0.5">
                   {formatIDR(selectedMenu.price)}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedMenu(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-slate-100 text-[#64748B] hover:text-[#18181B] flex items-center justify-center cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modifiers Body */}
-            <div className="p-4 overflow-y-auto space-y-5 flex-1">
+            <div className="p-5 overflow-y-auto space-y-5 flex-1">
               {selectedMenu.description && (
-                <p className="text-xs text-slate-500 leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <p className="text-xs text-[#64748B] leading-relaxed bg-[#FDFBF7] p-3 rounded-2xl border border-slate-200/80">
                   {selectedMenu.description}
                 </p>
               )}
@@ -663,40 +664,40 @@ export default function CustomerTablePage({
               {selectedMenu.modifierGroups.map((group) => (
                 <div key={group.id} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#18181B] font-serif">
                       {group.name}
                     </h4>
-                    <span className="text-[11px] text-slate-400 font-medium">
-                      {group.maxSelection === 1 ? "Pilih 1" : `Maksimal ${group.maxSelection}`}
+                    <span className="text-[11px] text-[#64748B] font-medium">
+                      {group.maxSelection === 1 ? "Pilih 1 Opsi" : `Maksimal ${group.maxSelection}`}
                     </span>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {group.options.map((opt) => {
                       const isSelected = (customModifiers[group.id] || []).includes(opt.id);
                       return (
                         <div
                           key={opt.id}
                           onClick={() => toggleModifierOption(group, opt.id)}
-                          className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                          className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
                             isSelected
-                              ? "border-orange-500 bg-orange-50/60 text-slate-900"
-                              : "border-slate-200 hover:border-slate-300 text-slate-700"
+                              ? "border-[#EA580C] bg-[#EA580C]/5 text-[#18181B]"
+                              : "border-slate-200 hover:border-slate-300 text-[#64748B]"
                           }`}
                         >
-                          <div className="flex items-center gap-2.5">
+                          <div className="flex items-center gap-3">
                             <div
                               className={`w-4 h-4 rounded-full flex items-center justify-center border ${
                                 isSelected
-                                  ? "border-orange-500 bg-orange-500 text-white"
+                                  ? "border-[#EA580C] bg-[#EA580C] text-white"
                                   : "border-slate-300"
                               }`}
                             >
                               {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                             </div>
-                            <span className="text-xs font-semibold">{opt.name}</span>
+                            <span className="text-xs font-semibold text-[#18181B]">{opt.name}</span>
                           </div>
-                          <span className="text-xs font-bold text-slate-600">
+                          <span className="text-xs font-mono font-bold text-[#18181B]">
                             {opt.price > 0 ? `+${formatIDR(opt.price)}` : "Gratis"}
                           </span>
                         </div>
@@ -708,34 +709,34 @@ export default function CustomerTablePage({
 
               {/* Special Notes */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-xs font-bold uppercase tracking-wider text-[#18181B] font-serif">
                   Catatan Khusus (Opsional)
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Contoh: Sambal dipisah, jangan pakai daun bawang..."
+                  placeholder="Contoh: Saus dipisah, kurangi gula..."
                   value={itemNotes}
                   onChange={(e) => setItemNotes(e.target.value)}
-                  className="w-full text-xs p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
                 />
               </div>
 
               {/* Quantity Selector */}
               <div className="flex items-center justify-between pt-2">
-                <span className="text-xs font-bold text-slate-700 uppercase">Jumlah Porsi</span>
-                <div className="flex items-center gap-3 bg-slate-100 rounded-xl p-1">
+                <span className="text-xs font-bold text-[#18181B] uppercase font-serif">Jumlah Porsi</span>
+                <div className="flex items-center gap-3 bg-[#FDFBF7] border border-slate-200/80 rounded-full p-1">
                   <button
                     onClick={() => setItemQty(Math.max(1, itemQty - 1))}
-                    className="w-8 h-8 rounded-lg bg-white text-slate-700 hover:bg-slate-200 flex items-center justify-center font-bold shadow-2xs"
+                    className="w-8 h-8 rounded-full bg-white text-[#18181B] hover:bg-slate-100 flex items-center justify-center font-bold shadow-2xs cursor-pointer"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="w-6 text-center font-bold text-sm text-slate-900">
+                  <span className="w-6 text-center font-bold text-sm text-[#18181B] font-mono">
                     {itemQty}
                   </span>
                   <button
                     onClick={() => setItemQty(itemQty + 1)}
-                    className="w-8 h-8 rounded-lg bg-white text-slate-700 hover:bg-slate-200 flex items-center justify-center font-bold shadow-2xs"
+                    className="w-8 h-8 rounded-full bg-white text-[#18181B] hover:bg-slate-100 flex items-center justify-center font-bold shadow-2xs cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -744,45 +745,45 @@ export default function CustomerTablePage({
             </div>
 
             {/* Footer Add button */}
-            <div className="p-4 border-t border-slate-100 bg-white">
+            <div className="p-5 border-t border-slate-100 bg-white">
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-between px-5 shadow-md shadow-orange-600/25 active:scale-[0.98] transition-transform"
+                className="w-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold py-3.5 rounded-full flex items-center justify-between px-6 shadow-md shadow-[#EA580C]/25 active:scale-[0.98] transition-transform cursor-pointer"
               >
                 <span>Tambahkan ke Keranjang</span>
-                <span>{formatIDR(calculateModalUnitPrice() * itemQty)}</span>
+                <span className="font-mono">{formatIDR(calculateModalUnitPrice() * itemQty)}</span>
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Cart Drawer (FR-CUS-003) */}
+      {/* Cart Drawer */}
       {isCartOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             {/* Header */}
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-slate-900 text-base">Rincian Pesanan Meja</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="font-serif font-bold text-[#18181B] text-base">Rincian Pesanan Meja</h3>
+                <p className="text-xs text-[#64748B]">
                   {table.tableNumber} • {table.area}
                 </p>
               </div>
               <button
                 onClick={() => setIsCartOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-slate-100 text-[#64748B] hover:text-[#18181B] flex items-center justify-center cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Items List */}
-            <div className="p-4 overflow-y-auto space-y-3 flex-1">
+            <div className="p-5 overflow-y-auto space-y-3.5 flex-1">
               {/* Customer Name & Order Type */}
-              <div className="grid grid-cols-2 gap-2 pb-2">
+              <div className="grid grid-cols-2 gap-3 pb-2">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 mb-1 block">
+                  <label className="text-[11px] font-bold text-[#18181B] mb-1 block">
                     Nama Pemesan
                   </label>
                   <input
@@ -790,17 +791,17 @@ export default function CustomerTablePage({
                     placeholder="Contoh: Budi"
                     value={cart.customerName}
                     onChange={(e) => cart.setCustomerName(e.target.value)}
-                    className="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                    className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 mb-1 block">
-                    Tipe Makan
+                  <label className="text-[11px] font-bold text-[#18181B] mb-1 block">
+                    Tipe Santap
                   </label>
                   <select
                     value={cart.orderType}
                     onChange={(e) => cart.setOrderType(e.target.value as any)}
-                    className="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none bg-white font-medium"
+                    className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none bg-white font-medium cursor-pointer"
                   >
                     <option value="dine_in">Makan di Tempat (Dine-In)</option>
                     <option value="takeaway">Bungkus (Takeaway)</option>
@@ -811,13 +812,13 @@ export default function CustomerTablePage({
               {cart.items.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-2"
+                  className="bg-[#FDFBF7] p-3.5 rounded-2xl border border-slate-200/80 space-y-2"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="font-bold text-xs text-slate-900">{item.name}</h4>
+                      <h4 className="font-semibold text-xs text-[#18181B]">{item.name}</h4>
                       {item.selectedVariants.length > 0 && (
-                        <p className="text-[11px] text-slate-500">
+                        <p className="text-[11px] text-[#64748B]">
                           {item.selectedVariants.map((v) => `${v.group}: ${v.option}`).join(", ")}
                         </p>
                       )}
@@ -827,7 +828,7 @@ export default function CustomerTablePage({
                         </p>
                       )}
                     </div>
-                    <span className="text-xs font-extrabold text-slate-800">
+                    <span className="text-xs font-mono font-bold text-[#18181B]">
                       {formatIDR(
                         (item.price +
                           item.selectedVariants.reduce((s, v) => s + v.extraPrice, 0)) *
@@ -839,24 +840,24 @@ export default function CustomerTablePage({
                   <div className="flex items-center justify-between pt-1">
                     <button
                       onClick={() => cart.removeItem(item.id)}
-                      className="text-[11px] text-red-500 font-semibold hover:underline"
+                      className="text-[11px] text-rose-500 font-semibold hover:underline cursor-pointer"
                     >
                       Hapus
                     </button>
 
-                    <div className="flex items-center gap-2 bg-white rounded-lg p-0.5 border border-slate-200">
+                    <div className="flex items-center gap-2 bg-white rounded-full p-1 border border-slate-200/80 shadow-2xs">
                       <button
                         onClick={() => cart.updateQuantity(item.id, -1)}
-                        className="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold"
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-[#64748B] hover:bg-slate-100 font-bold cursor-pointer"
                       >
                         -
                       </button>
-                      <span className="text-xs font-bold text-slate-900 w-4 text-center">
+                      <span className="text-xs font-mono font-bold text-[#18181B] w-4 text-center">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => cart.updateQuantity(item.id, 1)}
-                        className="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold"
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-[#64748B] hover:bg-slate-100 font-bold cursor-pointer"
                       >
                         +
                       </button>
@@ -867,31 +868,31 @@ export default function CustomerTablePage({
 
               {/* Price Breakdown */}
               <div className="pt-3 border-t border-slate-200 space-y-1.5 text-xs">
-                <div className="flex justify-between text-slate-500">
+                <div className="flex justify-between text-[#64748B]">
                   <span>Subtotal</span>
-                  <span>{formatIDR(cart.getSubtotal())}</span>
+                  <span className="font-mono">{formatIDR(cart.getSubtotal())}</span>
                 </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>PB1 / Pajak Restoran (10%)</span>
-                  <span>{formatIDR(cart.getTax())}</span>
+                <div className="flex justify-between text-[#64748B]">
+                  <span>Pajak Restoran PB1 (10%)</span>
+                  <span className="font-mono">{formatIDR(cart.getTax())}</span>
                 </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Service Charge (5%)</span>
-                  <span>{formatIDR(cart.getService())}</span>
+                <div className="flex justify-between text-[#64748B]">
+                  <span>Biaya Layanan (5%)</span>
+                  <span className="font-mono">{formatIDR(cart.getService())}</span>
                 </div>
-                <div className="flex justify-between font-extrabold text-sm text-slate-900 pt-2 border-t border-slate-200">
-                  <span>Total Tagihan</span>
-                  <span className="text-orange-600 text-base">{formatIDR(cart.getTotal())}</span>
+                <div className="flex justify-between font-bold text-sm text-[#18181B] pt-2 border-t border-slate-200">
+                  <span className="font-serif">Total Tagihan</span>
+                  <span className="text-[#EA580C] font-mono text-base">{formatIDR(cart.getTotal())}</span>
                 </div>
               </div>
             </div>
 
             {/* Footer Checkout Button */}
-            <div className="p-4 border-t border-slate-100 bg-white space-y-2">
+            <div className="p-5 border-t border-slate-100 bg-white space-y-2">
               <button
                 onClick={handleCheckout}
                 disabled={isSubmitting}
-                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 text-white font-bold py-3.5 rounded-xl shadow-md shadow-orange-600/25 active:scale-[0.98] transition-transform text-sm flex items-center justify-center gap-2"
+                className="w-full bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white font-bold py-3.5 rounded-full shadow-md shadow-[#EA580C]/25 active:scale-[0.98] transition-transform text-xs flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -905,8 +906,8 @@ export default function CustomerTablePage({
                   </>
                 )}
               </button>
-              <p className="text-[11px] text-center text-slate-400">
-                Pesanan akan langsung diterima kasir & dapur restoran.
+              <p className="text-[11px] text-center text-[#64748B]">
+                Pesanan akan langsung diterima kasir & dapur SAVORIA.
               </p>
             </div>
           </div>

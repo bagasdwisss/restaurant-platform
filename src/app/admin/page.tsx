@@ -28,6 +28,7 @@ import {
   X,
   Layers,
   LogOut,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { formatIDR, formatDate } from "@/lib/utils";
@@ -247,8 +248,8 @@ export default function AdminDashboardPage() {
         width: 320,
         margin: 2,
         color: {
-          dark: "#0f172a",
-          light: "#ffffff",
+          dark: "#18181B",
+          light: "#FFFFFF",
         },
       }).then((url) => {
         setQrDataUrl(url);
@@ -256,7 +257,7 @@ export default function AdminDashboardPage() {
     }
   }, [selectedTableQr]);
 
-  // Export Sales to Excel (.xlsx) (FR-ADM-004)
+  // Export Sales to Excel (.xlsx)
   const handleExportExcel = () => {
     if (!salesData || !salesData.recentOrders) return;
 
@@ -273,7 +274,7 @@ export default function AdminDashboardPage() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Penjualan");
 
-    XLSX.writeFile(workbook, `Laporan-RestoSync-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(workbook, `Laporan-SAVORIA-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   // Add Menu Handler
@@ -409,10 +410,10 @@ export default function AdminDashboardPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        <div className="flex items-center gap-3 text-xs">
-          <RefreshCw className="w-4 h-4 animate-spin text-orange-500" />
-          <span>Memverifikasi otentikasi administrator...</span>
+      <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex items-center justify-center">
+        <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-2xl shadow-sm border border-slate-200/80">
+          <RefreshCw className="w-5 h-5 animate-spin text-[#EA580C]" />
+          <span className="text-sm font-medium">Memverifikasi otentikasi administrator...</span>
         </div>
       </div>
     );
@@ -420,17 +421,17 @@ export default function AdminDashboardPage() {
 
   if (!user || user.role !== "admin") {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl">
-          <div className="w-16 h-16 rounded-3xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-xl">
+          <div className="w-16 h-16 rounded-full bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center mx-auto">
             <ShieldAlert className="w-8 h-8" />
           </div>
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">
-              Hak Akses Terbatas (Hanya Admin)
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#EA580C] bg-[#EA580C]/10 px-3 py-1 rounded-full">
+              Hak Akses Terbatas (Administrator)
             </span>
-            <h2 className="text-xl font-black text-white mt-1">Admin Back-Office</h2>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+            <h2 className="font-serif text-2xl font-bold text-[#18181B] mt-3">SAVORIA Admin Suite</h2>
+            <p className="text-xs text-[#64748B] mt-2 leading-relaxed">
               {user
                 ? `Akun Anda (${user.name}) memiliki role [${user.role.toUpperCase()}]. Halaman konfigurasi master data dan analitik finansial ini hanya dapat diakses oleh Administrator.`
                 : "Anda belum login ke sistem admin. Silakan masuk menggunakan akun Administrator."}
@@ -440,7 +441,7 @@ export default function AdminDashboardPage() {
           <div className="space-y-3 pt-2">
             <button
               onClick={() => quickLogin("admin")}
-              className="w-full py-3 bg-linear-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 transition-all cursor-pointer"
+              className="w-full py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#EA580C]/25 transition-all cursor-pointer"
             >
               <TrendingUp className="w-4 h-4" />
               <span>Login Instan sebagai Admin (Demo)</span>
@@ -448,14 +449,14 @@ export default function AdminDashboardPage() {
 
             <Link
               href="/login?redirect=/admin"
-              className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 border border-slate-700 transition-all block text-center"
+              className="w-full py-2.5 bg-white hover:bg-slate-50 text-[#18181B] font-bold rounded-full text-xs flex items-center justify-center gap-2 border border-slate-200/80 transition-all block text-center shadow-sm"
             >
               Halaman Login Kredensial
             </Link>
 
             <Link
               href="/pos"
-              className="w-full py-2.5 text-slate-400 hover:text-white font-semibold text-xs flex items-center justify-center gap-1 transition-all block text-center"
+              className="w-full py-2.5 text-[#64748B] hover:text-[#18181B] font-semibold text-xs flex items-center justify-center gap-1 transition-all block text-center"
             >
               Buka POS Kasir Terminal →
             </Link>
@@ -466,27 +467,27 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row text-slate-800">
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col md:flex-row text-[#18181B]">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-slate-900 text-white flex flex-col border-r border-slate-800 shrink-0">
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center font-black text-sm">
-              RS
+      <aside className="w-full md:w-64 bg-[#14281D] text-white flex flex-col shrink-0 shadow-xl">
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-bold text-base shadow-md shadow-[#EA580C]/30">
+              S
             </div>
             <div>
-              <h1 className="font-extrabold text-sm leading-tight">RestoSync</h1>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                Admin Back-Office
+              <h1 className="font-serif font-bold text-base tracking-tight leading-tight">SAVORIA</h1>
+              <p className="text-[10px] text-amber-300 font-semibold uppercase tracking-wider">
+                Executive Suite
               </p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Admin User Profile pill */}
-        <div className="p-3 mx-3 my-2 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between">
+        <div className="p-3.5 mx-3.5 my-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between backdrop-blur-xs">
           <div className="truncate">
-            <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider block">
+            <span className="text-[9px] font-bold text-[#EA580C] uppercase tracking-wider block font-mono">
               {user.role}
             </span>
             <span className="text-xs font-bold text-white truncate block">{user.name}</span>
@@ -494,13 +495,13 @@ export default function AdminDashboardPage() {
           <button
             onClick={logout}
             title="Keluar / Logout"
-            className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 transition-colors cursor-pointer"
+            className="p-1.5 rounded-full bg-white/10 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 transition-colors cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <nav className="p-3 space-y-1 flex-1">
+        <nav className="p-3 space-y-1.5 flex-1">
           {[
             { id: "analytics", label: "Ringkasan Finansial", icon: TrendingUp },
             { id: "menus", label: "Master Data Menu", icon: UtensilsCrossed },
@@ -515,10 +516,10 @@ export default function AdminDashboardPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
                   isActive
-                    ? "bg-orange-500 text-white shadow-sm shadow-orange-500/25"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800"
+                    ? "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/25"
+                    : "text-slate-300 hover:text-white hover:bg-white/10"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -529,49 +530,49 @@ export default function AdminDashboardPage() {
         </nav>
 
         {/* Quick Portal Switch */}
-        <div className="p-3 border-t border-slate-800 space-y-2">
+        <div className="p-4 border-t border-white/10 space-y-2">
           <Link
             href="/pos"
-            className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+            className="w-full py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-bold flex items-center justify-center gap-2 transition-colors"
           >
             <span>Buka POS Kasir</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
           <Link
             href="/"
-            className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+            className="w-full py-2 text-slate-300 hover:text-white rounded-full text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
           >
-            <span>Kembali ke Portal</span>
+            <span>Kembali ke Beranda</span>
           </Link>
         </div>
       </aside>
 
       {/* Main Content Pane */}
-      <main className="flex-1 p-4 md:p-6 overflow-y-auto space-y-6">
-        {/* TAB 1: FINANCIAL ANALYTICS (FR-ADM-004) */}
+      <main className="flex-1 p-6 md:p-8 overflow-y-auto space-y-6">
+        {/* TAB 1: FINANCIAL ANALYTICS */}
         {activeTab === "analytics" && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900">
+                <h2 className="font-serif text-2xl font-bold text-[#18181B]">
                   Dashboard Analitik Finansial
                 </h2>
-                <p className="text-xs text-slate-500">
-                  Performa pendapatan, laba kotor, dan rekapitulasi metode pembayaran restoran.
+                <p className="text-xs text-[#64748B]">
+                  Performa pendapatan, estimasi laba kotor, dan rekapitulasi transaksi SAVORIA.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <button
                   onClick={fetchSalesSummary}
-                  className="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-xs font-semibold text-slate-700 flex items-center gap-1.5 shadow-2xs"
+                  className="px-4 py-2 bg-white border border-slate-200/80 hover:bg-slate-50 rounded-full text-xs font-semibold text-[#64748B] hover:text-[#18181B] flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Refresh</span>
+                  <span>Refresh Data</span>
                 </button>
                 <button
                   onClick={handleExportExcel}
-                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-600/20"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
                   <span>Ekspor Excel (.xlsx)</span>
@@ -582,52 +583,60 @@ export default function AdminDashboardPage() {
             {/* Metric KPI Cards */}
             {salesData && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-1">
-                  <div className="flex items-center justify-between text-slate-500 text-xs font-bold">
+                <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-2">
+                  <div className="flex items-center justify-between text-[#64748B] text-xs font-bold">
                     <span>Total Pendapatan (Gross)</span>
-                    <DollarSign className="w-4 h-4 text-orange-500" />
+                    <div className="w-8 h-8 rounded-full bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center">
+                      <DollarSign className="w-4 h-4" />
+                    </div>
                   </div>
-                  <p className="text-xl font-black text-slate-900">
+                  <p className="font-serif text-2xl font-bold text-[#18181B]">
                     {formatIDR(salesData.summary.totalRevenue)}
                   </p>
-                  <p className="text-[11px] text-emerald-600 font-semibold">
-                    Termasuk PB1 & Service
+                  <p className="text-[11px] text-emerald-700 font-semibold">
+                    Termasuk PB1 & Service Charge
                   </p>
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-1">
-                  <div className="flex items-center justify-between text-slate-500 text-xs font-bold">
+                <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-2">
+                  <div className="flex items-center justify-between text-[#64748B] text-xs font-bold">
                     <span>Estimasi Gross Profit</span>
-                    <TrendingUp className="w-4 h-4 text-emerald-500" />
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                      <TrendingUp className="w-4 h-4" />
+                    </div>
                   </div>
-                  <p className="text-xl font-black text-emerald-600">
+                  <p className="font-serif text-2xl font-bold text-emerald-700">
                     {formatIDR(salesData.summary.grossProfit)}
                   </p>
-                  <p className="text-[11px] text-slate-500">
-                    Est. Food Cost ~35%: {formatIDR(salesData.summary.estimatedCOGS)}
+                  <p className="text-[11px] text-[#64748B]">
+                    Food Cost ~35%: {formatIDR(salesData.summary.estimatedCOGS)}
                   </p>
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-1">
-                  <div className="flex items-center justify-between text-slate-500 text-xs font-bold">
-                    <span>Total Transaksi Selesai</span>
-                    <ShoppingBag className="w-4 h-4 text-blue-500" />
+                <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-2">
+                  <div className="flex items-center justify-between text-[#64748B] text-xs font-bold">
+                    <span>Transaksi Berhasil</span>
+                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                      <ShoppingBag className="w-4 h-4" />
+                    </div>
                   </div>
-                  <p className="text-xl font-black text-slate-900">
+                  <p className="font-serif text-2xl font-bold text-[#18181B]">
                     {salesData.summary.totalOrdersCount} Pesanan
                   </p>
-                  <p className="text-[11px] text-slate-500">Pesanan terbayar lunas</p>
+                  <p className="text-[11px] text-[#64748B]">Pesanan berstatus lunas</p>
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-1">
-                  <div className="flex items-center justify-between text-slate-500 text-xs font-bold">
+                <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-2">
+                  <div className="flex items-center justify-between text-[#64748B] text-xs font-bold">
                     <span>Rata-rata Nilai Pesanan</span>
-                    <Users className="w-4 h-4 text-purple-500" />
+                    <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+                      <Users className="w-4 h-4" />
+                    </div>
                   </div>
-                  <p className="text-xl font-black text-slate-900">
+                  <p className="font-serif text-2xl font-bold text-[#18181B]">
                     {formatIDR(salesData.summary.avgOrderValue)}
                   </p>
-                  <p className="text-[11px] text-slate-500">Average Basket Size</p>
+                  <p className="text-[11px] text-[#64748B]">Average Basket Size</p>
                 </div>
               </div>
             )}
@@ -636,53 +645,53 @@ export default function AdminDashboardPage() {
             {salesData && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Payment Breakdown */}
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
-                  <h3 className="font-bold text-sm text-slate-900">
-                    Rekapitulasi Metode Pembayaran
+                <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                  <h3 className="font-serif font-bold text-base text-[#18181B]">
+                    Rekapitulasi Pembayaran
                   </h3>
 
-                  <div className="space-y-2.5">
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs">
+                  <div className="space-y-3">
+                    <div className="p-3.5 rounded-2xl bg-[#FDFBF7] border border-slate-200/80 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
                           Rp
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-800">Tunai (Cash)</p>
-                          <p className="text-[10px] text-slate-500">Uang fisik di kasir</p>
+                          <p className="text-xs font-bold text-[#18181B]">Tunai (Cash)</p>
+                          <p className="text-[10px] text-[#64748B]">Uang fisik di kasir</p>
                         </div>
                       </div>
-                      <span className="font-extrabold text-xs text-slate-900">
+                      <span className="font-mono font-bold text-xs text-[#18181B]">
                         {formatIDR(salesData.paymentBreakdown.cash)}
                       </span>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">
+                    <div className="p-3.5 rounded-2xl bg-[#FDFBF7] border border-slate-200/80 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center font-bold text-xs">
                           QR
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-800">QRIS Dinamis</p>
-                          <p className="text-[10px] text-slate-500">E-wallet & Mobile Banking</p>
+                          <p className="text-xs font-bold text-[#18181B]">QRIS Dinamis</p>
+                          <p className="text-[10px] text-[#64748B]">E-wallet & Mobile Banking</p>
                         </div>
                       </div>
-                      <span className="font-extrabold text-xs text-slate-900">
+                      <span className="font-mono font-bold text-xs text-[#18181B]">
                         {formatIDR(salesData.paymentBreakdown.qris)}
                       </span>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+                    <div className="p-3.5 rounded-2xl bg-[#FDFBF7] border border-slate-200/80 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
                           EDC
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-800">Kartu Debit</p>
-                          <p className="text-[10px] text-slate-500">Mesin EDC kasir</p>
+                          <p className="text-xs font-bold text-[#18181B]">Kartu Debit/Kredit</p>
+                          <p className="text-[10px] text-[#64748B]">Mesin EDC kasir</p>
                         </div>
                       </div>
-                      <span className="font-extrabold text-xs text-slate-900">
+                      <span className="font-mono font-bold text-xs text-[#18181B]">
                         {formatIDR(salesData.paymentBreakdown.debit)}
                       </span>
                     </div>
@@ -690,32 +699,32 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Top Selling Items (Ranking) */}
-                <div className="lg:col-span-2 bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+                <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-sm text-slate-900">
+                    <h3 className="font-serif font-bold text-base text-[#18181B]">
                       Menu Terlaris (Top Selling Items)
                     </h3>
-                    <span className="text-xs text-slate-500">Berdasarkan porsi terjual</span>
+                    <span className="text-xs text-[#64748B]">Berdasarkan porsi terjual</span>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {salesData.topSellingItems?.length === 0 ? (
-                      <p className="text-xs text-slate-400 py-6 text-center">Belum ada penjualan selesai.</p>
+                      <p className="text-xs text-[#64748B] py-8 text-center">Belum ada transaksi selesai.</p>
                     ) : (
                       salesData.topSellingItems.map((item: any, idx: number) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200/60 text-xs"
+                          className="flex items-center justify-between p-3 bg-[#FDFBF7] rounded-2xl border border-slate-200/80 text-xs"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="w-5 font-black text-slate-400 text-xs">#{idx + 1}</span>
-                            <span className="font-bold text-slate-800">{item.name}</span>
+                            <span className="w-6 font-mono font-bold text-[#EA580C] text-xs">#{idx + 1}</span>
+                            <span className="font-bold text-[#18181B]">{item.name}</span>
                           </div>
                           <div className="flex items-center gap-4">
-                            <span className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 font-extrabold text-[11px]">
+                            <span className="px-2.5 py-0.5 rounded-full bg-[#EA580C]/10 text-[#EA580C] font-bold text-[11px] font-mono">
                               {item.quantity} Porsi
                             </span>
-                            <span className="font-extrabold text-slate-900">
+                            <span className="font-mono font-bold text-[#18181B]">
                               {formatIDR(item.revenue)}
                             </span>
                           </div>
@@ -729,61 +738,59 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* TAB 2: MENU & MODIFIER MANAGEMENT (FR-ADM-001) */}
+        {/* TAB 2: MENU & MODIFIER MANAGEMENT */}
         {activeTab === "menus" && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900">Master Data Menu & Varian</h2>
-                <p className="text-xs text-slate-500">
-                  Kelola konfigurasi harga, foto produk, ketersediaan, dan kelompok varian.
+                <h2 className="font-serif text-2xl font-bold text-[#18181B]">Master Data Menu & Varian</h2>
+                <p className="text-xs text-[#64748B]">
+                  Kelola konfigurasi harga, foto produk, ketersediaan, dan kelompok varian hidangan SAVORIA.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowAddMenuModal(true)}
-                  className="px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-orange-600/20"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Tambah Menu Baru</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setShowAddMenuModal(true)}
+                className="px-5 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#EA580C]/25 transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Menu Baru</span>
+              </button>
             </div>
 
             {/* Search */}
             <div className="relative max-w-md">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Cari menu berdasarkan nama..."
                 value={menuSearch}
                 onChange={(e) => setMenuSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200/80 rounded-full text-xs text-[#18181B] focus:ring-2 focus:ring-[#EA580C] focus:outline-none shadow-2xs"
               />
             </div>
 
             {/* Menu Table */}
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
+            <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                  <thead className="bg-[#FDFBF7] border-b border-slate-200/80 text-[#64748B] font-bold uppercase tracking-wider text-[11px]">
                     <tr>
-                      <th className="p-3">Foto & Nama Menu</th>
-                      <th className="p-3">Kategori</th>
-                      <th className="p-3">Harga</th>
-                      <th className="p-3">Status Stok</th>
-                      <th className="p-3 text-right">Aksi</th>
+                      <th className="p-4">Foto & Nama Menu</th>
+                      <th className="p-4">Kategori</th>
+                      <th className="p-4">Harga</th>
+                      <th className="p-4">Status Stok</th>
+                      <th className="p-4 text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {menus
                       .filter((m) => m.name.toLowerCase().includes(menuSearch.toLowerCase()))
                       .map((menu) => (
-                        <tr key={menu.id} className="hover:bg-slate-50/80">
-                          <td className="p-3">
+                        <tr key={menu.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="p-4">
                             <div className="flex items-center gap-3">
-                              <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-slate-100 shrink-0">
+                              <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 shrink-0">
                                 {menu.image ? (
                                   <Image
                                     src={menu.image}
@@ -797,32 +804,32 @@ export default function AdminDashboardPage() {
                                 )}
                               </div>
                               <div>
-                                <p className="font-bold text-slate-900">{menu.name}</p>
-                                <p className="text-[11px] text-slate-400 line-clamp-1">
+                                <p className="font-serif font-bold text-sm text-[#18181B]">{menu.name}</p>
+                                <p className="text-[11px] text-[#64748B] line-clamp-1">
                                   {menu.description || "Tidak ada deskripsi"}
                                 </p>
                               </div>
                             </div>
                           </td>
-                          <td className="p-3 font-semibold text-slate-700">
+                          <td className="p-4 font-semibold text-[#64748B]">
                             {menu.category?.name}
                           </td>
-                          <td className="p-3 font-extrabold text-orange-600">
+                          <td className="p-4 font-mono font-bold text-[#18181B]">
                             {formatIDR(menu.price)}
                           </td>
-                          <td className="p-3">
+                          <td className="p-4">
                             <button
                               onClick={() => handleToggleMenuAvailability(menu.id, menu.isAvailable)}
-                              className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                              className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
                                 menu.isAvailable
                                   ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                                  : "bg-red-100 text-red-800 hover:bg-red-200"
+                                  : "bg-rose-100 text-rose-800 hover:bg-rose-200"
                               }`}
                             >
-                              {menu.isAvailable ? "Tersedia (Ready)" : "Sold Out (Habis)"}
+                              {menu.isAvailable ? "Tersedia (Ready)" : "Habis (Sold Out)"}
                             </button>
                           </td>
-                          <td className="p-3 text-right">
+                          <td className="p-4 text-right">
                             <button
                               onClick={() => {
                                 setEditMenuForm({
@@ -836,14 +843,14 @@ export default function AdminDashboardPage() {
                                 });
                                 setShowEditMenuModal(true);
                               }}
-                              className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg mr-1 cursor-pointer transition-colors"
+                              className="p-2 text-[#64748B] hover:text-[#EA580C] hover:bg-orange-50 rounded-full mr-1 cursor-pointer transition-colors"
                               title="Edit Menu"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteMenu(menu.id, menu.name)}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
+                              className="p-2 text-[#64748B] hover:text-rose-600 hover:bg-rose-50 rounded-full cursor-pointer transition-colors"
                               title="Hapus Menu"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -858,22 +865,22 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* TAB 3: TABLE MANAGEMENT & QR GENERATOR (FR-ADM-002) */}
+        {/* TAB 3: TABLE MANAGEMENT & QR GENERATOR */}
         {activeTab === "tables" && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900">
+                <h2 className="font-serif text-2xl font-bold text-[#18181B]">
                   Manajemen Meja & QR Code Generator
                 </h2>
-                <p className="text-xs text-slate-500">
-                  Layout denah fisik restoran & generator QR Code beresolusi tinggi dengan branding RestoSync.
+                <p className="text-xs text-[#64748B]">
+                  Layout denah fisik restoran & generator QR Code beresolusi tinggi dengan branding SAVORIA.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowAddTableModal(true)}
-                className="px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-orange-600/20"
+                className="px-5 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#EA580C]/25 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Tambah Meja Baru</span>
@@ -884,35 +891,35 @@ export default function AdminDashboardPage() {
               {tables.map((table) => (
                 <div
                   key={table.id}
-                  className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs space-y-3 flex flex-col justify-between"
+                  className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm space-y-3 flex flex-col justify-between hover:shadow-md transition-all"
                 >
                   <div>
                     <div className="flex items-center justify-between">
-                      <h3 className="font-black text-base text-slate-900">{table.tableNumber}</h3>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                      <h3 className="font-serif font-bold text-base text-[#18181B]">{table.tableNumber}</h3>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-[#64748B] font-mono">
                         {table.area}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-[#64748B] mt-0.5">
                       Kapasitas: {table.capacity} Orang • Status: {table.status}
                     </p>
-                    <p className="text-[10px] text-slate-400 font-mono truncate mt-1 bg-slate-50 p-1 rounded-md">
+                    <p className="text-[10px] text-slate-400 font-mono truncate mt-2 bg-[#FDFBF7] p-2 rounded-xl border border-slate-200/60">
                       Token: {table.qrToken}
                     </p>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 flex gap-2">
+                  <div className="pt-3 border-t border-slate-100 flex gap-2">
                     <button
                       onClick={() => setSelectedTableQr(table)}
-                      className="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
+                      className="flex-1 py-2 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm shadow-[#EA580C]/20 transition-all cursor-pointer"
                     >
                       <QrCode className="w-3.5 h-3.5" />
-                      <span>Lihat & Unduh QR</span>
+                      <span>Unduh QR Pass</span>
                     </button>
                     <button
                       onClick={() => handleRegenerateQr(table.id)}
                       title="Regenerate QR Token"
-                      className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs"
+                      className="p-2 bg-slate-100 hover:bg-slate-200 text-[#64748B] rounded-full text-xs cursor-pointer"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                     </button>
@@ -923,16 +930,16 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* TAB 4: RAW INGREDIENTS & RECIPES (FR-ADM-003) */}
+        {/* TAB 4: RAW INGREDIENTS & RECIPES */}
         {activeTab === "inventory" && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900">
+                <h2 className="font-serif text-2xl font-bold text-[#18181B]">
                   Inventaris Bahan Baku & Resep Menu
                 </h2>
-                <p className="text-xs text-slate-500">
-                  Stok bahan otomatis terpotong saat status pesanan dikonfirmasi oleh kasir / dapur.
+                <p className="text-xs text-[#64748B]">
+                  Stok bahan otomatis terpotong saat status pesanan dikonfirmasi oleh kasir atau dapur.
                 </p>
               </div>
             </div>
@@ -944,33 +951,33 @@ export default function AdminDashboardPage() {
                 return (
                   <div
                     key={ing.id}
-                    className={`bg-white rounded-2xl border p-4 shadow-2xs space-y-3 ${
-                      isLowStock ? "border-red-400 bg-red-50/20" : "border-slate-200"
+                    className={`bg-white rounded-3xl border p-5 shadow-sm space-y-3.5 ${
+                      isLowStock ? "border-rose-300 bg-rose-50/20" : "border-slate-200/80"
                     }`}
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-bold text-sm text-slate-900">{ing.name}</h3>
-                        <p className="text-xs text-slate-500">Satuan: {ing.unit}</p>
+                        <h3 className="font-serif font-bold text-base text-[#18181B]">{ing.name}</h3>
+                        <p className="text-xs text-[#64748B]">Satuan Ukur: {ing.unit}</p>
                       </div>
                       {isLowStock && (
-                        <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-black flex items-center gap-1">
+                        <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold flex items-center gap-1">
                           <AlertTriangle className="w-3 h-3" />
                           <span>Hampir Habis</span>
                         </span>
                       )}
                     </div>
 
-                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 flex justify-between items-center text-xs">
+                    <div className="bg-[#FDFBF7] p-3 rounded-2xl border border-slate-200/80 flex justify-between items-center text-xs">
                       <div>
-                        <span className="text-slate-500 block text-[10px]">Stok Tersisa:</span>
-                        <span className="font-black text-base text-slate-900">
+                        <span className="text-[#64748B] block text-[10px]">Stok Tersisa:</span>
+                        <span className="font-mono font-bold text-base text-[#18181B]">
                           {ing.stockQuantity} {ing.unit}
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="text-slate-500 block text-[10px]">Min. Batas Aman:</span>
-                        <span className="font-bold text-slate-700">
+                        <span className="text-[#64748B] block text-[10px]">Batas Aman:</span>
+                        <span className="font-mono font-semibold text-[#64748B]">
                           {ing.minStock} {ing.unit}
                         </span>
                       </div>
@@ -981,7 +988,7 @@ export default function AdminDashboardPage() {
                         setSelectedIngredient(ing);
                         setShowRestockModal(true);
                       }}
-                      className="w-full py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1"
+                      className="w-full py-2.5 bg-[#EA580C]/10 hover:bg-[#EA580C] text-[#EA580C] hover:text-white font-bold rounded-full text-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Tambah Stok (Restock)</span>
@@ -997,55 +1004,55 @@ export default function AdminDashboardPage() {
         {activeTab === "shifts" && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-extrabold text-slate-900">
+              <h2 className="font-serif text-2xl font-bold text-[#18181B]">
                 Audit Rekonsiliasi Kasir & Shift
               </h2>
-              <p className="text-xs text-slate-500">
-                Riwayat buka/tutup kasir, pelacakan selisih kas fisik vs sistem, dan audit trail void.
+              <p className="text-xs text-[#64748B]">
+                Riwayat buka/tutup kasir, pelacakan selisih kas fisik vs sistem, dan audit trail kasir.
               </p>
             </div>
 
             {/* Shift History Table */}
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs space-y-3 p-4">
-              <h3 className="font-bold text-sm text-slate-900">Riwayat Sesi Shift Kasir</h3>
+            <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm space-y-3 p-5">
+              <h3 className="font-serif font-bold text-base text-[#18181B]">Riwayat Sesi Shift Kasir</h3>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                  <thead className="bg-[#FDFBF7] border-b border-slate-200/80 text-[#64748B] font-bold uppercase tracking-wider text-[11px]">
                     <tr>
-                      <th className="p-3">Kasir</th>
-                      <th className="p-3">Waktu Buka / Tutup</th>
-                      <th className="p-3">Modal Awal</th>
-                      <th className="p-3">Ekspektasi Kas</th>
-                      <th className="p-3">Fisik di Laci</th>
-                      <th className="p-3">Selisih Kas</th>
-                      <th className="p-3">Status</th>
+                      <th className="p-3.5">Kasir</th>
+                      <th className="p-3.5">Waktu Buka / Tutup</th>
+                      <th className="p-3.5">Modal Awal</th>
+                      <th className="p-3.5">Ekspektasi Kas</th>
+                      <th className="p-3.5">Fisik di Laci</th>
+                      <th className="p-3.5">Selisih Kas</th>
+                      <th className="p-3.5">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {shiftHistory.map((s) => (
-                      <tr key={s.id} className="hover:bg-slate-50/80">
-                        <td className="p-3 font-bold text-slate-900">{s.cashierName}</td>
-                        <td className="p-3 text-slate-500">
+                      <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="p-3.5 font-bold text-[#18181B]">{s.cashierName}</td>
+                        <td className="p-3.5 text-[#64748B]">
                           <div>Buka: {formatDate(s.openedAt)}</div>
                           {s.closedAt && <div>Tutup: {formatDate(s.closedAt)}</div>}
                         </td>
-                        <td className="p-3 font-semibold">{formatIDR(s.startCash)}</td>
-                        <td className="p-3 font-semibold">
+                        <td className="p-3.5 font-mono font-semibold">{formatIDR(s.startCash)}</td>
+                        <td className="p-3.5 font-mono font-semibold">
                           {s.endCashExpected !== null ? formatIDR(s.endCashExpected) : "-"}
                         </td>
-                        <td className="p-3 font-semibold">
+                        <td className="p-3.5 font-mono font-semibold">
                           {s.endCashActual !== null ? formatIDR(s.endCashActual) : "-"}
                         </td>
-                        <td className="p-3 font-bold">
+                        <td className="p-3.5 font-mono font-bold">
                           {s.variance !== null ? (
                             <span
                               className={
                                 s.variance === 0
-                                  ? "text-emerald-600"
+                                  ? "text-emerald-700"
                                   : s.variance > 0
-                                  ? "text-blue-600"
-                                  : "text-red-600"
+                                  ? "text-blue-700"
+                                  : "text-rose-700"
                               }
                             >
                               {formatIDR(s.variance)}
@@ -1054,9 +1061,9 @@ export default function AdminDashboardPage() {
                             "-"
                           )}
                         </td>
-                        <td className="p-3">
+                        <td className="p-3.5">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase font-mono ${
                               s.status === "open"
                                 ? "bg-emerald-100 text-emerald-800"
                                 : "bg-slate-100 text-slate-700"
@@ -1073,24 +1080,24 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Audit Trail Timeline */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs space-y-3">
-              <h3 className="font-bold text-sm text-slate-900">Audit Trail Sistem (50 Aktivitas Terakhir)</h3>
+            <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm space-y-3">
+              <h3 className="font-serif font-bold text-base text-[#18181B]">Audit Trail Sistem (50 Aktivitas Terakhir)</h3>
 
-              <div className="space-y-2 max-h-80 overflow-y-auto">
+              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                 {auditLogs.map((log) => (
                   <div
                     key={log.id}
-                    className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-xs flex items-start justify-between"
+                    className="p-3 rounded-2xl bg-[#FDFBF7] border border-slate-200/80 text-xs flex items-start justify-between"
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900">{log.action}</span>
-                        <span className="text-slate-400">•</span>
-                        <span className="text-[11px] text-slate-500 font-semibold">{log.user}</span>
+                        <span className="font-bold text-[#18181B]">{log.action}</span>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-[11px] text-[#64748B] font-semibold">{log.user}</span>
                       </div>
-                      <p className="text-slate-600 mt-0.5">{log.details}</p>
+                      <p className="text-[#64748B] mt-0.5">{log.details}</p>
                     </div>
-                    <span className="text-[10px] text-slate-400 whitespace-nowrap pl-2">
+                    <span className="text-[10px] text-slate-400 whitespace-nowrap pl-2 font-mono">
                       {formatDate(log.createdAt)}
                     </span>
                   </div>
@@ -1100,31 +1107,31 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* TAB 6: USER & STAFF MANAGEMENT (MULTI-ROLE) */}
+        {/* TAB 6: USER & STAFF MANAGEMENT */}
         {activeTab === "users" && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900">
+                <h2 className="font-serif text-2xl font-bold text-[#18181B]">
                   Manajemen Staff & Pengguna (Multi-Role)
                 </h2>
-                <p className="text-xs text-slate-500">
-                  Kelola akun Administrator, Kasir POS, dan Pelanggan/Customer dalam ekosistem restoran.
+                <p className="text-xs text-[#64748B]">
+                  Kelola akun Administrator, Kasir POS, dan Tamu VIP dalam ekosistem SAVORIA.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <button
                   onClick={fetchUsers}
                   disabled={loadingUsers}
-                  className="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-xs font-semibold text-slate-700 flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                  className="px-4 py-2 bg-white border border-slate-200/80 hover:bg-slate-50 rounded-full text-xs font-semibold text-[#64748B] hover:text-[#18181B] flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${loadingUsers ? "animate-spin" : ""}`} />
-                  <span>Refresh</span>
+                  <RefreshCw className={`w-3.5 h-3.5 ${loadingUsers ? "animate-spin text-[#EA580C]" : ""}`} />
+                  <span>Refresh Data</span>
                 </button>
                 <button
                   onClick={() => setShowAddUserModal(true)}
-                  className="px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-orange-600/20 cursor-pointer"
+                  className="px-5 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#EA580C]/25 transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Tambah Staff / User</span>
@@ -1133,18 +1140,18 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Users Table */}
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
+            <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                  <thead className="bg-[#FDFBF7] border-b border-slate-200/80 text-[#64748B] font-bold uppercase tracking-wider text-[11px]">
                     <tr>
-                      <th className="p-3">Nama & Username</th>
-                      <th className="p-3">Role Hak Akses</th>
-                      <th className="p-3">Email</th>
-                      <th className="p-3">Telepon</th>
-                      <th className="p-3">Aktivitas</th>
-                      <th className="p-3">Terdaftar Sejak</th>
-                      <th className="p-3 text-right">Aksi</th>
+                      <th className="p-4">Nama & Username</th>
+                      <th className="p-4">Role Akses</th>
+                      <th className="p-4">Email</th>
+                      <th className="p-4">Telepon</th>
+                      <th className="p-4">Aktivitas</th>
+                      <th className="p-4">Terdaftar</th>
+                      <th className="p-4 text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -1154,26 +1161,26 @@ export default function AdminDashboardPage() {
                           ? "bg-purple-100 text-purple-800 border-purple-200"
                           : u.role === "kasir"
                           ? "bg-blue-100 text-blue-800 border-blue-200"
-                          : "bg-orange-100 text-orange-800 border-orange-200";
+                          : "bg-[#EA580C]/10 text-[#EA580C] border-[#EA580C]/20";
 
                       return (
-                        <tr key={u.id} className="hover:bg-slate-50/80">
-                          <td className="p-3">
+                        <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="p-4">
                             <div>
-                              <p className="font-bold text-slate-900">{u.name}</p>
-                              <p className="text-[11px] font-mono text-slate-400">@{u.username}</p>
+                              <p className="font-bold text-[#18181B]">{u.name}</p>
+                              <p className="text-[11px] font-mono text-[#64748B]">@{u.username}</p>
                             </div>
                           </td>
-                          <td className="p-3">
+                          <td className="p-4">
                             <span
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${roleColor}`}
+                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border font-mono ${roleColor}`}
                             >
                               {u.role}
                             </span>
                           </td>
-                          <td className="p-3 text-slate-600 font-medium">{u.email}</td>
-                          <td className="p-3 text-slate-500">{u.phone || "-"}</td>
-                          <td className="p-3 text-slate-600 text-[11px]">
+                          <td className="p-4 text-[#64748B] font-medium">{u.email}</td>
+                          <td className="p-4 text-[#64748B]">{u.phone || "-"}</td>
+                          <td className="p-4 text-[#64748B] text-[11px]">
                             {u._count ? (
                               <span>
                                 {u._count.orders || 0} Order • {u._count.shifts || 0} Shift
@@ -1182,20 +1189,20 @@ export default function AdminDashboardPage() {
                               "-"
                             )}
                           </td>
-                          <td className="p-3 text-slate-400 text-[11px]">
+                          <td className="p-4 text-[#64748B] text-[11px]">
                             {formatDate(u.createdAt)}
                           </td>
-                          <td className="p-3 text-right">
+                          <td className="p-4 text-right">
                             {u.id !== user?.id ? (
                               <button
                                 onClick={() => handleDeleteUser(u.id, u.name)}
-                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
+                                className="p-2 text-[#64748B] hover:text-rose-600 hover:bg-rose-50 rounded-full cursor-pointer transition-colors"
                                 title="Hapus User"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             ) : (
-                              <span className="text-[10px] text-slate-400 italic">Akun Anda</span>
+                              <span className="text-[10px] text-[#64748B] italic">Akun Anda</span>
                             )}
                           </td>
                         </tr>
@@ -1211,22 +1218,22 @@ export default function AdminDashboardPage() {
 
       {/* MODAL: ADD MENU */}
       {showAddMenuModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="font-bold text-slate-900 text-base">Tambah Menu Baru</h3>
-              <button onClick={() => setShowAddMenuModal(false)} className="text-slate-400">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-serif font-bold text-[#18181B] text-base">Tambah Menu Baru</h3>
+              <button onClick={() => setShowAddMenuModal(false)} className="text-[#64748B] hover:text-[#18181B]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Kategori</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Kategori</label>
                 <select
                   value={menuForm.categoryId}
                   onChange={(e) => setMenuForm({ ...menuForm, categoryId: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl bg-white"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl bg-white"
                 >
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -1237,51 +1244,51 @@ export default function AdminDashboardPage() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Nama Menu</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Nama Menu</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Bebek Goreng Kremes"
+                  placeholder="Contoh: Wagyu A5 Striploin"
                   value={menuForm.name}
                   onChange={(e) => setMenuForm({ ...menuForm, name: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Harga (IDR)</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Harga (IDR)</label>
                 <input
                   type="number"
-                  placeholder="45000"
+                  placeholder="450000"
                   value={menuForm.price}
                   onChange={(e) => setMenuForm({ ...menuForm, price: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">URL Foto (Unsplash)</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">URL Foto (Unsplash)</label>
                 <input
                   type="text"
                   value={menuForm.image}
                   onChange={(e) => setMenuForm({ ...menuForm, image: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Deskripsi Singkat</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Deskripsi Singkat</label>
                 <textarea
                   rows={2}
                   value={menuForm.description}
                   onChange={(e) => setMenuForm({ ...menuForm, description: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
             </div>
 
             <button
               onClick={handleCreateMenu}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 rounded-xl text-xs"
+              className="w-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold py-3 rounded-full text-xs transition-all shadow-md shadow-[#EA580C]/25 cursor-pointer"
             >
               Simpan Menu Baru
             </button>
@@ -1291,54 +1298,54 @@ export default function AdminDashboardPage() {
 
       {/* MODAL: ADD TABLE */}
       {showAddTableModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="font-bold text-slate-900 text-base">Tambah Meja Restoran</h3>
-              <button onClick={() => setShowAddTableModal(false)} className="text-slate-400">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-serif font-bold text-[#18181B] text-base">Tambah Meja Restoran</h3>
+              <button onClick={() => setShowAddTableModal(false)} className="text-[#64748B] hover:text-[#18181B]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Nomor / Nama Meja</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Nomor / Nama Meja</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Meja 09 atau VIP 03"
+                  placeholder="Contoh: Meja 12 atau VIP Suite 01"
                   value={tableForm.tableNumber}
                   onChange={(e) => setTableForm({ ...tableForm, tableNumber: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Kapasitas Tamu</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Kapasitas Tamu (Pax)</label>
                 <input
                   type="number"
                   value={tableForm.capacity}
                   onChange={(e) => setTableForm({ ...tableForm, capacity: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Area Meja</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Area Meja</label>
                 <select
                   value={tableForm.area}
                   onChange={(e) => setTableForm({ ...tableForm, area: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl bg-white"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl bg-white"
                 >
-                  <option value="Indoor">Indoor (AC)</option>
-                  <option value="Outdoor">Outdoor (Smoking)</option>
-                  <option value="Lantai 2">Lantai 2 (VIP)</option>
+                  <option value="Indoor">Indoor (Main Hall)</option>
+                  <option value="Outdoor">Outdoor (Terrace)</option>
+                  <option value="Lantai 2">Lantai 2 (VIP Suite)</option>
                 </select>
               </div>
             </div>
 
             <button
               onClick={handleCreateTable}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 rounded-xl text-xs"
+              className="w-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold py-3 rounded-full text-xs transition-all shadow-md shadow-[#EA580C]/25 cursor-pointer"
             >
               Buat Meja & Generate Token
             </button>
@@ -1346,13 +1353,13 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* MODAL: VIEW & DOWNLOAD HIGH-RESOLUTION QR CODE (FR-ADM-002) */}
+      {/* MODAL: VIEW & DOWNLOAD HIGH-RESOLUTION QR CODE */}
       {selectedTableQr && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 text-center">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-400">RestoSync QR Generator</span>
-              <button onClick={() => setSelectedTableQr(null)} className="text-slate-400">
+              <span className="text-xs font-bold text-[#64748B]">SAVORIA QR Pass Generator</span>
+              <button onClick={() => setSelectedTableQr(null)} className="text-[#64748B] hover:text-[#18181B]">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1360,22 +1367,22 @@ export default function AdminDashboardPage() {
             {/* Standee Preview Card for Table */}
             <div
               id="qr-standee-card"
-              className="bg-radial from-orange-50 to-white p-5 rounded-2xl border-2 border-orange-500/30 shadow-md space-y-3"
+              className="bg-[#FDFBF7] p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-3"
             >
-              <div className="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center font-black mx-auto shadow-sm">
-                RS
+              <div className="w-12 h-12 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-bold text-lg mx-auto shadow-sm">
+                S
               </div>
               <div>
-                <h4 className="font-extrabold text-lg text-slate-900">
+                <h4 className="font-serif font-bold text-lg text-[#18181B]">
                   {selectedTableQr.tableNumber}
                 </h4>
-                <p className="text-xs text-slate-500">
-                  {selectedTableQr.area} • Pindai untuk Memesan Langsung
+                <p className="text-xs text-[#64748B]">
+                  {selectedTableQr.area} • Pindai untuk Pemesanan Meja
                 </p>
               </div>
 
               {qrDataUrl && (
-                <div className="p-3 bg-white rounded-xl shadow-2xs border border-slate-200 inline-block">
+                <div className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200/80 inline-block">
                   <img src={qrDataUrl} alt="QR Code" className="w-48 h-48 mx-auto" />
                 </div>
               )}
@@ -1388,17 +1395,17 @@ export default function AdminDashboardPage() {
             <div className="flex gap-2">
               <a
                 href={qrDataUrl}
-                download={`QR-${selectedTableQr.tableNumber}.png`}
-                className="flex-1 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-orange-600/20"
+                download={`SAVORIA-QR-${selectedTableQr.tableNumber}.png`}
+                className="flex-1 py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-[#EA580C]/25"
               >
                 <Download className="w-4 h-4" />
-                <span>Unduh PNG (300 DPI)</span>
+                <span>Unduh PNG</span>
               </a>
               <a
                 href={`/table/${selectedTableQr.qrToken}`}
                 target="_blank"
                 rel="noreferrer"
-                className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold"
+                className="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-[#18181B] rounded-full text-xs font-bold"
               >
                 Buka Tab ↗
               </a>
@@ -1409,20 +1416,20 @@ export default function AdminDashboardPage() {
 
       {/* MODAL: RESTOCK INGREDIENT */}
       {showRestockModal && selectedIngredient && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 className="font-bold text-slate-900 text-base">Restock Bahan Baku</h3>
-                <p className="text-xs text-slate-500">{selectedIngredient.name}</p>
+                <h3 className="font-serif font-bold text-[#18181B] text-base">Restock Bahan Baku</h3>
+                <p className="text-xs text-[#64748B]">{selectedIngredient.name}</p>
               </div>
-              <button onClick={() => setShowRestockModal(false)} className="text-slate-400">
+              <button onClick={() => setShowRestockModal(false)} className="text-[#64748B] hover:text-[#18181B]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
+              <label className="text-xs font-bold text-[#18181B] block mb-1">
                 Jumlah Tambahan ({selectedIngredient.unit}):
               </label>
               <input
@@ -1430,16 +1437,16 @@ export default function AdminDashboardPage() {
                 placeholder="Contoh: 5000"
                 value={restockAmount}
                 onChange={(e) => setRestockAmount(e.target.value)}
-                className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
               />
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[11px] text-[#64748B] mt-1 font-mono">
                 Stok saat ini: {selectedIngredient.stockQuantity} {selectedIngredient.unit}
               </p>
             </div>
 
             <button
               onClick={handleExecuteRestock}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 rounded-xl text-xs"
+              className="w-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold py-3 rounded-full text-xs transition-all shadow-md shadow-[#EA580C]/25 cursor-pointer"
             >
               Simpan Penambahan Stok
             </button>
@@ -1449,16 +1456,16 @@ export default function AdminDashboardPage() {
 
       {/* MODAL: EDIT MENU */}
       {showEditMenuModal && editMenuForm && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="font-bold text-slate-900 text-base">Edit Menu</h3>
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-serif font-bold text-[#18181B] text-base">Edit Menu</h3>
               <button
                 onClick={() => {
                   setShowEditMenuModal(false);
                   setEditMenuForm(null);
                 }}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1466,11 +1473,11 @@ export default function AdminDashboardPage() {
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Kategori</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Kategori</label>
                 <select
                   value={editMenuForm.categoryId}
                   onChange={(e) => setEditMenuForm({ ...editMenuForm, categoryId: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl bg-white"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl bg-white"
                 >
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -1481,42 +1488,42 @@ export default function AdminDashboardPage() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Nama Menu</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Nama Menu</label>
                 <input
                   type="text"
                   value={editMenuForm.name}
                   onChange={(e) => setEditMenuForm({ ...editMenuForm, name: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Harga (IDR)</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Harga (IDR)</label>
                 <input
                   type="number"
                   value={editMenuForm.price}
                   onChange={(e) => setEditMenuForm({ ...editMenuForm, price: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">URL Foto Menu</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">URL Foto Menu</label>
                 <input
                   type="text"
                   value={editMenuForm.image}
                   onChange={(e) => setEditMenuForm({ ...editMenuForm, image: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Deskripsi</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Deskripsi</label>
                 <textarea
                   rows={2}
                   value={editMenuForm.description}
                   onChange={(e) => setEditMenuForm({ ...editMenuForm, description: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
 
@@ -1528,9 +1535,9 @@ export default function AdminDashboardPage() {
                   onChange={(e) =>
                     setEditMenuForm({ ...editMenuForm, isAvailable: e.target.checked })
                   }
-                  className="w-4 h-4 rounded text-orange-600"
+                  className="w-4 h-4 rounded text-[#EA580C]"
                 />
-                <label htmlFor="editMenuAvailable" className="text-xs font-bold text-slate-700">
+                <label htmlFor="editMenuAvailable" className="text-xs font-bold text-[#18181B]">
                   Menu Tersedia (Ready to Order)
                 </label>
               </div>
@@ -1543,14 +1550,14 @@ export default function AdminDashboardPage() {
                   setShowEditMenuModal(false);
                   setEditMenuForm(null);
                 }}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                className="flex-1 py-3 rounded-full border border-slate-200 text-xs font-bold text-[#64748B] hover:bg-slate-50 cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleUpdateMenu}
-                className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold cursor-pointer"
+                className="flex-1 py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold cursor-pointer shadow-md shadow-[#EA580C]/25"
               >
                 Simpan Perubahan
               </button>
@@ -1561,13 +1568,13 @@ export default function AdminDashboardPage() {
 
       {/* MODAL: ADD USER / STAFF */}
       {showAddUserModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="font-bold text-slate-900 text-base">Tambah Akun Staff / User</h3>
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-serif font-bold text-[#18181B] text-base">Tambah Akun Staff / User</h3>
               <button
                 onClick={() => setShowAddUserModal(false)}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1575,11 +1582,11 @@ export default function AdminDashboardPage() {
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Role Akun</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Role Akun</label>
                 <select
                   value={userForm.role}
                   onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl bg-white font-semibold"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl bg-white font-semibold"
                 >
                   <option value="kasir">Kasir (POS Terminal Access)</option>
                   <option value="admin">Admin (Full Back-Office Access)</option>
@@ -1588,19 +1595,19 @@ export default function AdminDashboardPage() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Nama Lengkap</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Nama Lengkap</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Rina Melati (Kasir Siang)"
+                  placeholder="Contoh: Rina Melati (Kasir)"
                   value={userForm.name}
                   onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Username</label>
+                  <label className="text-xs font-bold text-[#18181B] block mb-1">Username</label>
                   <input
                     type="text"
                     placeholder="rina_kasir"
@@ -1611,40 +1618,40 @@ export default function AdminDashboardPage() {
                         username: e.target.value.toLowerCase().replace(/\s+/g, ""),
                       })
                     }
-                    className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                    className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Telepon (HP)</label>
+                  <label className="text-xs font-bold text-[#18181B] block mb-1">Telepon (HP)</label>
                   <input
                     type="text"
                     placeholder="08123456789"
                     value={userForm.phone}
                     onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })}
-                    className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                    className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Email</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Email</label>
                 <input
                   type="email"
-                  placeholder="rina@restosync.com"
+                  placeholder="rina@savoria.com"
                   value={userForm.email}
                   onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Password</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Password</label>
                 <input
                   type="password"
                   placeholder="••••••••"
                   value={userForm.password}
                   onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
                 />
               </div>
             </div>
@@ -1653,14 +1660,14 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowAddUserModal(false)}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                className="flex-1 py-3 rounded-full border border-slate-200 text-xs font-bold text-[#64748B] hover:bg-slate-50 cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleCreateUser}
-                className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold cursor-pointer"
+                className="flex-1 py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold cursor-pointer shadow-md shadow-[#EA580C]/25"
               >
                 Simpan Akun
               </button>

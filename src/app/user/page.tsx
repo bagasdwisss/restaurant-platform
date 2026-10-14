@@ -30,6 +30,7 @@ import {
   Award,
   Crown,
   X,
+  ArrowRight,
 } from "lucide-react";
 
 export default function UserPortalPage() {
@@ -90,7 +91,6 @@ export default function UserPortalPage() {
   useEffect(() => {
     if (user) {
       fetchMyOrders();
-      // Auto-poll active orders every 10s
       const interval = setInterval(fetchMyOrders, 10000);
       return () => clearInterval(interval);
     }
@@ -100,7 +100,7 @@ export default function UserPortalPage() {
   useEffect(() => {
     if (selectedReceipt) {
       const payload = JSON.stringify({
-        restaurant: "L'Étoile Royale",
+        restaurant: "SAVORIA Gourmet Dining",
         bookingCode: selectedReceipt.orderNumber,
         table: selectedReceipt.table?.tableNumber || "VIP",
         guestCount: selectedReceipt.guestCount || 2,
@@ -112,7 +112,7 @@ export default function UserPortalPage() {
       QRCode.toDataURL(payload, {
         width: 260,
         margin: 2,
-        color: { dark: "#0f172a", light: "#ffffff" },
+        color: { dark: "#18181B", light: "#FFFFFF" },
       })
         .then((url) => setReceiptQrDataUrl(url))
         .catch(() => {});
@@ -123,10 +123,10 @@ export default function UserPortalPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0c10] flex items-center justify-center text-white">
-        <div className="flex items-center gap-3">
-          <RefreshCw className="w-5 h-5 animate-spin text-amber-500" />
-          <span className="text-sm font-serif">Memuat lounge VIP pelanggan...</span>
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center text-[#18181B]">
+        <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-2xl shadow-sm border border-slate-200/80">
+          <RefreshCw className="w-5 h-5 animate-spin text-[#EA580C]" />
+          <span className="text-sm font-medium">Memuat lounge tamu SAVORIA...</span>
         </div>
       </div>
     );
@@ -154,28 +154,28 @@ export default function UserPortalPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0a0c10] text-slate-100 flex flex-col justify-between selection:bg-amber-500 selection:text-black">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex flex-col justify-between selection:bg-[#EA580C] selection:text-white">
       {/* Navigation Header */}
-      <header className="border-b border-amber-500/10 px-6 py-4 backdrop-blur-md sticky top-0 z-40 bg-[#0a0c10]/85">
+      <header className="border-b border-slate-200/80 px-6 py-4 backdrop-blur-md sticky top-0 z-40 bg-[#FDFBF7]/90">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3.5">
             <Link
               href="/"
-              className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 text-slate-950 flex items-center justify-center font-serif font-black text-xl shadow-lg shadow-amber-500/20 border border-amber-200/40"
+              className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-serif font-black text-xl shadow-md shadow-[#EA580C]/20 hover:scale-105 transition-transform"
             >
-              👑
+              S
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-serif text-lg font-bold tracking-wider text-white">
-                  VIP Patron Lounge
+                <h1 className="font-serif text-lg font-bold tracking-tight text-[#18181B]">
+                  SAVORIA Patron Lounge
                 </h1>
-                <span className="text-[10px] bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-mono uppercase font-semibold">
-                  Customer
+                <span className="text-[10px] bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 px-2.5 py-0.5 rounded-full font-mono uppercase font-semibold">
+                  VIP Guest
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-light">
-                {user ? `Selamat Datang, ${user.name} (@${user.username})` : "Sesi Tamu Mandiri"}
+              <p className="text-[11px] text-[#64748B]">
+                {user ? `Selamat Datang, ${user.name} (@${user.username})` : "Sesi Tamu Terdaftar"}
               </p>
             </div>
           </div>
@@ -183,7 +183,7 @@ export default function UserPortalPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/reservation"
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all flex items-center gap-1.5"
+              className="px-4 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-md shadow-[#EA580C]/25 transition-all flex items-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Reservasi 5 Langkah</span>
@@ -192,12 +192,12 @@ export default function UserPortalPage() {
 
             {user ? (
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono px-3 py-1 bg-slate-900 rounded-full border border-slate-800 text-slate-400 hidden md:inline-block">
+                <span className="text-xs font-medium px-3 py-1.5 bg-white rounded-full border border-slate-200/80 text-[#64748B] hidden md:inline-block shadow-sm">
                   {user.email}
                 </span>
                 <button
                   onClick={logout}
-                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-500/20 hover:text-rose-400 border border-slate-800 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer text-slate-300"
+                  className="px-3.5 py-2 rounded-full bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 border border-slate-200/80 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer text-[#64748B] shadow-sm"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Keluar</span>
@@ -206,7 +206,7 @@ export default function UserPortalPage() {
             ) : (
               <Link
                 href="/login"
-                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all"
+                className="px-4 py-2.5 rounded-full bg-white hover:bg-slate-50 text-[#18181B] border border-slate-200/80 text-xs font-bold transition-all shadow-sm"
               >
                 Masuk / Login
               </Link>
@@ -218,36 +218,39 @@ export default function UserPortalPage() {
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full flex-1 space-y-6">
         {/* Luxury Banner */}
-        <div className="bg-gradient-to-r from-[#181d2a] via-[#11141c] to-[#181d2a] border border-amber-500/25 rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
+        <div className="bg-[#14281D] text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#EA580C]/10 rounded-full blur-3xl pointer-events-none" />
+
           <div className="space-y-2 max-w-2xl relative z-10">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-amber-300 text-xs font-semibold backdrop-blur-sm">
               <Star className="w-3.5 h-3.5 fill-amber-300" />
-              <span>Haute Gastronomie • L&apos;Étoile Royale Experience</span>
+              <span>Modern Gastronomie • SAVORIA Experience</span>
             </div>
-            <h2 className="font-serif text-2xl sm:text-4xl font-bold text-white tracking-tight">
-              Reservasi Meja & Pengalaman Santap Bintang 5
+            <h2 className="font-serif text-2xl sm:text-4xl font-bold text-white tracking-tight leading-tight">
+              Reservasi Meja & Pengalaman Santap Modern
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed">
-              Jalankan alur reservasi lengkap: tentukan tanggal dan jumlah tamu (pax), kurasi hidangan adiboga Miyazaki Wagyu & Caviar, pilih meja di Grand Salon atau VIP Suite, bayar langsung secara aman, dan terima struk digital dengan QR verifikasi resmi.
+              Nikmati alur reservasi terpadu: pilih tanggal dan jumlah tamu, kurasi hidangan istimewa kreasi chef, tentukan meja di Main Dining Room atau Private Salon, selesaikan pembayaran aman, dan terima struk digital dengan QR Pass resmi.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0 relative z-10">
             <Link
               href="/reservation"
-              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-amber-500/25 flex items-center gap-2 hover:scale-[1.02] transition-all"
+              className="px-6 py-3.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs sm:text-sm shadow-xl shadow-[#EA580C]/30 flex items-center gap-2 hover:scale-[1.02] transition-all"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Buat Reservasi Baru (5 Langkah)</span>
+              <span>Reservasi Baru (5 Langkah)</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
 
             {activeOrdersList.length > 0 && (
               <button
                 onClick={() => setActiveTab("active")}
-                className="px-4 py-3 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold text-xs flex items-center gap-2 animate-pulse cursor-pointer"
+                className="px-4 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer backdrop-blur-sm"
               >
-                <Clock className="w-4 h-4" />
+                <Clock className="w-4 h-4 text-[#EA580C]" />
                 <span>{activeOrdersList.length} Reservasi Aktif</span>
               </button>
             )}
@@ -255,13 +258,13 @@ export default function UserPortalPage() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 border-b border-amber-500/10 pb-3 overflow-x-auto">
+        <div className="flex items-center gap-2 pb-1 overflow-x-auto">
           <button
             onClick={() => setActiveTab("reserve")}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "reserve"
-                ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
-                : "bg-[#11141c] text-slate-400 hover:text-white border border-slate-800"
+                ? "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/25"
+                : "bg-white text-[#64748B] hover:text-[#18181B] border border-slate-200/80 shadow-sm"
             }`}
           >
             <Calendar className="w-4 h-4" />
@@ -270,10 +273,10 @@ export default function UserPortalPage() {
 
           <button
             onClick={() => setActiveTab("active")}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer relative ${
+            className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer relative ${
               activeTab === "active"
-                ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
-                : "bg-[#11141c] text-slate-400 hover:text-white border border-slate-800"
+                ? "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/25"
+                : "bg-white text-[#64748B] hover:text-[#18181B] border border-slate-200/80 shadow-sm"
             }`}
           >
             <Clock className="w-4 h-4" />
@@ -287,10 +290,10 @@ export default function UserPortalPage() {
 
           <button
             onClick={() => setActiveTab("history")}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "history"
-                ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
-                : "bg-[#11141c] text-slate-400 hover:text-white border border-slate-800"
+                ? "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/25"
+                : "bg-white text-[#64748B] hover:text-[#18181B] border border-slate-200/80 shadow-sm"
             }`}
           >
             <Receipt className="w-4 h-4" />
@@ -302,14 +305,14 @@ export default function UserPortalPage() {
 
           <button
             onClick={() => setActiveTab("menu")}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === "menu"
-                ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
-                : "bg-[#11141c] text-slate-400 hover:text-white border border-slate-800"
+                ? "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/25"
+                : "bg-white text-[#64748B] hover:text-[#18181B] border border-slate-200/80 shadow-sm"
             }`}
           >
             <ShoppingBag className="w-4 h-4" />
-            <span>Katalog Menu Michelin</span>
+            <span>Katalog Menu Istimewa</span>
           </button>
         </div>
 
@@ -317,49 +320,49 @@ export default function UserPortalPage() {
         {activeTab === "reserve" && (
           <div className="space-y-6">
             {/* Quick 5-Step Card banner */}
-            <div className="bg-[#11141c] border border-amber-500/20 rounded-3xl p-6 shadow-xl space-y-4">
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-[0_10px_30px_rgba(0,0,0,0.04)] space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
-                    5-Step Dining Flow
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#EA580C] font-mono">
+                    5-Step Seamless Dining Flow
                   </span>
-                  <h3 className="font-serif text-xl font-bold text-white mt-0.5">
+                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#18181B] mt-0.5">
                     Alur Reservasi Pelanggan Terpadu
                   </h3>
-                  <p className="text-xs text-slate-400 font-light mt-1">
-                    Ikuti 5 langkah untuk memesan meja, hidangan, pembayaran, dan menerima struk lengkap.
+                  <p className="text-xs sm:text-sm text-[#64748B] font-light mt-1">
+                    Cukup ikuti 5 langkah mudah untuk memesan meja, hidangan, pembayaran, dan menerima receipt lengkap.
                   </p>
                 </div>
                 <Link
                   href="/reservation"
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md shadow-amber-500/20 self-start sm:self-auto transition-all"
+                  className="px-5 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-[#EA580C]/25 self-start sm:self-auto transition-all"
                 >
-                  <span>Mulai Reservasi 5 Langkah</span>
+                  <span>Mulai Reservasi</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
 
               {/* 5 mini steps */}
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 pt-3 border-t border-slate-800 text-xs">
-                <div className="p-3 rounded-2xl bg-[#161a24] border border-slate-800">
-                  <span className="text-amber-400 font-bold block mb-1">1. Tanggal & Pax</span>
-                  <p className="text-[11px] text-slate-400">Pilih hari & jumlah orang</p>
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 pt-4 border-t border-slate-100 text-xs">
+                <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
+                  <span className="text-[#EA580C] font-bold block mb-1">1. Tanggal & Pax</span>
+                  <p className="text-[11px] text-[#64748B]">Tentukan jadwal & jumlah tamu</p>
                 </div>
-                <div className="p-3 rounded-2xl bg-[#161a24] border border-slate-800">
-                  <span className="text-amber-400 font-bold block mb-1">2. Menu Adiboga</span>
-                  <p className="text-[11px] text-slate-400">Pilih menu & varian</p>
+                <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
+                  <span className="text-[#EA580C] font-bold block mb-1">2. Menu Pilihan</span>
+                  <p className="text-[11px] text-[#64748B]">Pilih hidangan & varian rasa</p>
                 </div>
-                <div className="p-3 rounded-2xl bg-[#161a24] border border-slate-800">
-                  <span className="text-amber-400 font-bold block mb-1">3. Pilih Meja</span>
-                  <p className="text-[11px] text-slate-400">Grand Salon / VIP Suite</p>
+                <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
+                  <span className="text-[#EA580C] font-bold block mb-1">3. Pilih Meja</span>
+                  <p className="text-[11px] text-[#64748B]">Main Hall, Terrace, atau VIP</p>
                 </div>
-                <div className="p-3 rounded-2xl bg-[#161a24] border border-slate-800">
-                  <span className="text-amber-400 font-bold block mb-1">4. Pembayaran</span>
-                  <p className="text-[11px] text-slate-400">QRIS / Kartu Kredit</p>
+                <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
+                  <span className="text-[#EA580C] font-bold block mb-1">4. Pembayaran</span>
+                  <p className="text-[11px] text-[#64748B]">QRIS, Kartu Kredit, atau Tunai</p>
                 </div>
-                <div className="p-3 rounded-2xl bg-[#161a24] border border-amber-500/30">
-                  <span className="text-amber-300 font-bold block mb-1">5. Struk & QR</span>
-                  <p className="text-[11px] text-slate-400">Struk lengkap rincian</p>
+                <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200">
+                  <span className="text-amber-800 font-bold block mb-1">5. Struk & QR Pass</span>
+                  <p className="text-[11px] text-amber-700">Digital receipt dengan verifikasi</p>
                 </div>
               </div>
             </div>
@@ -368,17 +371,19 @@ export default function UserPortalPage() {
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-serif text-lg font-bold text-white">Denah & Ketersediaan Meja</h3>
-                  <p className="text-xs text-slate-400 font-light">
+                  <h3 className="font-serif text-lg sm:text-xl font-bold text-[#18181B]">
+                    Denah & Ketersediaan Meja
+                  </h3>
+                  <p className="text-xs text-[#64748B]">
                     Pilih meja yang tersedia untuk reservasi langsung atau pemesanan dine-in di restoran.
                   </p>
                 </div>
                 <button
                   onClick={fetchTables}
-                  className="px-3 py-1.5 rounded-xl bg-[#11141c] border border-slate-800 text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 self-start cursor-pointer"
+                  className="px-4 py-2 rounded-full bg-white border border-slate-200/80 text-xs font-semibold text-[#64748B] hover:text-[#18181B] flex items-center gap-1.5 self-start cursor-pointer shadow-sm hover:shadow"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Refresh Meja</span>
+                  <span>Perbarui Status Meja</span>
                 </button>
               </div>
 
@@ -389,44 +394,44 @@ export default function UserPortalPage() {
                   return (
                     <div
                       key={tbl.id}
-                      className={`rounded-2xl p-4 border flex flex-col justify-between transition-all ${
+                      className={`rounded-2xl p-4 border flex flex-col justify-between transition-all bg-white shadow-sm hover:shadow-md ${
                         isAvailable
-                          ? "bg-[#11141c] border-amber-500/20 hover:border-amber-500 shadow-md group"
+                          ? "border-emerald-200"
                           : isOccupied
-                          ? "bg-blue-950/20 border-blue-900/40 opacity-80"
-                          : "bg-slate-900/40 border-slate-800/40 opacity-60"
+                          ? "border-rose-200 opacity-90"
+                          : "border-slate-200 opacity-70"
                       }`}
                     >
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-amber-300">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-[#64748B] font-semibold">
                             {tbl.area}
                           </span>
                           <span
-                            className={`w-2 h-2 rounded-full ${
+                            className={`w-2.5 h-2.5 rounded-full ${
                               isAvailable
-                                ? "bg-emerald-400"
+                                ? "bg-emerald-500 shadow-sm shadow-emerald-500/50"
                                 : isOccupied
-                                ? "bg-blue-400 animate-pulse"
-                                : "bg-amber-400"
+                                ? "bg-rose-500 animate-pulse"
+                                : "bg-amber-500"
                             }`}
                           />
                         </div>
                         <div>
-                          <h4 className="font-serif text-base font-bold text-white">{tbl.tableNumber}</h4>
-                          <p className="text-[11px] text-slate-400 font-light">
+                          <h4 className="font-serif text-base font-bold text-[#18181B]">{tbl.tableNumber}</h4>
+                          <p className="text-[11px] text-[#64748B]">
                             Kapasitas {tbl.capacity} Pax
                           </p>
                         </div>
                       </div>
 
-                      <div className="pt-4 border-t border-slate-800/60 mt-3">
+                      <div className="pt-4 border-t border-slate-100 mt-3">
                         <Link
                           href={`/reservation`}
                           className={`w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                             isAvailable
-                              ? "bg-amber-500/15 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-500/30"
-                              : "bg-slate-800 hover:bg-slate-700 text-slate-300"
+                              ? "bg-[#EA580C]/10 hover:bg-[#EA580C] hover:text-white text-[#EA580C]"
+                              : "bg-slate-100 text-[#64748B] hover:bg-slate-200"
                           }`}
                         >
                           <span>{isAvailable ? "Reservasi Meja" : "Lihat Sesi"}</span>
@@ -446,48 +451,52 @@ export default function UserPortalPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-serif text-lg font-bold text-white">Lacak Reservasi Aktif Anda</h3>
-                <p className="text-xs text-slate-400 font-light">
-                  Pantau verifikasi Maître D&apos;, persiapan chef di dapur, hingga hidangan tersaji di meja Anda.
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-[#18181B]">
+                  Lacak Reservasi Aktif Anda
+                </h3>
+                <p className="text-xs text-[#64748B]">
+                  Pantau verifikasi resepsionis, persiapan chef di dapur, hingga hidangan tersaji di meja Anda.
                 </p>
               </div>
               <button
                 onClick={fetchMyOrders}
                 disabled={loadingOrders}
-                className="px-3 py-1.5 rounded-xl bg-[#11141c] border border-slate-800 text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 rounded-full bg-white border border-slate-200/80 text-xs font-semibold text-[#64748B] hover:text-[#18181B] flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loadingOrders ? "animate-spin" : ""}`} />
-                <span>Update Status</span>
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingOrders ? "animate-spin text-[#EA580C]" : ""}`} />
+                <span>Perbarui Status</span>
               </button>
             </div>
 
             {activeOrdersList.length === 0 ? (
-              <div className="bg-[#11141c] border border-slate-800 rounded-3xl p-12 text-center space-y-4">
-                <UtensilsCrossed className="w-12 h-12 text-amber-500/40 mx-auto" />
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-12 text-center space-y-4 shadow-sm">
+                <div className="w-16 h-16 rounded-full bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center mx-auto">
+                  <UtensilsCrossed className="w-8 h-8" />
+                </div>
                 <div className="space-y-1">
-                  <h4 className="font-serif text-base font-bold text-white">
+                  <h4 className="font-serif text-lg font-bold text-[#18181B]">
                     Belum Ada Reservasi yang Sedang Aktif
                   </h4>
-                  <p className="text-xs text-slate-400 max-w-sm mx-auto font-light">
+                  <p className="text-xs text-[#64748B] max-w-sm mx-auto">
                     Buat reservasi meja dan pilih menu mewah Anda sekarang lewat alur 5 langkah kami.
                   </p>
                 </div>
                 <Link
                   href="/reservation"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-md shadow-[#EA580C]/25 transition-all"
                 >
                   <Sparkles className="w-4 h-4" />
-                  <span>Mulai Reservasi 5 Langkah</span>
+                  <span>Mulai Reservasi Sekarang</span>
                 </Link>
               </div>
             ) : (
               <div className="space-y-4">
                 {activeOrdersList.map((order) => {
                   const statusSteps = [
-                    { key: "pending", label: "Menunggu Konfirmasi", desc: "Pesanan diterima Maître D'" },
-                    { key: "confirmed", label: "Dikonfirmasi", desc: "Meja & stok bahan disiapkan" },
-                    { key: "preparing", label: "Sedang Dimasak", desc: "Chef meracik hidangan di dapur" },
-                    { key: "served", label: "Hidangan Tersaji", desc: "Makanan tersaji sempurna" },
+                    { key: "pending", label: "Menunggu", desc: "Pesanan diterima sistem" },
+                    { key: "confirmed", label: "Dikonfirmasi", desc: "Meja & pesanan disiapkan" },
+                    { key: "preparing", label: "Dimasak", desc: "Chef meracik di dapur" },
+                    { key: "served", label: "Tersaji", desc: "Hidangan siap di meja" },
                   ];
 
                   const currentIndex = statusSteps.findIndex((s) => s.key === order.status);
@@ -495,26 +504,26 @@ export default function UserPortalPage() {
                   return (
                     <div
                       key={order.id}
-                      className="bg-[#11141c] border border-amber-500/20 rounded-3xl p-6 shadow-xl space-y-6"
+                      className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-7 shadow-[0_10px_30px_rgba(0,0,0,0.04)] space-y-6"
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono font-black text-amber-400 text-sm">
+                            <span className="font-mono font-bold text-[#EA580C] text-sm">
                               {order.orderNumber}
                             </span>
-                            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold uppercase">
+                            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 font-bold uppercase">
                               {order.table?.tableNumber || "Meja Reservasi"}
                             </span>
                             {order.table?.area && (
-                              <span className="text-[10px] text-slate-400 font-mono">
+                              <span className="text-[10px] text-[#64748B] font-medium">
                                 ({order.table.area})
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-slate-400 font-light">
+                          <p className="text-xs text-[#64748B]">
                             {order.reservationDate
-                              ? `Jadwal: ${formatDate(order.reservationDate)} • ${order.reservationTime || "Gala Dinner"}`
+                              ? `Jadwal: ${formatDate(order.reservationDate)} • ${order.reservationTime || "Dining Session"}`
                               : `Dipesan: ${formatDate(order.createdAt)}`}{" "}
                             • {order.guestCount ? `${order.guestCount} Tamu` : "2 Tamu"} •{" "}
                             {order.items.length} Menu
@@ -522,8 +531,8 @@ export default function UserPortalPage() {
                         </div>
 
                         <div className="text-right">
-                          <span className="text-xs text-slate-400 block font-light">Total Pembayaran</span>
-                          <span className="font-serif text-lg font-black text-amber-400">
+                          <span className="text-xs text-[#64748B] block font-light">Total Biaya</span>
+                          <span className="font-serif text-xl font-bold text-[#18181B]">
                             {formatIDR(order.totalAmount)}
                           </span>
                         </div>
@@ -531,8 +540,8 @@ export default function UserPortalPage() {
 
                       {/* Stepper Status */}
                       <div className="space-y-2">
-                        <span className="text-xs font-bold text-slate-300 block">
-                          Progress Jamuan:
+                        <span className="text-xs font-bold text-[#18181B] block">
+                          Progress Pesanan:
                         </span>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           {statusSteps.map((step, idx) => {
@@ -541,25 +550,25 @@ export default function UserPortalPage() {
                             return (
                               <div
                                 key={step.key}
-                                className={`p-3 rounded-2xl border transition-all ${
+                                className={`p-3.5 rounded-2xl border transition-all ${
                                   isCurrent
-                                    ? "bg-amber-500/15 border-amber-500 text-amber-300"
+                                    ? "bg-[#EA580C]/10 border-[#EA580C] text-[#EA580C]"
                                     : isDone
-                                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                                    : "bg-[#0a0c10] border-slate-800 text-slate-500"
+                                    ? "bg-emerald-50 border-emerald-300 text-emerald-800"
+                                    : "bg-[#FDFBF7] border-slate-200 text-[#64748B]"
                                 }`}
                               >
                                 <div className="flex items-center gap-2 mb-1">
                                   {isDone ? (
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                                   ) : (
-                                    <div className="w-4 h-4 rounded-full border border-slate-600 text-[10px] flex items-center justify-center font-bold">
+                                    <div className="w-4 h-4 rounded-full border border-slate-400 text-[10px] flex items-center justify-center font-bold">
                                       {idx + 1}
                                     </div>
                                   )}
                                   <span className="text-xs font-bold">{step.label}</span>
                                 </div>
-                                <p className="text-[10px] text-slate-400 font-light leading-tight">
+                                <p className="text-[10px] opacity-80 leading-tight">
                                   {step.desc}
                                 </p>
                               </div>
@@ -570,29 +579,29 @@ export default function UserPortalPage() {
 
                       {/* Items List */}
                       <div className="space-y-2 pt-2">
-                        <span className="text-xs font-bold text-slate-400 block">
+                        <span className="text-xs font-bold text-[#64748B] block">
                           Menu Yang Dipesan:
                         </span>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                           {order.items.map((it: any) => (
                             <div
                               key={it.id}
-                              className="p-3 rounded-xl bg-[#0a0c10] border border-slate-800 flex items-center justify-between"
+                              className="p-3 rounded-2xl bg-[#FDFBF7] border border-slate-200/80 flex items-center justify-between"
                             >
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-amber-400 font-mono">
+                                <span className="font-bold text-[#EA580C] font-mono">
                                   {it.quantity}x
                                 </span>
                                 <div>
-                                  <span className="text-slate-200 font-medium">{it.menu?.name}</span>
+                                  <span className="text-[#18181B] font-semibold">{it.menu?.name}</span>
                                   {it.modifiers && it.modifiers.length > 0 && (
-                                    <span className="block text-[10px] text-amber-300/80">
+                                    <span className="block text-[10px] text-[#64748B]">
                                       {it.modifiers.map((m: any) => m.name).join(", ")}
                                     </span>
                                   )}
                                 </div>
                               </div>
-                              <span className="font-mono text-slate-300">
+                              <span className="font-mono font-semibold text-[#18181B]">
                                 {formatIDR(it.subtotal)}
                               </span>
                             </div>
@@ -601,14 +610,14 @@ export default function UserPortalPage() {
                       </div>
 
                       {/* Action buttons */}
-                      <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800 text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100 text-xs">
                         <div className="flex items-center gap-2">
-                          <span className="text-slate-400 font-light">Status Pembayaran:</span>
+                          <span className="text-[#64748B]">Status Pembayaran:</span>
                           <span
-                            className={`font-bold px-2 py-0.5 rounded-full text-[10px] uppercase font-mono ${
+                            className={`font-bold px-3 py-1 rounded-full text-[10px] uppercase font-mono ${
                               order.paymentStatus === "paid"
-                                ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
-                                : "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                                ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                : "bg-amber-100 text-amber-800 border border-amber-300"
                             }`}
                           >
                             {order.paymentStatus === "paid" ? "Lunas (Paid)" : "Menunggu Pembayaran"}
@@ -618,19 +627,19 @@ export default function UserPortalPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setSelectedReceipt(order)}
-                            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 cursor-pointer"
+                            className="px-4 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-[#EA580C]/20 cursor-pointer transition-all"
                           >
                             <Receipt className="w-3.5 h-3.5" />
-                            <span>Lihat Struk Lengkap</span>
+                            <span>Lihat Receipt & QR Pass</span>
                           </button>
 
                           {order.table?.qrToken && (
                             <Link
                               href={`/table/${order.table.qrToken}`}
-                              className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-semibold flex items-center gap-1.5 transition-all"
+                              className="px-4 py-2 rounded-full bg-white hover:bg-slate-50 text-[#18181B] border border-slate-200/80 font-semibold flex items-center gap-1.5 transition-all shadow-sm"
                             >
                               <span>Layar Meja</span>
-                              <ExternalLink className="w-3 h-3" />
+                              <ExternalLink className="w-3 h-3 text-[#64748B]" />
                             </Link>
                           )}
                         </div>
@@ -648,18 +657,22 @@ export default function UserPortalPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-serif text-lg font-bold text-white">Arsip Reservasi & Struk Digital</h3>
-                <p className="text-xs text-slate-400 font-light">
-                  Seluruh jamuan bersantap Anda yang telah selesai tersimpan rapi beserta struk resmi.
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-[#18181B]">
+                  Arsip Reservasi & Struk Digital
+                </h3>
+                <p className="text-xs text-[#64748B]">
+                  Seluruh jamuan bersantap Anda yang telah selesai tersimpan rapi beserta receipt resmi.
                 </p>
               </div>
             </div>
 
             {historyOrdersList.length === 0 ? (
-              <div className="bg-[#11141c] border border-slate-800 rounded-3xl p-12 text-center space-y-3">
-                <Receipt className="w-12 h-12 text-amber-500/40 mx-auto" />
-                <h4 className="font-serif text-base font-bold text-white">Belum Ada Riwayat Transaksi Selesai</h4>
-                <p className="text-xs text-slate-400 font-light">
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-12 text-center space-y-3 shadow-sm">
+                <Receipt className="w-12 h-12 text-slate-300 mx-auto" />
+                <h4 className="font-serif text-base font-bold text-[#18181B]">
+                  Belum Ada Riwayat Transaksi Selesai
+                </h4>
+                <p className="text-xs text-[#64748B]">
                   Transaksi reservasi Anda yang telah diselesaikan akan tercatat di sini secara permanen.
                 </p>
               </div>
@@ -668,23 +681,23 @@ export default function UserPortalPage() {
                 {historyOrdersList.map((order) => (
                   <div
                     key={order.id}
-                    className="p-5 rounded-2xl bg-[#11141c] border border-amber-500/15 hover:border-amber-500/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg"
+                    className="p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-[#EA580C]/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm hover:shadow"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-amber-300 text-xs">
+                        <span className="font-mono font-bold text-[#EA580C] text-xs">
                           {order.orderNumber}
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold uppercase font-mono">
+                        <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold uppercase font-mono">
                           {order.status}
                         </span>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-[#64748B] font-medium">
                           {order.table?.tableNumber || "Private Salon"}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400 font-light">
+                      <p className="text-[11px] text-[#64748B]">
                         {order.reservationDate
-                          ? `Jadwal: ${formatDate(order.reservationDate)} • ${order.reservationTime || "Gala"}`
+                          ? `Jadwal: ${formatDate(order.reservationDate)} • ${order.reservationTime || "Dining"}`
                           : `Selesai: ${formatDate(order.createdAt)}`}{" "}
                         • {order.items.length} item • Metode: {(order.paymentMethod || "QRIS").toUpperCase()}
                       </p>
@@ -692,13 +705,13 @@ export default function UserPortalPage() {
 
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <span className="text-xs font-serif font-black text-amber-400">
+                        <span className="text-xs font-serif font-black text-[#18181B]">
                           {formatIDR(order.totalAmount)}
                         </span>
                       </div>
                       <button
                         onClick={() => setSelectedReceipt(order)}
-                        className="px-4 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                        className="px-4 py-2 rounded-full bg-[#EA580C]/10 hover:bg-[#EA580C] hover:text-white text-[#EA580C] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                       >
                         <Receipt className="w-3.5 h-3.5" />
                         <span>Buka Struk</span>
@@ -716,29 +729,31 @@ export default function UserPortalPage() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="font-serif text-lg font-bold text-white">Katalog Haute Cuisine Michelin</h3>
-                <p className="text-xs text-slate-400 font-light">
-                  Jelajahi sajian mahakarya Executive Chef berbahan Wagyu A5, Caviar, & Black Truffle.
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-[#18181B]">
+                  Katalog Hidangan SAVORIA
+                </h3>
+                <p className="text-xs text-[#64748B]">
+                  Jelajahi sajian lezat mahakarya Executive Chef dari berbagai belahan dunia.
                 </p>
               </div>
 
               {/* Search & Filter */}
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                   <input
                     type="text"
                     value={menuSearch}
                     onChange={(e) => setMenuSearch(e.target.value)}
                     placeholder="Cari hidangan..."
-                    className="pl-9 pr-3 py-1.5 bg-[#11141c] border border-slate-800 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                    className="pl-9 pr-4 py-2 bg-white border border-slate-200/80 rounded-full text-xs text-[#18181B] placeholder:text-slate-400 focus:outline-none focus:border-[#EA580C] shadow-sm"
                   />
                 </div>
 
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-3 py-1.5 bg-[#11141c] border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="px-4 py-2 bg-white border border-slate-200/80 rounded-full text-xs text-[#18181B] focus:outline-none focus:border-[#EA580C] shadow-sm cursor-pointer"
                 >
                   <option value="all">Semua Kategori</option>
                   {categories.map((c) => (
@@ -754,9 +769,9 @@ export default function UserPortalPage() {
               {filteredMenus.map((m) => (
                 <div
                   key={m.id}
-                  className="bg-[#11141c] border border-amber-500/15 rounded-3xl overflow-hidden flex flex-col justify-between hover:border-amber-500/40 transition-all shadow-xl group"
+                  className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden flex flex-col justify-between hover:shadow-lg transition-all group shadow-[0_10px_30px_rgba(0,0,0,0.03)]"
                 >
-                  <div className="h-44 w-full relative bg-slate-900 overflow-hidden">
+                  <div className="h-48 w-full relative bg-slate-100 overflow-hidden">
                     {m.image ? (
                       <Image
                         src={m.image}
@@ -766,7 +781,7 @@ export default function UserPortalPage() {
                         sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-amber-500/30">
+                      <div className="w-full h-full flex items-center justify-center text-slate-300">
                         <UtensilsCrossed className="w-10 h-10" />
                       </div>
                     )}
@@ -774,21 +789,21 @@ export default function UserPortalPage() {
 
                   <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
                     <div>
-                      <h4 className="font-serif font-bold text-white text-base group-hover:text-amber-300 transition-colors">
+                      <h4 className="font-serif font-bold text-[#18181B] text-base group-hover:text-[#EA580C] transition-colors">
                         {m.name}
                       </h4>
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-2 font-light leading-relaxed">
-                        {m.description || "Hidangan haute cuisine istimewa dengan bahan impor tersertifikasi."}
+                      <p className="text-xs text-[#64748B] mt-1 line-clamp-2 leading-relaxed">
+                        {m.description || "Hidangan istimewa dengan bahan-bahan premium pilihan terbaik."}
                       </p>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between mt-3">
-                      <span className="font-serif font-bold text-amber-400 text-sm">
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-3">
+                      <span className="font-serif font-bold text-[#18181B] text-base">
                         {formatIDR(m.price)}
                       </span>
                       <Link
                         href="/reservation"
-                        className="px-3.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 hover:text-slate-950 text-xs font-bold text-amber-300 transition-all flex items-center gap-1"
+                        className="px-4 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-xs font-bold text-white transition-all flex items-center gap-1 shadow-sm shadow-[#EA580C]/20"
                       >
                         <span>Reservasi</span>
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -801,62 +816,62 @@ export default function UserPortalPage() {
           </div>
         )}
 
-        {/* Modal Digital Struk Lengkap (5-Star Luxury Digital Receipt) */}
+        {/* Modal Digital Struk Lengkap (SAVORIA Modern Digital Receipt) */}
         {selectedReceipt && (
-          <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-[#0f1218] border border-amber-500/30 text-slate-100 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl relative animate-in fade-in zoom-in-95 my-8">
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white border border-slate-200 text-[#18181B] rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl relative animate-in fade-in zoom-in-95 my-8">
               {/* Close Button */}
               <button
                 onClick={() => setSelectedReceipt(null)}
-                className="absolute top-5 right-5 p-2 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer border border-slate-800"
+                className="absolute top-5 right-5 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-[#64748B] hover:text-[#18181B] transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
 
               {/* Receipt Header */}
-              <div className="text-center space-y-1.5 pb-4 border-b border-amber-500/20">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 text-slate-950 flex items-center justify-center font-serif font-black text-2xl mx-auto shadow-lg shadow-amber-500/20 border border-amber-200/40">
-                  👑
+              <div className="text-center space-y-1.5 pb-4 border-b border-slate-100">
+                <div className="w-12 h-12 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-serif font-black text-2xl mx-auto shadow-md shadow-[#EA580C]/20">
+                  S
                 </div>
-                <h3 className="font-serif font-black text-xl tracking-wider text-white">
-                  L&apos;ÉTOILE ROYALE
+                <h3 className="font-serif font-bold text-2xl tracking-tight text-[#18181B]">
+                  SAVORIA
                 </h3>
-                <p className="text-[11px] text-amber-300 uppercase tracking-widest font-serif">
-                  Distinction Michelin 3-Star • Grand Salon
+                <p className="text-[11px] text-[#EA580C] uppercase tracking-widest font-semibold">
+                  Modern Gourmet Dining Experience
                 </p>
-                <p className="text-[10px] text-slate-500">
-                  The Grand Pavilion • SCBD Jakarta • Tel: +62 21 8899 0000
+                <p className="text-[10px] text-[#64748B]">
+                  Grand Boulevard No. 88, Jakarta Selatan • Tel: +62 21 8899 0000
                 </p>
-                <div className="inline-block mt-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold font-mono">
+                <div className="inline-block mt-2 px-3 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-bold font-mono">
                   ✓ LUNAS / PAYMENT CONFIRMED
                 </div>
               </div>
 
               {/* Reservation Meta & Booking Details */}
-              <div className="grid grid-cols-2 gap-3 text-xs font-mono bg-[#161a24] p-4 rounded-2xl border border-slate-800">
+              <div className="grid grid-cols-2 gap-3 text-xs bg-[#FDFBF7] p-4 rounded-2xl border border-slate-200/80">
                 <div>
-                  <span className="text-[10px] text-slate-400 block">KODE BOOKING:</span>
-                  <span className="font-bold text-amber-300">{selectedReceipt.orderNumber}</span>
+                  <span className="text-[10px] text-[#64748B] block font-medium">KODE BOOKING:</span>
+                  <span className="font-bold font-mono text-[#EA580C]">{selectedReceipt.orderNumber}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 block">MEJA & SALON:</span>
-                  <span className="font-bold text-white">
+                  <span className="text-[10px] text-[#64748B] block font-medium">MEJA & AREA:</span>
+                  <span className="font-bold text-[#18181B]">
                     {selectedReceipt.table?.tableNumber || "VIP Salon"}{" "}
                     {selectedReceipt.table?.area && `(${selectedReceipt.table.area})`}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 block">TANGGAL RESERVASI:</span>
-                  <span className="font-bold text-slate-200">
+                  <span className="text-[10px] text-[#64748B] block font-medium">TANGGAL RESERVASI:</span>
+                  <span className="font-bold text-[#18181B]">
                     {selectedReceipt.reservationDate
                       ? formatDate(selectedReceipt.reservationDate)
                       : formatDate(selectedReceipt.createdAt)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 block">SESI WAKTU & TAMU:</span>
-                  <span className="font-bold text-slate-200">
-                    {selectedReceipt.reservationTime || "19:30 Gala"} •{" "}
+                  <span className="text-[10px] text-[#64748B] block font-medium">SESI & JUMLAH TAMU:</span>
+                  <span className="font-bold text-[#18181B]">
+                    {selectedReceipt.reservationTime || "19:00"} •{" "}
                     {selectedReceipt.guestCount ? `${selectedReceipt.guestCount} Pax` : "2 Pax"}
                   </span>
                 </div>
@@ -864,21 +879,21 @@ export default function UserPortalPage() {
 
               {/* Itemized Order Dishes */}
               <div className="space-y-2">
-                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block font-serif">
+                <span className="text-xs font-bold text-[#18181B] uppercase tracking-wider block font-serif">
                   Rincian Hidangan & Minuman:
                 </span>
-                <div className="divide-y divide-slate-800/80 max-h-48 overflow-y-auto pr-1 text-xs">
+                <div className="divide-y divide-slate-100 max-h-48 overflow-y-auto pr-1 text-xs">
                   {selectedReceipt.items?.map((it: any) => (
                     <div key={it.id} className="py-2.5 flex items-start justify-between gap-3">
                       <div>
-                        <div className="font-semibold text-slate-200">
-                          <span className="text-amber-400 font-mono font-bold mr-1.5">
+                        <div className="font-semibold text-[#18181B]">
+                          <span className="text-[#EA580C] font-mono font-bold mr-1.5">
                             {it.quantity}x
                           </span>
                           {it.menu?.name}
                         </div>
                         {it.modifiers && it.modifiers.length > 0 && (
-                          <div className="text-[10px] text-amber-300/80 font-mono">
+                          <div className="text-[10px] text-[#64748B]">
                             {it.modifiers.map((m: any) => m.name).join(", ")}
                           </div>
                         )}
@@ -888,7 +903,7 @@ export default function UserPortalPage() {
                           </div>
                         )}
                       </div>
-                      <span className="font-mono font-bold text-slate-200 shrink-0">
+                      <span className="font-mono font-bold text-[#18181B] shrink-0">
                         {formatIDR(it.subtotal)}
                       </span>
                     </div>
@@ -897,34 +912,34 @@ export default function UserPortalPage() {
               </div>
 
               {/* Financial Calculation Breakdown */}
-              <div className="bg-[#161a24] p-4 rounded-2xl border border-slate-800 text-xs font-mono space-y-1.5">
-                <div className="flex justify-between text-slate-400">
+              <div className="bg-[#FDFBF7] p-4 rounded-2xl border border-slate-200/80 text-xs space-y-1.5">
+                <div className="flex justify-between text-[#64748B]">
                   <span>Subtotal Pesanan:</span>
-                  <span>{formatIDR(selectedReceipt.subtotal)}</span>
+                  <span className="font-mono">{formatIDR(selectedReceipt.subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-[#64748B]">
                   <span>Pajak Restoran (PB1 10%):</span>
-                  <span>{formatIDR(selectedReceipt.taxAmount)}</span>
+                  <span className="font-mono">{formatIDR(selectedReceipt.taxAmount)}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-[#64748B]">
                   <span>Biaya Layanan (Service 5%):</span>
-                  <span>{formatIDR(selectedReceipt.serviceCharge)}</span>
+                  <span className="font-mono">{formatIDR(selectedReceipt.serviceCharge)}</span>
                 </div>
-                <div className="pt-2 border-t border-slate-700/80 flex justify-between font-black text-sm text-white">
+                <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-sm text-[#18181B]">
                   <span className="font-serif">TOTAL DIBAYAR:</span>
-                  <span className="text-amber-400">{formatIDR(selectedReceipt.totalAmount)}</span>
+                  <span className="text-[#EA580C] font-mono text-base">{formatIDR(selectedReceipt.totalAmount)}</span>
                 </div>
-                <div className="flex justify-between text-[11px] text-slate-400 pt-1">
+                <div className="flex justify-between text-[11px] text-[#64748B] pt-1">
                   <span>Metode Pembayaran:</span>
-                  <span className="uppercase text-amber-300 font-bold">
+                  <span className="uppercase text-[#18181B] font-bold">
                     {selectedReceipt.paymentMethod || "QRIS Dinamis"}
                   </span>
                 </div>
               </div>
 
               {/* QR Verification Pass */}
-              <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white text-slate-950 space-y-2 text-center">
-                <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-800">
+              <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white border border-slate-200/80 space-y-2 text-center shadow-sm">
+                <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-[#64748B]">
                   Boarding Pass QR Verifikasi Meja
                 </span>
                 {receiptQrDataUrl ? (
@@ -934,12 +949,12 @@ export default function UserPortalPage() {
                     className="w-36 h-36 object-contain"
                   />
                 ) : (
-                  <div className="w-36 h-36 bg-slate-100 flex items-center justify-center font-mono text-xs">
+                  <div className="w-36 h-36 bg-slate-50 flex items-center justify-center font-mono text-xs text-slate-400">
                     Generating QR...
                   </div>
                 )}
-                <p className="text-[10px] text-slate-500 font-light">
-                  Tunjukkan QR ini kepada Maître D&apos; saat tiba di L&apos;Étoile Royale.
+                <p className="text-[10px] text-[#64748B]">
+                  Tunjukkan QR ini kepada staf resepsionis saat tiba di SAVORIA.
                 </p>
               </div>
 
@@ -948,16 +963,16 @@ export default function UserPortalPage() {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer border border-slate-700"
+                  className="w-full py-3 rounded-full bg-white hover:bg-slate-50 text-[#18181B] font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer border border-slate-200 shadow-sm"
                 >
-                  <Printer className="w-4 h-4 text-amber-400" />
-                  <span>Cetak Struk / PDF</span>
+                  <Printer className="w-4 h-4 text-[#EA580C]" />
+                  <span>Cetak Receipt / PDF</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setSelectedReceipt(null)}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-xs transition-colors cursor-pointer"
+                  className="w-full py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs transition-colors cursor-pointer shadow-md shadow-[#EA580C]/25"
                 >
                   Tutup Struk
                 </button>
@@ -968,8 +983,8 @@ export default function UserPortalPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-amber-500/10 px-6 py-6 text-center text-xs text-slate-500">
-        <p>L&apos;Étoile Royale • Fine Dining VIP Patron Portal & Reservations</p>
+      <footer className="border-t border-slate-200/80 px-6 py-6 text-center text-xs text-[#64748B] bg-white">
+        <p>SAVORIA • Modern Gourmet Dining Experience & Patron Portal</p>
       </footer>
     </div>
   );

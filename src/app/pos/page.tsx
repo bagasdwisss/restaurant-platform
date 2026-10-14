@@ -27,6 +27,7 @@ import {
   RefreshCw,
   LogOut,
   Coffee,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { formatIDR, formatDate } from "@/lib/utils";
@@ -42,7 +43,7 @@ export default function PosCashierPage() {
   // Modals for shift
   const [showOpenShiftModal, setShowOpenShiftModal] = useState(false);
   const [startCashInput, setStartCashInput] = useState("500000");
-  const [cashierNameInput, setCashierNameInput] = useState("Budi Santoso");
+  const [cashierNameInput, setCashierNameInput] = useState("Kasir Utama");
 
   useEffect(() => {
     if (user?.name) {
@@ -77,23 +78,19 @@ export default function PosCashierPage() {
   const [payMethod, setPayMethod] = useState<"cash" | "qris" | "debit">("cash");
   const [cashPaidInput, setCashPaidInput] = useState<number>(0);
 
-  // Void Modal state (FR-CAS-005)
+  // Void Modal state
   const [showVoidModal, setShowVoidModal] = useState(false);
   const [voidTarget, setVoidTarget] = useState<{ orderId: number; itemId?: number } | null>(null);
   const [supervisorPin, setSupervisorPin] = useState("");
   const [voidReason, setVoidReason] = useState("");
 
-  // Move Table Modal state (FR-CAS-003)
+  // Move Table Modal state
   const [showMoveTableModal, setShowMoveTableModal] = useState(false);
   const [moveFromTable, setMoveFromTable] = useState<any>(null);
   const [moveToTableId, setMoveToTableId] = useState<string>("");
 
-  // Print Receipt / Kitchen Ticket state (FR-CAS-004)
+  // Print Receipt / Kitchen Ticket state
   const [printData, setPrintData] = useState<{ type: "customer" | "kitchen"; order: any } | null>(null);
-
-  // Split Bill Modal state
-  const [showSplitBillModal, setShowSplitBillModal] = useState(false);
-  const [splitCount, setSplitCount] = useState(2);
 
   // 1. Fetch current shift
   const fetchShift = async () => {
@@ -174,7 +171,6 @@ export default function PosCashierPage() {
         setShowPaymentModal(false);
         setShowVoidModal(false);
         setShowMoveTableModal(false);
-        setShowSplitBillModal(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -332,7 +328,6 @@ export default function PosCashierPage() {
   };
 
   // Update Order Status (Confirmed -> Preparing -> Served -> Completed)
-  // Confirmed automatically triggers inventory deduction!
   const handleUpdateOrderStatus = async (orderId: number, status: string) => {
     try {
       const res = await fetch(`/api/v1/pos/orders/${orderId}/status`, {
@@ -386,7 +381,7 @@ export default function PosCashierPage() {
     }
   };
 
-  // Void Action (Order or Item) with Supervisor PIN
+  // Void Action with Supervisor PIN
   const handleExecuteVoid = async () => {
     if (!voidTarget || !supervisorPin || !voidReason) {
       alert("PIN Supervisor dan alasan void wajib diisi.");
@@ -458,10 +453,10 @@ export default function PosCashierPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        <div className="flex items-center gap-3 text-xs">
-          <RefreshCw className="w-4 h-4 animate-spin text-orange-500" />
-          <span>Memverifikasi otentikasi kasir...</span>
+      <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex items-center justify-center">
+        <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-2xl shadow-sm border border-slate-200/80">
+          <RefreshCw className="w-5 h-5 animate-spin text-[#EA580C]" />
+          <span className="text-sm font-medium">Memverifikasi otentikasi kasir...</span>
         </div>
       </div>
     );
@@ -469,19 +464,19 @@ export default function PosCashierPage() {
 
   if (!user || (user.role !== "kasir" && user.role !== "admin")) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl">
-          <div className="w-16 h-16 rounded-3xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-xl">
+          <div className="w-16 h-16 rounded-full bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center mx-auto">
             <Store className="w-8 h-8" />
           </div>
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">
-              Hak Akses Terbatas (Role Kasir / Admin)
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#EA580C] bg-[#EA580C]/10 px-3 py-1 rounded-full">
+              Hak Akses Terbatas (Kasir / Admin)
             </span>
-            <h2 className="text-xl font-black text-white mt-1">POS Kasir Terminal</h2>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+            <h2 className="font-serif text-2xl font-bold text-[#18181B] mt-3">SAVORIA POS Terminal</h2>
+            <p className="text-xs text-[#64748B] mt-2 leading-relaxed">
               {user
-                ? `Akun Anda saat ini (${user.name}) memiliki role [${user.role.toUpperCase()}]. Anda memerlukan hak akses Kasir atau Admin untuk mengoperasikan terminal POS ini.`
+                ? `Akun Anda (${user.name}) memiliki role [${user.role.toUpperCase()}]. Anda memerlukan hak akses Kasir atau Admin untuk mengoperasikan terminal POS ini.`
                 : "Anda belum login ke sistem POS. Silakan masuk menggunakan akun kasir atau admin."}
             </p>
           </div>
@@ -489,7 +484,7 @@ export default function PosCashierPage() {
           <div className="space-y-3 pt-2">
             <button
               onClick={() => quickLogin("kasir")}
-              className="w-full py-3 bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition-all cursor-pointer"
+              className="w-full py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#EA580C]/25 transition-all cursor-pointer"
             >
               <Store className="w-4 h-4" />
               <span>Login Instan sebagai Kasir (Demo)</span>
@@ -497,16 +492,16 @@ export default function PosCashierPage() {
 
             <Link
               href="/login?redirect=/pos"
-              className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 border border-slate-700 transition-all block text-center"
+              className="w-full py-2.5 bg-white hover:bg-slate-50 text-[#18181B] font-bold rounded-full text-xs flex items-center justify-center gap-2 border border-slate-200/80 transition-all block text-center shadow-sm"
             >
               Halaman Login Kredensial
             </Link>
 
             <Link
               href="/user"
-              className="w-full py-2.5 text-slate-400 hover:text-white font-semibold text-xs flex items-center justify-center gap-1 transition-all block text-center"
+              className="w-full py-2.5 text-[#64748B] hover:text-[#18181B] font-semibold text-xs flex items-center justify-center gap-1 transition-all block text-center"
             >
-              ← Kembali ke Portal Pelanggan
+              ← Kembali ke Portal Tamu
             </Link>
           </div>
         </div>
@@ -515,40 +510,43 @@ export default function PosCashierPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col text-slate-800">
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col text-[#18181B]">
       {/* 1. TOP CASHIER BAR */}
-      <header className="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between shadow-md">
+      <header className="bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 flex items-center justify-between shadow-xs sticky top-0 z-30">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-orange-500 text-white flex items-center justify-center font-black text-sm">
-              RS
-            </div>
+          <div className="flex items-center gap-2.5">
+            <Link
+              href="/"
+              className="w-9 h-9 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-bold text-base shadow-sm shadow-[#EA580C]/30"
+            >
+              S
+            </Link>
             <div>
-              <h1 className="font-extrabold text-sm tracking-wide text-white flex items-center gap-1.5">
-                RestoSync <span className="text-[10px] bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded-md font-bold uppercase">POS Terminal</span>
+              <h1 className="font-serif font-bold text-base text-[#18181B] flex items-center gap-1.5 leading-none">
+                SAVORIA <span className="text-[10px] bg-[#EA580C]/10 text-[#EA580C] px-2 py-0.5 rounded-full font-bold uppercase font-mono">POS Terminal</span>
               </h1>
             </div>
           </div>
 
           {/* Shift Indicator */}
           {currentShift ? (
-            <div className="hidden sm:flex items-center gap-3 text-xs bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-slate-300">
-                Kasir: <strong className="text-white">{currentShift.cashierName}</strong>
+            <div className="hidden lg:flex items-center gap-3 text-xs bg-[#FDFBF7] px-3.5 py-1.5 rounded-full border border-slate-200/80 shadow-2xs">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[#64748B]">
+                Petugas: <strong className="text-[#18181B]">{currentShift.cashierName}</strong>
               </span>
-              <span className="text-slate-500">|</span>
-              <span className="text-slate-300">
-                Modal Awal: <strong className="text-emerald-400">{formatIDR(currentShift.startCash)}</strong>
+              <span className="text-slate-300">|</span>
+              <span className="text-[#64748B]">
+                Modal: <strong className="text-emerald-700 font-mono">{formatIDR(currentShift.startCash)}</strong>
               </span>
-              <span className="text-slate-500">|</span>
-              <span className="text-slate-300">
-                Ekspektasi Kas: <strong className="text-yellow-400">{formatIDR(currentShift.expectedCash || currentShift.startCash)}</strong>
+              <span className="text-slate-300">|</span>
+              <span className="text-[#64748B]">
+                Estimasi Kas: <strong className="text-[#EA580C] font-mono">{formatIDR(currentShift.expectedCash || currentShift.startCash)}</strong>
               </span>
             </div>
           ) : (
-            <div className="text-xs bg-red-900/60 text-red-200 px-3 py-1 rounded-lg border border-red-700 flex items-center gap-2">
-              <AlertTriangle className="w-3.5 h-3.5" />
+            <div className="text-xs bg-rose-50 text-rose-700 px-3 py-1 rounded-full border border-rose-200 flex items-center gap-1.5 font-medium">
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
               <span>Shift Kasir Belum Dibuka</span>
             </div>
           )}
@@ -558,39 +556,39 @@ export default function PosCashierPage() {
         <div className="flex items-center gap-2">
           {/* Waiter Calls Badge Alert */}
           {waiterCalls.length > 0 && (
-            <div className="flex items-center gap-1.5 bg-amber-500 text-slate-900 px-3 py-1 rounded-lg text-xs font-bold animate-pulse">
+            <div className="flex items-center gap-1.5 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse shadow-sm">
               <BellRing className="w-3.5 h-3.5" />
               <span>{waiterCalls.length} Panggilan Pelayan!</span>
             </div>
           )}
 
           {/* Tab Selector */}
-          <div className="bg-slate-800 p-1 rounded-xl flex items-center text-xs font-semibold">
+          <div className="bg-[#FDFBF7] border border-slate-200/80 p-1 rounded-full flex items-center text-xs font-semibold">
             <button
               onClick={() => setActiveTab("pos")}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                activeTab === "pos" ? "bg-orange-500 text-white shadow-xs" : "text-slate-300 hover:text-white"
+              className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
+                activeTab === "pos" ? "bg-[#EA580C] text-white shadow-xs" : "text-[#64748B] hover:text-[#18181B]"
               }`}
             >
               Order Grid (F2)
             </button>
             <button
               onClick={() => setActiveTab("orders")}
-              className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1 ${
-                activeTab === "orders" ? "bg-orange-500 text-white shadow-xs" : "text-slate-300 hover:text-white"
+              className={`px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === "orders" ? "bg-[#EA580C] text-white shadow-xs" : "text-[#64748B] hover:text-[#18181B]"
               }`}
             >
               <span>Pesanan Aktif</span>
               {activeOrders.length > 0 && (
-                <span className="bg-white text-orange-600 px-1.5 py-0.2 rounded-full text-[10px] font-black">
+                <span className="bg-white text-[#EA580C] px-1.5 py-0.2 rounded-full text-[10px] font-black">
                   {activeOrders.length}
                 </span>
               )}
             </button>
             <button
               onClick={() => setActiveTab("tables")}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                activeTab === "tables" ? "bg-orange-500 text-white shadow-xs" : "text-slate-300 hover:text-white"
+              className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
+                activeTab === "tables" ? "bg-[#EA580C] text-white shadow-xs" : "text-[#64748B] hover:text-[#18181B]"
               }`}
             >
               Denah Meja
@@ -604,7 +602,7 @@ export default function PosCashierPage() {
                 setEndCashActualInput("");
                 setShowCloseShiftModal(true);
               }}
-              className="px-3 py-1.5 bg-slate-800 hover:bg-red-950 text-red-300 hover:text-red-200 border border-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-1"
+              className="px-3.5 py-1.5 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 border border-slate-200/80 text-xs font-bold rounded-full transition-all flex items-center gap-1 cursor-pointer shadow-sm"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Tutup Shift</span>
@@ -612,7 +610,7 @@ export default function PosCashierPage() {
           ) : (
             <button
               onClick={() => setShowOpenShiftModal(true)}
-              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-all"
+              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-full transition-all shadow-sm cursor-pointer"
             >
               Buka Shift
             </button>
@@ -620,22 +618,22 @@ export default function PosCashierPage() {
 
           <Link
             href="/admin"
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold rounded-xl"
+            className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-[#18181B] border border-slate-200/80 text-xs font-semibold rounded-full shadow-sm"
           >
             Admin ↗
           </Link>
 
           {/* User Profile & Logout */}
           {user && (
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-700">
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
               <div className="hidden sm:flex flex-col text-right">
-                <span className="text-[11px] font-bold text-white leading-tight">{user.name}</span>
-                <span className="text-[9px] text-orange-400 font-mono uppercase">{user.role}</span>
+                <span className="text-[11px] font-bold text-[#18181B] leading-tight">{user.name}</span>
+                <span className="text-[9px] text-[#EA580C] font-mono uppercase">{user.role}</span>
               </div>
               <button
                 onClick={logout}
                 title="Keluar / Logout"
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 transition-colors cursor-pointer"
+                className="p-1.5 rounded-full bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-[#64748B] transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
@@ -646,12 +644,12 @@ export default function PosCashierPage() {
 
       {/* Waiter Calls Floating Notification Bar */}
       {waiterCalls.length > 0 && (
-        <div className="bg-amber-100 border-b border-amber-300 px-4 py-2 flex items-center justify-between text-xs text-amber-900">
+        <div className="bg-amber-50 border-b border-amber-200 px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs text-amber-900">
           <div className="flex items-center gap-2">
             <BellRing className="w-4 h-4 text-amber-600 animate-bounce" />
             <span className="font-bold">Perhatian Kasir & Pelayan:</span>
             <span>
-              {waiterCalls.map((c) => c.tableNumber).join(", ")} membutuhkan bantuan pelayan!
+              {waiterCalls.map((c) => c.tableNumber).join(", ")} memanggil bantuan pelayan ke meja!
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -659,7 +657,7 @@ export default function PosCashierPage() {
               <button
                 key={c.id}
                 onClick={() => handleResolveWaiterCall(c.id)}
-                className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-[11px]"
+                className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-full text-[11px] transition-colors cursor-pointer shadow-sm"
               >
                 Selesai Tangani ({c.tableNumber})
               </button>
@@ -674,29 +672,29 @@ export default function PosCashierPage() {
         {activeTab === "pos" && (
           <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
             {/* Left Column: Menu Catalog Grid */}
-            <div className="flex-1 flex flex-col bg-slate-50 border-r border-slate-200 overflow-hidden">
+            <div className="flex-1 flex flex-col bg-[#FDFBF7] border-r border-slate-200/80 overflow-hidden">
               {/* Category & Search Topbar */}
-              <div className="p-3 bg-white border-b border-slate-200 space-y-2">
+              <div className="p-4 bg-white border-b border-slate-200/80 space-y-3 shadow-2xs">
                 <div className="relative">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     id="pos-search-input"
                     type="text"
-                    placeholder="Cari Menu (Shortcut F2)..."
+                    placeholder="Cari Menu Cepat (Shortcut F2)..."
                     value={posSearch}
                     onChange={(e) => setPosSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#FDFBF7] border border-slate-200/80 rounded-full text-xs text-[#18181B] focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
                   />
                 </div>
 
                 {/* Categories */}
-                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
                   <button
                     onClick={() => setSelectedCategory("all")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                    className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                       selectedCategory === "all"
-                        ? "bg-orange-500 text-white shadow-xs"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        ? "bg-[#EA580C] text-white shadow-xs"
+                        : "bg-[#FDFBF7] text-[#64748B] hover:text-[#18181B] border border-slate-200/80"
                     }`}
                   >
                     Semua ({menus.length})
@@ -705,10 +703,10 @@ export default function PosCashierPage() {
                     <button
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.slug)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                         selectedCategory === cat.slug
-                          ? "bg-orange-500 text-white shadow-xs"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          ? "bg-[#EA580C] text-white shadow-xs"
+                          : "bg-[#FDFBF7] text-[#64748B] hover:text-[#18181B] border border-slate-200/80"
                       }`}
                     >
                       {cat.name}
@@ -718,7 +716,7 @@ export default function PosCashierPage() {
               </div>
 
               {/* Menu Items Grid */}
-              <div className="flex-1 p-3 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5">
+              <div className="flex-1 p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
                 {menus
                   .filter(
                     (m) =>
@@ -730,17 +728,17 @@ export default function PosCashierPage() {
                     <div
                       key={menu.id}
                       onClick={() => addToPosCart(menu)}
-                      className={`bg-white rounded-xl border border-slate-200 p-2.5 flex flex-col justify-between hover:border-orange-400 hover:shadow-xs transition-all cursor-pointer active:scale-95 ${
+                      className={`bg-white rounded-2xl border border-slate-200/80 p-3 flex flex-col justify-between hover:border-[#EA580C] hover:shadow-md transition-all cursor-pointer active:scale-95 shadow-sm group ${
                         !menu.isAvailable ? "opacity-50 cursor-not-allowed" : ""
                       }`}
                     >
-                      <div className="relative w-full h-24 rounded-lg overflow-hidden bg-slate-100 mb-2">
+                      <div className="relative w-full h-28 rounded-xl overflow-hidden bg-slate-100 mb-2.5">
                         {menu.image ? (
                           <Image
                             src={menu.image}
                             alt={menu.name}
                             fill
-                            className="object-cover"
+                            className="object-cover group-hover:scale-105 transition-transform"
                             sizes="180px"
                           />
                         ) : (
@@ -755,10 +753,10 @@ export default function PosCashierPage() {
                         )}
                       </div>
                       <div>
-                        <h3 className="font-bold text-xs text-slate-800 line-clamp-1 leading-tight">
+                        <h3 className="font-serif font-bold text-xs text-[#18181B] line-clamp-1 leading-tight group-hover:text-[#EA580C] transition-colors">
                           {menu.name}
                         </h3>
-                        <p className="text-orange-600 font-extrabold text-xs mt-1">
+                        <p className="text-[#EA580C] font-serif font-bold text-xs mt-1">
                           {formatIDR(menu.price)}
                         </p>
                       </div>
@@ -768,28 +766,28 @@ export default function PosCashierPage() {
             </div>
 
             {/* Right Column: Active Bill / Cart */}
-            <div className="w-full md:w-96 bg-white flex flex-col border-l border-slate-200 shadow-xs">
+            <div className="w-full md:w-96 bg-white flex flex-col border-l border-slate-200/80 shadow-sm">
               {/* Table & Order Type Selector */}
-              <div className="p-3 border-b border-slate-200 bg-slate-50 space-y-2">
+              <div className="p-4 border-b border-slate-200/80 bg-[#FDFBF7] space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase text-slate-700">Tujuan Pesanan</span>
-                  <div className="flex gap-1 text-[11px] font-bold">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#64748B]">Tujuan Pesanan</span>
+                  <div className="flex gap-1.5 text-xs font-bold">
                     <button
                       onClick={() => setOrderType("dine_in")}
-                      className={`px-2.5 py-1 rounded-md transition-all ${
+                      className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
                         orderType === "dine_in"
-                          ? "bg-slate-900 text-white"
-                          : "bg-white text-slate-600 border border-slate-200"
+                          ? "bg-[#EA580C] text-white shadow-xs"
+                          : "bg-white text-[#64748B] border border-slate-200/80"
                       }`}
                     >
                       Dine-In
                     </button>
                     <button
                       onClick={() => setOrderType("takeaway")}
-                      className={`px-2.5 py-1 rounded-md transition-all ${
+                      className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
                         orderType === "takeaway"
-                          ? "bg-slate-900 text-white"
-                          : "bg-white text-slate-600 border border-slate-200"
+                          ? "bg-[#EA580C] text-white shadow-xs"
+                          : "bg-white text-[#64748B] border border-slate-200/80"
                       }`}
                     >
                       Takeaway
@@ -801,9 +799,9 @@ export default function PosCashierPage() {
                   <select
                     value={selectedTableId || ""}
                     onChange={(e) => setSelectedTableId(e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full text-xs p-2 border border-slate-300 rounded-lg bg-white font-medium focus:ring-2 focus:ring-orange-500"
+                    className="w-full text-xs p-2.5 border border-slate-200/80 rounded-xl bg-white font-medium focus:ring-2 focus:ring-[#EA580C] focus:outline-none cursor-pointer"
                   >
-                    <option value="">Pilih Nomor Meja...</option>
+                    <option value="">Pilih Meja Tamu...</option>
                     {tables.map((t) => (
                       <option key={t.id} value={t.id}>
                         {t.tableNumber} ({t.area} - {t.status === "available" ? "Kosong" : "Terisi"})
@@ -814,46 +812,46 @@ export default function PosCashierPage() {
               </div>
 
               {/* Cart Items List */}
-              <div className="flex-1 p-3 overflow-y-auto space-y-2">
+              <div className="flex-1 p-4 overflow-y-auto space-y-2.5">
                 {posCart.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center">
-                    <Store className="w-10 h-10 mb-2 opacity-40" />
-                    <p className="text-xs font-semibold">Keranjang Kasir Masih Kosong</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Klik menu pada katalog untuk menambahkan item.
+                    <Store className="w-10 h-10 mb-2 opacity-30 text-[#EA580C]" />
+                    <p className="text-xs font-semibold text-[#18181B]">Keranjang Kasir Kosong</p>
+                    <p className="text-[11px] text-[#64748B] mt-0.5">
+                      Klik item hidangan di katalog untuk menambahkan pesanan.
                     </p>
                   </div>
                 ) : (
                   posCart.map((item) => (
                     <div
                       key={item.menuId}
-                      className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5"
+                      className="p-3 bg-[#FDFBF7] border border-slate-200/80 rounded-2xl space-y-1.5"
                     >
                       <div className="flex items-start justify-between">
-                        <span className="font-bold text-xs text-slate-800 leading-tight">
+                        <span className="font-semibold text-xs text-[#18181B] leading-tight">
                           {item.name}
                         </span>
-                        <span className="font-extrabold text-xs text-slate-900">
+                        <span className="font-mono font-bold text-xs text-[#18181B]">
                           {formatIDR(item.price * item.quantity)}
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-slate-500">
+                        <span className="text-[11px] text-[#64748B] font-mono">
                           @ {formatIDR(item.price)}
                         </span>
 
-                        <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-md p-0.5">
+                        <div className="flex items-center gap-1.5 bg-white border border-slate-200/80 rounded-full p-0.5 shadow-2xs">
                           <button
                             onClick={() => updatePosCartQty(item.menuId, -1)}
-                            className="w-5 h-5 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold"
+                            className="w-5 h-5 rounded-full flex items-center justify-center text-[#64748B] hover:bg-slate-100 font-bold cursor-pointer"
                           >
                             <Minus className="w-3 h-3" />
                           </button>
-                          <span className="text-xs font-bold w-5 text-center">{item.quantity}</span>
+                          <span className="text-xs font-bold w-5 text-center font-mono">{item.quantity}</span>
                           <button
                             onClick={() => updatePosCartQty(item.menuId, 1)}
-                            className="w-5 h-5 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold"
+                            className="w-5 h-5 rounded-full flex items-center justify-center text-[#64748B] hover:bg-slate-100 font-bold cursor-pointer"
                           >
                             <Plus className="w-3 h-3" />
                           </button>
@@ -865,23 +863,23 @@ export default function PosCashierPage() {
               </div>
 
               {/* Bottom Price Summary & Checkout Action */}
-              <div className="p-3 border-t border-slate-200 bg-slate-50 space-y-2">
-                <div className="space-y-1 text-xs text-slate-600">
+              <div className="p-4 border-t border-slate-200/80 bg-[#FDFBF7] space-y-2.5">
+                <div className="space-y-1 text-xs text-[#64748B]">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>{formatIDR(posSubtotal)}</span>
+                    <span className="font-mono">{formatIDR(posSubtotal)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>PB1 / Pajak (10%)</span>
-                    <span>{formatIDR(posTax)}</span>
+                    <span>PB1 (10%)</span>
+                    <span className="font-mono">{formatIDR(posTax)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Service (5%)</span>
-                    <span>{formatIDR(posService)}</span>
+                    <span>Biaya Layanan (5%)</span>
+                    <span className="font-mono">{formatIDR(posService)}</span>
                   </div>
-                  <div className="flex justify-between font-extrabold text-slate-900 text-sm pt-1 border-t border-slate-200">
-                    <span>Total Tagihan</span>
-                    <span className="text-orange-600 text-base">{formatIDR(posTotal)}</span>
+                  <div className="flex justify-between font-bold text-[#18181B] text-sm pt-1.5 border-t border-slate-200">
+                    <span className="font-serif">Total Tagihan</span>
+                    <span className="text-[#EA580C] font-mono text-base">{formatIDR(posTotal)}</span>
                   </div>
                 </div>
 
@@ -889,14 +887,14 @@ export default function PosCashierPage() {
                   <button
                     onClick={() => setPosCart([])}
                     disabled={posCart.length === 0}
-                    className="p-2.5 bg-white border border-slate-200 text-slate-600 hover:text-red-600 rounded-xl disabled:opacity-50"
+                    className="p-3 bg-white border border-slate-200/80 text-[#64748B] hover:text-rose-600 rounded-full disabled:opacity-50 cursor-pointer shadow-sm"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={handlePosCheckout}
                     disabled={posCart.length === 0}
-                    className="flex-1 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-orange-600/20 active:scale-95 transition-all"
+                    className="flex-1 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white font-bold py-3 px-4 rounded-full text-xs flex items-center justify-center gap-1.5 shadow-md shadow-[#EA580C]/25 active:scale-95 transition-all cursor-pointer"
                   >
                     <span>Bayar Sekarang (F4)</span>
                     <span className="font-extrabold">→</span>
@@ -909,31 +907,31 @@ export default function PosCashierPage() {
 
         {/* TAB 2: ACTIVE & INCOMING ORDERS */}
         {activeTab === "orders" && (
-          <div className="flex-1 p-4 overflow-y-auto space-y-3">
+          <div className="flex-1 p-6 overflow-y-auto space-y-4">
             <div className="flex items-center justify-between pb-2">
               <div>
-                <h2 className="text-base font-bold text-slate-900">
+                <h2 className="font-serif text-lg sm:text-xl font-bold text-[#18181B]">
                   Daftar Pesanan Berjalan ({activeOrders.length})
                 </h2>
-                <p className="text-xs text-slate-500">
-                  Pesanan masuk dari QR Meja pembeli & kasir tersinkronisasi live.
+                <p className="text-xs text-[#64748B]">
+                  Pesanan masuk dari reservasi tamu & kasir tersinkronisasi secara real-time.
                 </p>
               </div>
               <button
                 onClick={fetchAllData}
-                className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center gap-1 hover:bg-slate-50"
+                className="px-4 py-2 bg-white border border-slate-200/80 rounded-full text-xs font-semibold text-[#64748B] hover:text-[#18181B] flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Refresh</span>
+                <span>Refresh Data</span>
               </button>
             </div>
 
             {activeOrders.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400">
-                <UtensilsCrossed className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                <p className="font-bold text-slate-700">Tidak ada pesanan aktif saat ini.</p>
-                <p className="text-xs text-slate-400 mt-1">
-                  Pesanan baru dari scan QR meja akan otomatis muncul di sini.
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center text-[#64748B] shadow-sm">
+                <UtensilsCrossed className="w-12 h-12 mx-auto mb-2 opacity-30 text-[#EA580C]" />
+                <p className="font-serif font-bold text-base text-[#18181B]">Tidak ada pesanan aktif saat ini.</p>
+                <p className="text-xs text-[#64748B] mt-1">
+                  Pesanan baru dari reservasi atau scan QR meja akan otomatis muncul di sini.
                 </p>
               </div>
             ) : (
@@ -941,18 +939,18 @@ export default function PosCashierPage() {
                 {activeOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between space-y-3"
+                    className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
                   >
                     <div>
                       {/* Order Header */}
-                      <div className="flex items-start justify-between border-b border-slate-100 pb-2.5">
+                      <div className="flex items-start justify-between border-b border-slate-100 pb-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-black text-sm text-slate-900">
+                            <h3 className="font-mono font-bold text-sm text-[#18181B]">
                               {order.orderNumber}
                             </h3>
                             <span
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase font-mono ${
                                 order.status === "pending"
                                   ? "bg-amber-100 text-amber-800"
                                   : order.status === "confirmed"
@@ -967,7 +965,7 @@ export default function PosCashierPage() {
                               {order.status}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                          <p className="text-xs text-[#64748B] mt-0.5 font-medium">
                             {order.table?.tableNumber || "Takeaway"} • {order.customerName}
                           </p>
                         </div>
@@ -977,45 +975,45 @@ export default function PosCashierPage() {
                           <button
                             title="Cetak Tiket Dapur"
                             onClick={() => triggerPrint("kitchen", order)}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600"
+                            className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-[#64748B] cursor-pointer"
                           >
-                            <ChefHat className="w-4 h-4" />
+                            <ChefHat className="w-3.5 h-3.5" />
                           </button>
                           <button
                             title="Cetak Struk Pelanggan"
                             onClick={() => triggerPrint("customer", order)}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600"
+                            className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-[#64748B] cursor-pointer"
                           >
-                            <Printer className="w-4 h-4" />
+                            <Printer className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
 
                       {/* Item List */}
-                      <div className="py-2.5 space-y-2 max-h-48 overflow-y-auto">
+                      <div className="py-3 space-y-2 max-h-48 overflow-y-auto">
                         {order.items?.map((item: any) => (
                           <div
                             key={item.id}
                             className={`text-xs flex items-start justify-between ${
-                              item.isVoided ? "line-through opacity-40 text-red-500" : "text-slate-700"
+                              item.isVoided ? "line-through opacity-40 text-rose-500" : "text-[#18181B]"
                             }`}
                           >
                             <div>
-                              <span className="font-bold text-slate-900">{item.quantity}x </span>
-                              <span>{item.menu.name}</span>
+                              <span className="font-mono font-bold text-[#EA580C]">{item.quantity}x </span>
+                              <span className="font-medium">{item.menu.name}</span>
                               {item.notes && (
                                 <p className="text-[10px] text-amber-700 italic">
                                   &ldquo;{item.notes}&rdquo;
                                 </p>
                               )}
                               {item.voidReason && (
-                                <p className="text-[10px] text-red-600">
+                                <p className="text-[10px] text-rose-600">
                                   Void: {item.voidReason}
                                 </p>
                               )}
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="font-bold">{formatIDR(item.subtotal)}</span>
+                              <span className="font-mono font-bold">{formatIDR(item.subtotal)}</span>
                               {!item.isVoided && order.paymentStatus !== "paid" && (
                                 <button
                                   onClick={() => {
@@ -1023,7 +1021,7 @@ export default function PosCashierPage() {
                                     setShowVoidModal(true);
                                   }}
                                   title="Void Item"
-                                  className="text-red-400 hover:text-red-600 text-[10px]"
+                                  className="text-rose-400 hover:text-rose-600 text-[10px] font-bold cursor-pointer"
                                 >
                                   Void
                                 </button>
@@ -1034,9 +1032,9 @@ export default function PosCashierPage() {
                       </div>
 
                       {/* Total */}
-                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                        <span className="text-slate-500">Total Pembayaran</span>
-                        <span className="font-black text-sm text-slate-900">
+                      <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                        <span className="text-[#64748B]">Total Tagihan:</span>
+                        <span className="font-serif font-bold text-sm text-[#18181B]">
                           {formatIDR(order.totalAmount)}
                         </span>
                       </div>
@@ -1047,7 +1045,7 @@ export default function PosCashierPage() {
                       {order.status === "pending" && (
                         <button
                           onClick={() => handleUpdateOrderStatus(order.id, "confirmed")}
-                          className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs"
+                          className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full text-xs transition-colors cursor-pointer"
                         >
                           Konfirmasi Pesanan
                         </button>
@@ -1056,7 +1054,7 @@ export default function PosCashierPage() {
                       {order.status === "confirmed" && (
                         <button
                           onClick={() => handleUpdateOrderStatus(order.id, "preparing")}
-                          className="flex-1 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-xs"
+                          className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full text-xs transition-colors cursor-pointer"
                         >
                           Mulai Masak (Dapur)
                         </button>
@@ -1065,7 +1063,7 @@ export default function PosCashierPage() {
                       {order.status === "preparing" && (
                         <button
                           onClick={() => handleUpdateOrderStatus(order.id, "served")}
-                          className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs"
+                          className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full text-xs transition-colors cursor-pointer"
                         >
                           Sajikan ke Meja
                         </button>
@@ -1074,13 +1072,13 @@ export default function PosCashierPage() {
                       {order.paymentStatus === "unpaid" ? (
                         <button
                           onClick={() => openPaymentForOrder(order)}
-                          className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg text-xs flex items-center gap-1 shadow-xs"
+                          className="px-4 py-2 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center gap-1 shadow-xs cursor-pointer"
                         >
                           <DollarSign className="w-3.5 h-3.5" />
                           <span>Bayar</span>
                         </button>
                       ) : (
-                        <span className="px-3 py-1.5 bg-emerald-100 text-emerald-800 font-bold rounded-lg text-xs flex items-center gap-1">
+                        <span className="px-3.5 py-1.5 bg-emerald-100 text-emerald-800 font-bold rounded-full text-xs flex items-center gap-1 font-mono">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>Lunas</span>
                         </span>
@@ -1093,7 +1091,7 @@ export default function PosCashierPage() {
                             setVoidTarget({ orderId: order.id });
                             setShowVoidModal(true);
                           }}
-                          className="px-2 py-1.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 font-semibold rounded-lg text-xs"
+                          className="p-2 bg-slate-100 hover:bg-rose-50 text-[#64748B] hover:text-rose-600 rounded-full text-xs cursor-pointer"
                         >
                           <Ban className="w-3.5 h-3.5" />
                         </button>
@@ -1106,13 +1104,13 @@ export default function PosCashierPage() {
           </div>
         )}
 
-        {/* TAB 3: TABLE MAP DASHBOARD (FR-CAS-003) */}
+        {/* TAB 3: TABLE MAP DASHBOARD */}
         {activeTab === "tables" && (
-          <div className="flex-1 p-4 overflow-y-auto space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="flex-1 p-6 overflow-y-auto space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-base font-bold text-slate-900">Denah Visual Meja Restoran</h2>
-                <p className="text-xs text-slate-500">
+                <h2 className="font-serif text-lg sm:text-xl font-bold text-[#18181B]">Denah Visual Meja Restoran</h2>
+                <p className="text-xs text-[#64748B]">
                   Pantau status keterisian meja secara langsung & pindah meja dengan 1 klik.
                 </p>
               </div>
@@ -1120,20 +1118,20 @@ export default function PosCashierPage() {
               {/* Legend */}
               <div className="flex items-center gap-3 text-xs font-semibold">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-emerald-500" />
-                  <span>Kosong</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                  <span className="text-[#64748B]">Kosong</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-amber-500" />
-                  <span>Menunggu Bayar</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  <span className="text-[#64748B]">Menunggu Bayar</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-red-500" />
-                  <span>Aktif / Masak</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                  <span className="text-[#64748B]">Aktif</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-purple-500" />
-                  <span>Reserved</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+                  <span className="text-[#64748B]">Reserved</span>
                 </span>
               </div>
             </div>
@@ -1144,28 +1142,28 @@ export default function PosCashierPage() {
               if (areaTables.length === 0) return null;
 
               return (
-                <div key={areaName} className="space-y-2">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                <div key={areaName} className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#64748B] font-mono">
                     Area: {areaName}
                   </h3>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3.5">
                     {areaTables.map((tbl) => {
                       const hasActiveOrder = tbl.orders && tbl.orders.length > 0;
                       const order = hasActiveOrder ? tbl.orders[0] : null;
 
-                      let statusBg = "bg-white border-emerald-500 text-emerald-800";
+                      let statusBorder = "border-emerald-300";
                       let badge = "Kosong";
 
                       if (tbl.status === "reserved") {
-                        statusBg = "bg-purple-50 border-purple-500 text-purple-900";
+                        statusBorder = "border-purple-300";
                         badge = "Reserved";
                       } else if (order) {
                         if (order.status === "pending") {
-                          statusBg = "bg-amber-50 border-amber-500 text-amber-900";
+                          statusBorder = "border-amber-300";
                           badge = "Menunggu";
                         } else {
-                          statusBg = "bg-red-50 border-red-500 text-red-900";
+                          statusBorder = "border-rose-300";
                           badge = order.status.toUpperCase();
                         }
                       }
@@ -1173,30 +1171,30 @@ export default function PosCashierPage() {
                       return (
                         <div
                           key={tbl.id}
-                          className={`p-3.5 rounded-2xl border-2 shadow-2xs flex flex-col justify-between transition-all ${statusBg}`}
+                          className={`p-4 rounded-3xl border-2 bg-white shadow-sm flex flex-col justify-between transition-all ${statusBorder}`}
                         >
                           <div>
-                            <div className="flex items-center justify-between mb-1">
-                              <h4 className="font-black text-sm text-slate-900">{tbl.tableNumber}</h4>
-                              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-white/80 border border-current">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <h4 className="font-serif font-bold text-base text-[#18181B]">{tbl.tableNumber}</h4>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 font-mono text-[#64748B]">
                                 {badge}
                               </span>
                             </div>
-                            <p className="text-[11px] text-slate-500">
+                            <p className="text-[11px] text-[#64748B]">
                               Kapasitas {tbl.capacity} Orang
                             </p>
                           </div>
 
                           {order ? (
-                            <div className="mt-3 pt-2 border-t border-slate-200/60 space-y-1">
-                              <p className="text-xs font-bold line-clamp-1">{order.customerName}</p>
-                              <p className="text-xs font-extrabold text-orange-600">
+                            <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1.5">
+                              <p className="text-xs font-bold text-[#18181B] line-clamp-1">{order.customerName}</p>
+                              <p className="text-xs font-serif font-bold text-[#EA580C]">
                                 {formatIDR(order.totalAmount)}
                               </p>
-                              <div className="flex gap-1 pt-1">
+                              <div className="flex gap-1.5 pt-1">
                                 <button
                                   onClick={() => openPaymentForOrder(order)}
-                                  className="flex-1 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[10px] font-bold"
+                                  className="flex-1 py-1.5 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-[10px] font-bold cursor-pointer"
                                 >
                                   Bayar
                                 </button>
@@ -1206,20 +1204,20 @@ export default function PosCashierPage() {
                                     setShowMoveTableModal(true);
                                   }}
                                   title="Pindah Meja"
-                                  className="p-1 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-lg text-[10px] font-bold"
+                                  className="p-1.5 bg-slate-100 hover:bg-slate-200 text-[#64748B] rounded-full text-[10px] font-bold cursor-pointer"
                                 >
                                   <ArrowRightLeft className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             </div>
                           ) : (
-                            <div className="mt-3 pt-2 border-t border-slate-200/60">
+                            <div className="mt-3 pt-2.5 border-t border-slate-100">
                               <button
                                 onClick={() => {
                                   setSelectedTableId(tbl.id);
                                   setActiveTab("pos");
                                 }}
-                                className="w-full py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold"
+                                className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-[11px] font-bold cursor-pointer shadow-xs"
                               >
                                 + Buka Bill
                               </button>
@@ -1238,37 +1236,37 @@ export default function PosCashierPage() {
 
       {/* 3. MODALS */}
 
-      {/* OPEN SHIFT MODAL (FR-CAS-001) */}
+      {/* OPEN SHIFT MODAL */}
       {showOpenShiftModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                <Store className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <Store className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 text-base">Buka Shift Kasir Baru</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="font-serif font-bold text-[#18181B] text-lg">Buka Shift Kasir Baru</h3>
+                <p className="text-xs text-[#64748B]">
                   Input nama kasir dan modal uang receh awal di laci kasir.
                 </p>
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">
+                <label className="text-xs font-bold text-[#18181B] block mb-1">
                   Nama Kasir Petugas
                 </label>
                 <input
                   type="text"
                   value={cashierNameInput}
                   onChange={(e) => setCashierNameInput(e.target.value)}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">
+                <label className="text-xs font-bold text-[#18181B] block mb-1">
                   Modal Uang Receh Awal (Starting Cash)
                 </label>
                 <input
@@ -1276,9 +1274,9 @@ export default function PosCashierPage() {
                   value={startCashInput}
                   onChange={(e) => setStartCashInput(e.target.value)}
                   placeholder="500000"
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-[#64748B] mt-1 font-mono">
                   Nominal: {formatIDR(parseFloat(startCashInput) || 0)}
                 </p>
               </div>
@@ -1286,7 +1284,7 @@ export default function PosCashierPage() {
 
             <button
               onClick={handleOpenShift}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20"
+              className="w-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold py-3 rounded-full text-xs transition-all shadow-md shadow-[#EA580C]/25 cursor-pointer"
             >
               Konfirmasi & Mulai Shift Kasir
             </button>
@@ -1294,47 +1292,47 @@ export default function PosCashierPage() {
         </div>
       )}
 
-      {/* CLOSE SHIFT MODAL & RECONCILIATION (FR-CAS-001) */}
+      {/* CLOSE SHIFT MODAL & RECONCILIATION */}
       {showCloseShiftModal && currentShift && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Store className="w-5 h-5 text-red-600" />
-                <h3 className="font-bold text-slate-900 text-base">Tutup Shift & Rekonsiliasi Kas</h3>
+                <Store className="w-5 h-5 text-rose-600" />
+                <h3 className="font-serif font-bold text-[#18181B] text-base">Tutup Shift & Rekonsiliasi Kas</h3>
               </div>
               <button
                 onClick={() => setShowCloseShiftModal(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Reconciliation math summary */}
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1.5">
-              <div className="flex justify-between text-slate-600">
-                <span>Modal Awal Kasir</span>
+            <div className="bg-[#FDFBF7] p-3.5 rounded-2xl border border-slate-200/80 text-xs space-y-1.5 font-mono">
+              <div className="flex justify-between text-[#64748B]">
+                <span>Modal Awal Kasir:</span>
                 <span>{formatIDR(currentShift.startCash)}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Total Penjualan Tunai Bersih</span>
+              <div className="flex justify-between text-[#64748B]">
+                <span>Total Penjualan Tunai Bersih:</span>
                 <span>{formatIDR(currentShift.netCashSales || 0)}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Total Penjualan Digital (QRIS/Debit)</span>
+              <div className="flex justify-between text-[#64748B]">
+                <span>Total Digital (QRIS/Debit):</span>
                 <span>{formatIDR(currentShift.digitalSales || 0)}</span>
               </div>
-              <div className="flex justify-between font-extrabold text-slate-900 pt-1.5 border-t border-slate-200">
-                <span>Ekspektasi Uang Tunai di Laci</span>
-                <span className="text-emerald-700 text-sm">
+              <div className="flex justify-between font-bold text-[#18181B] pt-2 border-t border-slate-200">
+                <span>Ekspektasi Uang Tunai di Laci:</span>
+                <span className="text-[#EA580C] text-sm">
                   {formatIDR(currentShift.expectedCash || currentShift.startCash)}
                 </span>
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">
+              <label className="text-xs font-bold text-[#18181B] block mb-1">
                 Hitung Uang Fisik Aktual di Laci Kasir:
               </label>
               <input
@@ -1347,17 +1345,17 @@ export default function PosCashierPage() {
                   const exp = currentShift.expectedCash || currentShift.startCash;
                   setCloseShiftVariance(actual - exp);
                 }}
-                className="w-full text-xs p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
               />
 
               {closeShiftVariance !== null && (
                 <div
-                  className={`mt-2 p-2 rounded-lg text-xs font-bold flex items-center justify-between ${
+                  className={`mt-2.5 p-2.5 rounded-xl text-xs font-bold flex items-center justify-between font-mono ${
                     closeShiftVariance === 0
                       ? "bg-emerald-100 text-emerald-800"
                       : closeShiftVariance > 0
                       ? "bg-blue-100 text-blue-800"
-                      : "bg-red-100 text-red-800"
+                      : "bg-rose-100 text-rose-800"
                   }`}
                 >
                   <span>
@@ -1374,7 +1372,7 @@ export default function PosCashierPage() {
 
             <button
               onClick={handleCloseShift}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md shadow-red-600/20"
+              className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-full text-xs transition-all shadow-md shadow-rose-600/20 cursor-pointer"
             >
               Simpan & Tutup Shift Sekarang
             </button>
@@ -1384,29 +1382,29 @@ export default function PosCashierPage() {
 
       {/* PAYMENT MODAL (TUNAI / QRIS / DEBIT) */}
       {showPaymentModal && orderToPay && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 className="font-bold text-slate-900 text-base">
+                <h3 className="font-serif font-bold text-[#18181B] text-base">
                   Pembayaran: {orderToPay.orderNumber}
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#64748B]">
                   {orderToPay.table?.tableNumber || "Takeaway"} • {orderToPay.customerName}
                 </p>
               </div>
               <button
                 onClick={() => setShowPaymentModal(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Total tagihan */}
-            <div className="bg-orange-50 p-3 rounded-xl border border-orange-200 text-center">
-              <span className="text-xs text-orange-800 font-bold">Total yang Harus Dibayar</span>
-              <p className="text-2xl font-black text-orange-600 mt-0.5">
+            <div className="bg-[#FDFBF7] p-3.5 rounded-2xl border border-slate-200/80 text-center">
+              <span className="text-xs text-[#64748B] font-medium">Total Tagihan Bersih</span>
+              <p className="font-serif text-2xl font-bold text-[#EA580C] mt-0.5">
                 {formatIDR(orderToPay.totalAmount)}
               </p>
             </div>
@@ -1414,7 +1412,7 @@ export default function PosCashierPage() {
             {/* Payment Method Selector */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { id: "cash", label: "Tunai (Cash)", icon: DollarSign },
+                { id: "cash", label: "Tunai", icon: DollarSign },
                 { id: "qris", label: "QRIS", icon: QrCode },
                 { id: "debit", label: "Kartu Debit", icon: CreditCard },
               ].map((m) => {
@@ -1426,10 +1424,10 @@ export default function PosCashierPage() {
                       setPayMethod(m.id as any);
                       if (m.id !== "cash") setCashPaidInput(orderToPay.totalAmount);
                     }}
-                    className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all ${
+                    className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                       payMethod === m.id
-                        ? "bg-orange-500 text-white border-orange-500 shadow-xs"
-                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        ? "bg-[#EA580C] text-white border-[#EA580C] shadow-xs"
+                        : "bg-white border-slate-200/80 text-[#64748B] hover:bg-slate-50"
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -1441,15 +1439,15 @@ export default function PosCashierPage() {
 
             {/* Cash specific details */}
             {payMethod === "cash" && (
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 block">
+              <div className="space-y-2.5">
+                <label className="text-xs font-bold text-[#18181B] block">
                   Uang Tunai Diterima:
                 </label>
                 <input
                   type="number"
                   value={cashPaidInput}
                   onChange={(e) => setCashPaidInput(parseFloat(e.target.value) || 0)}
-                  className="w-full text-sm font-bold p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  className="w-full text-sm font-mono font-bold p-3 border border-slate-200/80 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
                 />
 
                 {/* Quick Cash Buttons */}
@@ -1463,7 +1461,7 @@ export default function PosCashierPage() {
                     <button
                       key={idx}
                       onClick={() => setCashPaidInput(preset)}
-                      className="px-2 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700"
+                      className="px-2 py-1.5 bg-[#FDFBF7] hover:bg-slate-100 border border-slate-200/80 rounded-full text-[10px] font-mono font-bold text-[#18181B] cursor-pointer"
                     >
                       {preset === orderToPay.totalAmount ? "Pas" : formatIDR(preset)}
                     </button>
@@ -1471,9 +1469,9 @@ export default function PosCashierPage() {
                 </div>
 
                 {/* Change amount */}
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between text-xs font-bold">
-                  <span>Kembalian:</span>
-                  <span className="text-emerald-700 text-sm">
+                <div className="bg-[#FDFBF7] p-3 rounded-2xl border border-slate-200/80 flex items-center justify-between text-xs font-bold">
+                  <span className="text-[#64748B]">Kembalian:</span>
+                  <span className="text-emerald-700 font-mono text-sm">
                     {formatIDR(Math.max(0, cashPaidInput - orderToPay.totalAmount))}
                   </span>
                 </div>
@@ -1482,13 +1480,13 @@ export default function PosCashierPage() {
 
             {/* QRIS specific simulation */}
             {payMethod === "qris" && (
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center space-y-2">
-                <div className="w-32 h-32 bg-white border border-slate-300 mx-auto rounded-lg flex items-center justify-center p-2 shadow-2xs">
-                  <QrCode className="w-24 h-24 text-slate-800" />
+              <div className="p-4 bg-[#FDFBF7] rounded-2xl border border-slate-200/80 text-center space-y-2">
+                <div className="w-32 h-32 bg-white border border-slate-200 mx-auto rounded-xl flex items-center justify-center p-2 shadow-2xs">
+                  <QrCode className="w-24 h-24 text-[#18181B]" />
                 </div>
-                <p className="text-xs font-bold text-slate-700">QRIS Dinamis RestoSync</p>
-                <p className="text-[11px] text-slate-400">
-                  Pelanggan scan kode QR di atas via GoPay / OVO / Dana / BCA Mobile.
+                <p className="text-xs font-bold text-[#18181B]">QRIS Dinamis SAVORIA</p>
+                <p className="text-[11px] text-[#64748B]">
+                  Pelanggan scan kode QR di atas via BCA Mobile, GoPay, OVO, atau ShopeePay.
                 </p>
               </div>
             )}
@@ -1496,7 +1494,7 @@ export default function PosCashierPage() {
             <button
               onClick={handleProcessPayment}
               disabled={cashPaidInput < orderToPay.totalAmount}
-              className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 text-white font-bold py-3 rounded-xl text-xs transition-all shadow-md shadow-orange-600/20"
+              className="w-full bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white font-bold py-3.5 rounded-full text-xs transition-all shadow-md shadow-[#EA580C]/25 cursor-pointer"
             >
               Selesaikan Transaksi & Cetak Struk
             </button>
@@ -1504,21 +1502,21 @@ export default function PosCashierPage() {
         </div>
       )}
 
-      {/* SUPERVISOR PIN VOID PROTECTION MODAL (FR-CAS-005) */}
+      {/* SUPERVISOR PIN VOID PROTECTION MODAL */}
       {showVoidModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center gap-2.5 text-red-600">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-2.5 text-rose-600">
               <ShieldCheck className="w-6 h-6" />
               <div>
-                <h3 className="font-bold text-slate-900 text-base">Otorisasi Void Pesanan</h3>
-                <p className="text-[11px] text-slate-500">Wajib PIN Supervisor & Alasan Void</p>
+                <h3 className="font-serif font-bold text-[#18181B] text-base">Otorisasi Void Pesanan</h3>
+                <p className="text-[11px] text-[#64748B]">Wajib PIN Supervisor & Alasan Void</p>
               </div>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">
+                <label className="text-xs font-bold text-[#18181B] block mb-1">
                   Supervisor PIN (Default: 123456)
                 </label>
                 <input
@@ -1526,12 +1524,12 @@ export default function PosCashierPage() {
                   placeholder="******"
                   value={supervisorPin}
                   onChange={(e) => setSupervisorPin(e.target.value)}
-                  className="w-full text-center tracking-widest text-base font-bold p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none"
+                  className="w-full text-center tracking-widest text-base font-bold p-3 border border-slate-200/80 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">
+                <label className="text-xs font-bold text-[#18181B] block mb-1">
                   Alasan Pembatalan (Void Reason)
                 </label>
                 <textarea
@@ -1539,7 +1537,7 @@ export default function PosCashierPage() {
                   placeholder="Contoh: Tamu membatalkan pesanan, salah input..."
                   value={voidReason}
                   onChange={(e) => setVoidReason(e.target.value)}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none"
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -1547,13 +1545,13 @@ export default function PosCashierPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowVoidModal(false)}
-                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold"
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#18181B] rounded-full text-xs font-bold cursor-pointer"
               >
                 Batal
               </button>
               <button
                 onClick={handleExecuteVoid}
-                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold"
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs font-bold cursor-pointer shadow-sm"
               >
                 Eksekusi Void
               </button>
@@ -1562,23 +1560,23 @@ export default function PosCashierPage() {
         </div>
       )}
 
-      {/* MOVE TABLE MODAL (FR-CAS-003) */}
+      {/* MOVE TABLE MODAL */}
       {showMoveTableModal && moveFromTable && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-2">
-              <ArrowRightLeft className="w-5 h-5 text-orange-500" />
-              <h3 className="font-bold text-slate-900 text-base">Pindah Meja (Move Table)</h3>
+              <ArrowRightLeft className="w-5 h-5 text-[#EA580C]" />
+              <h3 className="font-serif font-bold text-[#18181B] text-base">Pindah Meja (Move Table)</h3>
             </div>
 
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-[#64748B]">
               Pindahkan seluruh tagihan dari <strong>{moveFromTable.tableNumber}</strong> ke meja kosong yang baru:
             </p>
 
             <select
               value={moveToTableId}
               onChange={(e) => setMoveToTableId(e.target.value)}
-              className="w-full text-xs p-2.5 border border-slate-300 rounded-xl bg-white font-medium focus:ring-2 focus:ring-orange-500"
+              className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl bg-white font-medium focus:ring-2 focus:ring-[#EA580C] cursor-pointer"
             >
               <option value="">Pilih Meja Tujuan...</option>
               {tables
@@ -1593,14 +1591,14 @@ export default function PosCashierPage() {
             <div className="flex gap-2 pt-2">
               <button
                 onClick={() => setShowMoveTableModal(false)}
-                className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold"
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#18181B] rounded-full text-xs font-bold cursor-pointer"
               >
                 Batal
               </button>
               <button
                 onClick={handleExecuteMoveTable}
                 disabled={!moveToTableId}
-                className="flex-1 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 text-white rounded-xl text-xs font-bold"
+                className="flex-1 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white rounded-full text-xs font-bold cursor-pointer shadow-sm"
               >
                 Pindahkan
               </button>
@@ -1609,15 +1607,15 @@ export default function PosCashierPage() {
         </div>
       )}
 
-      {/* DIRECT THERMAL PRINTING COMPONENT (ESC/POS 58mm/80mm) (FR-CAS-004) */}
+      {/* DIRECT THERMAL PRINTING COMPONENT (ESC/POS 58mm/80mm) */}
       {printData && (
         <div id="printable-receipt" className="hidden print:block">
           {printData.type === "customer" ? (
             /* Struk Pelanggan */
-            <div className="text-center">
-              <h2 className="font-bold text-base uppercase">RESTOSYNC RESTAURANT</h2>
-              <p className="text-[10px]">Jl. Gastronomi No. 88, Jakarta Selatan</p>
-              <p className="text-[10px]">Telp: (021) 555-8899</p>
+            <div className="text-center font-mono text-xs">
+              <h2 className="font-bold text-base uppercase">SAVORIA RESTAURANT</h2>
+              <p className="text-[10px]">Grand Boulevard No. 88, Jakarta Selatan</p>
+              <p className="text-[10px]">Telp: (021) 8899-0000</p>
               <div className="border-t border-dashed border-black my-2" />
 
               <div className="text-left text-[10px] space-y-0.5">
@@ -1673,10 +1671,10 @@ export default function PosCashierPage() {
               <p className="text-[9px]">Simpan struk ini sebagai bukti pembayaran sah.</p>
             </div>
           ) : (
-            /* Tiket Dapur (Tanpa Harga, Hanya Menu & Catatan) */
-            <div className="text-left">
+            /* Tiket Dapur */
+            <div className="text-left font-mono">
               <h2 className="font-bold text-sm uppercase text-center border-b border-black pb-1">
-                *** TIKET DAPUR / BAR ***
+                *** SAVORIA TIKET DAPUR / BAR ***
               </h2>
               <div className="text-[11px] my-1 font-bold">
                 <p>MEJA: {printData.order.table?.tableNumber || "TAKEAWAY"}</p>

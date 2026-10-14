@@ -59,7 +59,7 @@ interface CartItem {
   notes: string;
 }
 
-export default function LuxuryReservationPage() {
+export default function SavoriaReservationPage() {
   const { user } = useAuth();
 
   // Wizard Step: 1 (Date/Time/Pax), 2 (Menu), 3 (Table), 4 (Payment), 5 (Receipt)
@@ -70,7 +70,7 @@ export default function LuxuryReservationPage() {
     new Date().toISOString().slice(0, 10)
   );
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>(
-    "19:30 - Grand Dinner Gala"
+    "07:30 PM - Prime Evening Gala"
   );
   const [guestCount, setGuestCount] = useState<number>(2);
   const [specialRequests, setSpecialRequests] = useState<string>("");
@@ -90,26 +90,25 @@ export default function LuxuryReservationPage() {
   const [selectedTable, setSelectedTable] = useState<TableItem | null>(null);
 
   // STEP 4 STATE: Payment
-  const [paymentMethod, setPaymentMethod] = useState<"qris" | "credit_card" | "cash">("qris");
+  const [paymentMethod, setPaymentMethod] = useState<"qris" | "card" | "cash">("qris");
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
-  const [cardNumber, setCardNumber] = useState<string>("4532 •••• •••• 8892");
-  const [cardHolder, setCardHolder] = useState<string>("");
+  const [qrisSimulatorStep, setQrisSimulatorStep] = useState<"scan" | "success">("scan");
 
   // STEP 5 STATE: Final Completed Order & QR Receipt
   const [completedOrder, setCompletedOrder] = useState<any>(null);
   const [receiptQrDataUrl, setReceiptQrDataUrl] = useState<string>("");
 
-  // Auto-fill user profile if logged in
+  // Prefill customer name if logged in
   useEffect(() => {
     if (user) {
       if (!customerName) setCustomerName(user.name);
       if (!customerPhone && user.phone) setCustomerPhone(user.phone);
-      if (!cardHolder) setCardHolder(user.name);
     }
   }, [user]);
 
-  // Fetch Menus and Tables
+  // Fetch initial data: Menus & Tables
   useEffect(() => {
+    // Menus
     fetch("/api/v1/customer/menus")
       .then((res) => res.json())
       .then((data) => {
@@ -117,6 +116,7 @@ export default function LuxuryReservationPage() {
       })
       .catch(() => {});
 
+    // Tables
     fetch("/api/v1/pos/tables")
       .then((res) => res.json())
       .then((data) => {
@@ -127,12 +127,12 @@ export default function LuxuryReservationPage() {
 
   // Time Slots Available
   const timeSlots = [
-    { label: "12:00 - Luncheon Soirée", desc: "Sesi siang elegan & segar" },
-    { label: "13:30 - Midday Gourmet", desc: "Santap siang tenang & privat" },
-    { label: "17:30 - Sunset & Aperitivo", desc: "Golden hour cocktail & starter" },
-    { label: "19:00 - Prime Evening Gala", desc: "Suasana romantis lilin malam" },
-    { label: "19:30 - Grand Dinner Gala", desc: "Sesi makan malam utama terfavorit" },
-    { label: "20:30 - Late Night Soirée", desc: "Makan malam intim eksklusif" },
+    { label: "12:00 PM - Luncheon Soirée", desc: "Sesi siang segar & elegan" },
+    { label: "01:30 PM - Midday Gourmet", desc: "Santap siang tenang & privat" },
+    { label: "05:30 PM - Sunset & Aperitivo", desc: "Golden hour starter & mocktail" },
+    { label: "06:30 PM - Romantic Dinner", desc: "Suasana romantis lilin malam" },
+    { label: "07:30 PM - Prime Evening Gala", desc: "Sesi makan malam utama terfavorit" },
+    { label: "08:30 PM - Late Night Soirée", desc: "Makan malam intim eksklusif" },
   ];
 
   // Cart Operations
@@ -199,25 +199,26 @@ export default function LuxuryReservationPage() {
     setCustomizingMenu(null);
   };
 
-  const updateCartQty = (index: number, delta: number) => {
-    const updated = [...cart];
-    const newQty = updated[index].quantity + delta;
-    if (newQty > 0) {
-      updated[index].quantity = newQty;
-      setCart(updated);
-    } else {
-      setCart(cart.filter((_, i) => i !== index));
-    }
+  const updateCartQty = (menuId: number, delta: number) => {
+    const updated = cart
+      .map((item) => {
+        if (item.menuId === menuId) {
+          return { ...item, quantity: item.quantity + delta };
+        }
+        return item;
+      })
+      .filter((item) => item.quantity > 0);
+    setCart(updated);
   };
 
-  // Cart Financials
-  const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const tax = Math.round(subtotal * 0.1);
-  const service = Math.round(subtotal * 0.05);
-  const totalAmount = subtotal + tax + service;
+  // Financial Computations
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const taxAmount = Math.round(subtotal * 0.1); // PB1 10%
+  const serviceCharge = Math.round(subtotal * 0.05); // Service 5%
+  const totalAmount = subtotal + taxAmount + serviceCharge;
 
-  // Finalize Booking & Direct Payment
-  const handleFinalPayment = async () => {
+  // Process Complete Reservation & Payment
+  const handleExecutePayment = async () => {
     if (!selectedTable) {
       alert("Harap pilih meja terlebih dahulu.");
       setCurrentStep(3);
@@ -225,7 +226,7 @@ export default function LuxuryReservationPage() {
     }
 
     if (cart.length === 0) {
-      alert("Harap pilih minimal 1 hidangan menu kuliner.");
+      alert("Pilih setidaknya 1 menu santap adiboga.");
       setCurrentStep(2);
       return;
     }
@@ -234,19 +235,17 @@ export default function LuxuryReservationPage() {
 
     try {
       const payload = {
-        tableId: selectedTable.id,
         qrToken: selectedTable.qrToken,
-        customerName: customerName.trim() || user?.name || "Tamu Terhormat",
-        customerPhone: customerPhone.trim() || user?.phone || "081200000000",
+        customerName: customerName.trim() || (user ? user.name : "Tamu VIP Savoria"),
+        customerPhone: customerPhone.trim(),
+        orderType: "dine_in",
         reservationDate: selectedDate,
         reservationTime: selectedTimeSlot,
-        guestCount,
-        specialRequests,
-        orderType: "reservation",
-        isDirectPayment: true,
-        paymentMethod,
-        amountPaid: totalAmount,
-        userId: user?.id,
+        guestCount: guestCount,
+        specialRequests: specialRequests.trim(),
+        paymentMethod: paymentMethod,
+        isPaid: true,
+        userId: user ? user.id : undefined,
         items: cart.map((i) => ({
           menuId: i.menuId,
           quantity: i.quantity,
@@ -262,16 +261,17 @@ export default function LuxuryReservationPage() {
       });
 
       const data = await res.json();
+
       if (data.success && data.data) {
         setCompletedOrder(data.data);
 
-        // Generate high-res verification QR for reception
-        const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+        // Generate QR Pass for Digital Receipt Verification
+        const origin = window.location.origin;
         const verificationUrl = `${origin}/table/${selectedTable.qrToken}?verifiedOrder=${data.data.orderNumber}`;
         const qrUrl = await QRCode.toDataURL(verificationUrl, {
           width: 300,
           margin: 2,
-          color: { dark: "#0f172a", light: "#ffffff" },
+          color: { dark: "#18181b", light: "#ffffff" },
         });
         setReceiptQrDataUrl(qrUrl);
 
@@ -294,25 +294,25 @@ export default function LuxuryReservationPage() {
   });
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-slate-950 via-[#0b0f19] to-slate-950 text-white selection:bg-amber-500 selection:text-slate-950 flex flex-col justify-between font-sans">
-      {/* 5-STAR LUXURY HEADER */}
-      <header className="border-b border-amber-500/20 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-linear-to-br from-amber-300 via-amber-500 to-yellow-600 text-slate-950 flex items-center justify-center font-black text-xl shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-              ★
+    <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] selection:bg-[#EA580C] selection:text-white flex flex-col justify-between font-sans antialiased">
+      {/* MODERN RESTAURANT HEADER */}
+      <header className="border-b border-[#E2E8F0] bg-white/90 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
+        <div className="max-w-[1280px] mx-auto flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-display font-black text-xl shadow-cta group-hover:scale-105 transition-transform">
+              S
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-serif tracking-widest text-lg font-black text-transparent bg-clip-text bg-linear-to-r from-amber-200 via-yellow-400 to-amber-500">
-                  L&apos;ÉTOILE ROYALE
+                <span className="font-display tracking-tight text-xl font-bold text-[#18181B]">
+                  SAVOR<span className="text-[#EA580C]">IA</span>
                 </span>
-                <span className="text-[9px] bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">
-                  Grand Réservation
+                <span className="text-[10px] bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                  Grand Reservation
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 tracking-wide font-light">
-                Michelin 3-Star Gastronomy & Private Dining Experience
+              <p className="text-[11px] text-[#64748B] font-light">
+                5-Step Seamless Fine Dining Experience
               </p>
             </div>
           </Link>
@@ -321,14 +321,14 @@ export default function LuxuryReservationPage() {
             {user ? (
               <div className="flex items-center gap-2">
                 <div className="hidden sm:block text-right">
-                  <span className="text-xs font-bold text-amber-300 block">{user.name}</span>
-                  <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">
+                  <span className="text-xs font-bold text-[#18181B] block">{user.name}</span>
+                  <span className="text-[10px] text-[#EA580C] uppercase font-mono tracking-wider font-semibold">
                     {user.role === "admin" ? "General Manager" : user.role === "kasir" ? "Maître D'" : "VIP Patron"}
                   </span>
                 </div>
                 <Link
                   href="/user"
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-amber-500/30 text-amber-300 hover:bg-amber-500/10 text-xs font-semibold transition-all"
+                  className="px-4 py-2 rounded-full bg-white border border-[#E2E8F0] text-[#18181B] hover:border-[#EA580C] text-xs font-semibold transition-all shadow-sm"
                 >
                   Pesanan Saya
                 </Link>
@@ -336,28 +336,27 @@ export default function LuxuryReservationPage() {
             ) : (
               <Link
                 href="/login?redirect=/reservation"
-                className="px-4 py-2 rounded-xl bg-slate-900 border border-amber-500/40 text-amber-300 hover:bg-amber-500 hover:text-slate-950 text-xs font-bold transition-all shadow-md"
+                className="px-4 py-2 rounded-full bg-white border border-[#E2E8F0] text-[#18181B] hover:text-[#EA580C] text-xs font-bold transition-all shadow-sm"
               >
-                Masuk / Login Tamu
+                Masuk / Unique Key
               </Link>
             )}
           </div>
         </div>
       </header>
 
-      {/* 5-STEP LUXURY JOURNEY STEPPER BAR */}
-      <div className="border-b border-slate-800/80 bg-slate-900/50 px-6 py-4">
+      {/* 5-STEP JOURNEY STEPPER BAR */}
+      <div className="border-b border-[#E2E8F0] bg-white px-6 py-4 shadow-sm">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           {[
             { step: 1, label: "Jadwal & Tamu", icon: Calendar },
-            { step: 2, label: "Menu Pilihan", icon: UtensilsCrossed },
+            { step: 2, label: "Pilih Menu", icon: UtensilsCrossed },
             { step: 3, label: "Pilih Meja", icon: MapPin },
             { step: 4, label: "Pembayaran", icon: CreditCard },
-            { step: 5, label: "Struk Lengkap", icon: Receipt },
+            { step: 5, label: "Struk & QR Pass", icon: Receipt },
           ].map((item, idx) => {
             const isDone = currentStep > item.step;
             const isCurrent = currentStep === item.step;
-            const Icon = item.icon;
 
             return (
               <React.Fragment key={item.step}>
@@ -367,19 +366,19 @@ export default function LuxuryReservationPage() {
                   onClick={() => currentStep > item.step && setCurrentStep(item.step)}
                   className={`flex items-center gap-2 transition-all ${
                     isCurrent
-                      ? "text-amber-400 scale-105 font-bold"
+                      ? "text-[#EA580C] scale-105 font-bold"
                       : isDone
-                      ? "text-emerald-400 hover:text-emerald-300 cursor-pointer"
-                      : "text-slate-600 cursor-not-allowed"
+                      ? "text-[#14281D] hover:text-[#EA580C] cursor-pointer"
+                      : "text-stone-400 cursor-not-allowed"
                   }`}
                 >
                   <div
                     className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all ${
                       isCurrent
-                        ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/30"
+                        ? "bg-[#EA580C] text-white font-bold shadow-cta"
                         : isDone
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                        : "bg-slate-800 text-slate-500"
+                        ? "bg-[#14281D] text-white"
+                        : "bg-[#F3EFE6] text-stone-400"
                     }`}
                   >
                     {isDone ? <CheckCircle2 className="w-4 h-4" /> : item.step}
@@ -389,7 +388,7 @@ export default function LuxuryReservationPage() {
                 {idx < 4 && (
                   <div
                     className={`flex-1 h-0.5 mx-2 rounded-full transition-all ${
-                      currentStep > idx + 1 ? "bg-emerald-500/40" : "bg-slate-800"
+                      currentStep > idx + 1 ? "bg-[#14281D]" : "bg-[#E2E8F0]"
                     }`}
                   />
                 )}
@@ -400,30 +399,30 @@ export default function LuxuryReservationPage() {
       </div>
 
       {/* MAIN CONTENT CONTAINER */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 w-full flex-1">
+      <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 py-8 w-full flex-1">
         {/* ============================================================== */}
         {/* STEP 1: PILIH TANGGAL, SESI WAKTU & JUMLAH TAMU */}
         {/* ============================================================== */}
         {currentStep === 1 && (
           <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-300">
             <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Tahap 1: Konfigurasi Kehadiran & Sesi Jamuan</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-serif font-black tracking-tight text-white">
+              <h2 className="text-3xl sm:text-4xl font-display font-bold tracking-tight text-[#18181B]">
                 Rencanakan Kehadiran Istimewa Anda
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-                Tentukan tanggal jamuan, pilih sesi waktu yang diinginkan, dan jumlah tamu yang akan hadir menikmati perjamuan haute cuisine.
+              <p className="text-xs sm:text-sm text-[#64748B] max-w-xl mx-auto">
+                Tentukan tanggal jamuan, pilih sesi waktu yang diinginkan, dan jumlah tamu yang akan hadir menikmati perjamuan adiboga di Savoria.
               </p>
             </div>
 
-            <div className="bg-slate-900/80 border border-amber-500/20 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl backdrop-blur-md">
+            <div className="bg-white border border-[#E2E8F0] rounded-card p-6 sm:p-8 space-y-6 shadow-float">
               {/* Data Tamu Pemesan */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6 border-b border-slate-800">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6 border-b border-[#E2E8F0]">
                 <div>
-                  <label className="text-xs font-bold text-amber-200 block mb-1.5">
+                  <label className="text-xs font-bold text-[#18181B] block mb-1.5">
                     Nama Pemesan / Atas Nama Reservasi
                   </label>
                   <input
@@ -432,11 +431,11 @@ export default function LuxuryReservationPage() {
                     placeholder="Contoh: Lord Aditya Pratama"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-400"
+                    className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl text-xs text-[#18181B] placeholder:text-stone-400 focus:outline-none focus:border-[#EA580C]"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-amber-200 block mb-1.5">
+                  <label className="text-xs font-bold text-[#18181B] block mb-1.5">
                     Nomor WhatsApp / Kontak Konfirmasi
                   </label>
                   <input
@@ -445,7 +444,7 @@ export default function LuxuryReservationPage() {
                     placeholder="08123456789"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-400"
+                    className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl text-xs text-[#18181B] placeholder:text-stone-400 focus:outline-none focus:border-[#EA580C]"
                   />
                 </div>
               </div>
@@ -453,8 +452,8 @@ export default function LuxuryReservationPage() {
               {/* Tanggal & Jumlah Tamu */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-xs font-bold text-amber-200 block mb-2 flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-amber-400" />
+                  <label className="text-xs font-bold text-[#18181B] block mb-2 flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-[#EA580C]" />
                     <span>Pilih Tanggal Jamuan</span>
                   </label>
                   <input
@@ -462,40 +461,40 @@ export default function LuxuryReservationPage() {
                     value={selectedDate}
                     min={new Date().toISOString().slice(0, 10)}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400 font-medium"
+                    className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl text-xs text-[#18181B] focus:outline-none focus:border-[#EA580C] font-medium"
                   />
-                  <p className="text-[11px] text-slate-500 mt-1">
+                  <p className="text-[11px] text-[#64748B] mt-1">
                     *Reservasi dibuka hingga 30 hari ke depan.
                   </p>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-amber-200 block mb-2 flex items-center gap-1.5">
-                    <Users className="w-4 h-4 text-amber-400" />
+                  <label className="text-xs font-bold text-[#18181B] block mb-2 flex items-center gap-1.5">
+                    <Users className="w-4 h-4 text-[#EA580C]" />
                     <span>Jumlah Tamu (Party Size)</span>
                   </label>
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center bg-slate-950 border border-slate-700 rounded-xl p-1">
+                    <div className="flex items-center bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl p-1">
                       <button
                         type="button"
                         onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-                        className="w-9 h-9 rounded-lg bg-slate-800 text-white font-bold flex items-center justify-center hover:bg-slate-700 cursor-pointer"
+                        className="w-9 h-9 rounded-lg bg-white text-[#18181B] border border-[#E2E8F0] font-bold flex items-center justify-center hover:bg-stone-50 cursor-pointer shadow-sm"
                       >
                         -
                       </button>
-                      <span className="w-12 text-center text-sm font-black text-amber-300 font-mono">
+                      <span className="w-12 text-center text-sm font-black text-[#EA580C] font-mono">
                         {guestCount}
                       </span>
                       <button
                         type="button"
                         onClick={() => setGuestCount(Math.min(16, guestCount + 1))}
-                        className="w-9 h-9 rounded-lg bg-slate-800 text-white font-bold flex items-center justify-center hover:bg-slate-700 cursor-pointer"
+                        className="w-9 h-9 rounded-lg bg-white text-[#18181B] border border-[#E2E8F0] font-bold flex items-center justify-center hover:bg-stone-50 cursor-pointer shadow-sm"
                       >
                         +
                       </button>
                     </div>
-                    <span className="text-xs text-slate-400">
-                      {guestCount === 2 ? "Intimate Couple Table" : guestCount <= 4 ? "Family / Four-Top Table" : "Grand Banquet / VIP Suite"}
+                    <span className="text-xs text-[#64748B]">
+                      {guestCount === 2 ? "Intimate Couple Table" : guestCount <= 4 ? "Family Table" : "Grand Banquet / VIP Chamber"}
                     </span>
                   </div>
                 </div>
@@ -503,8 +502,8 @@ export default function LuxuryReservationPage() {
 
               {/* Sesi Waktu */}
               <div>
-                <label className="text-xs font-bold text-amber-200 block mb-2 flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-amber-400" />
+                <label className="text-xs font-bold text-[#18181B] block mb-2 flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-[#EA580C]" />
                   <span>Pilih Sesi Jamuan Makan (Dining Session)</span>
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -517,12 +516,12 @@ export default function LuxuryReservationPage() {
                         onClick={() => setSelectedTimeSlot(slot.label)}
                         className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                           isSelected
-                            ? "bg-amber-500/15 border-amber-400 text-amber-200 shadow-md shadow-amber-500/10"
-                            : "bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300"
+                            ? "bg-[#EA580C]/10 border-[#EA580C] text-[#EA580C] shadow-sm"
+                            : "bg-[#FDFBF7] border-[#E2E8F0] hover:bg-white text-[#18181B]"
                         }`}
                       >
                         <span className="text-xs font-bold block">{slot.label}</span>
-                        <span className="text-[10px] text-slate-400 block mt-0.5">{slot.desc}</span>
+                        <span className="text-[10px] text-[#64748B] block mt-0.5">{slot.desc}</span>
                       </button>
                     );
                   })}
@@ -531,20 +530,20 @@ export default function LuxuryReservationPage() {
 
               {/* Permintaan Khusus */}
               <div>
-                <label className="text-xs font-bold text-amber-200 block mb-1.5">
+                <label className="text-xs font-bold text-[#18181B] block mb-1.5">
                   Permintaan Khusus & Preferensi Jamuan (Opsional)
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Contoh: Merayakan Wedding Anniversary ke-5, preferensi pemandangan taman, alergi kacang/seafood..."
+                  placeholder="Contoh: Merayakan Wedding Anniversary, preferensi pemandangan taman, alergi kacang/seafood..."
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-400"
+                  className="w-full px-4 py-2.5 bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl text-xs text-[#18181B] placeholder:text-stone-400 focus:outline-none focus:border-[#EA580C]"
                 />
               </div>
 
               {/* Navigasi Selanjutnya */}
-              <div className="pt-4 border-t border-slate-800 flex justify-end">
+              <div className="pt-4 border-t border-[#E2E8F0] flex justify-end">
                 <button
                   type="button"
                   onClick={() => {
@@ -554,7 +553,7 @@ export default function LuxuryReservationPage() {
                     }
                     setCurrentStep(2);
                   }}
-                  className="px-6 py-3 bg-linear-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-500 hover:to-yellow-700 text-slate-950 font-black rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+                  className="px-8 py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center gap-2 shadow-cta transition-all cursor-pointer"
                 >
                   <span>Lanjut ke Pemilihan Menu</span>
                   <ChevronRight className="w-4 h-4" />
@@ -565,21 +564,21 @@ export default function LuxuryReservationPage() {
         )}
 
         {/* ============================================================== */}
-        {/* STEP 2: MEMILIH MENU KULINER BINTANG 5 */}
+        {/* STEP 2: MEMILIH MENU KULINER */}
         {/* ============================================================== */}
         {currentStep === 2 && (
           <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Tahap 2: Pemilihan Hidangan Kuliner Haute Cuisine</span>
+                  <span>Tahap 2: Pemilihan Menu Mahakarya</span>
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-serif font-black text-white mt-1">
-                  Pilih Menu Perjamuan Michelin 3-Star
+                <h2 className="text-2xl sm:text-3xl font-display font-bold text-[#18181B] mt-1">
+                  Pilih Menu Perjamuan Bintang Lima
                 </h2>
-                <p className="text-xs text-slate-400">
-                  Dipersiapkan secara langsung oleh Executive Chef dengan bahan baku import langka kelas dunia.
+                <p className="text-xs text-[#64748B]">
+                  Dipersiapkan langsung oleh Executive Chef dengan bahan baku segar berstandar internasional.
                 </p>
               </div>
 
@@ -587,22 +586,22 @@ export default function LuxuryReservationPage() {
               <div className="flex items-center gap-2 overflow-x-auto pb-2">
                 <button
                   onClick={() => setSelectedCategory("all")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-sm ${
                     selectedCategory === "all"
-                      ? "bg-amber-500 text-slate-950 shadow-md"
-                      : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
+                      ? "bg-[#EA580C] text-white shadow-cta"
+                      : "bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#18181B]"
                   }`}
                 >
-                  Semua Hidangan ({allMenus.length})
+                  Semua ({allMenus.length})
                 </button>
                 {categories.map((c) => (
                   <button
                     key={c.id}
                     onClick={() => setSelectedCategory(String(c.id))}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-sm ${
                       selectedCategory === String(c.id)
-                        ? "bg-amber-500 text-slate-950 shadow-md"
-                        : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
+                        ? "bg-[#EA580C] text-white shadow-cta"
+                        : "bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#18181B]"
                     }`}
                   >
                     {c.name}
@@ -611,217 +610,133 @@ export default function LuxuryReservationPage() {
               </div>
             </div>
 
-            {/* Menu Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {displayedMenus.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-3xl overflow-hidden flex flex-col justify-between shadow-xl transition-all group"
-                >
-                  <div className="h-48 relative bg-slate-800 overflow-hidden">
-                    {item.image ? (
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-600">
-                        <UtensilsCrossed className="w-12 h-12" />
+            {/* Menu Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayedMenus.map((m) => {
+                const inCart = cart.find((i) => i.menuId === m.id);
+                return (
+                  <div
+                    key={m.id}
+                    className="bg-white rounded-card border border-[#E2E8F0] overflow-hidden shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between group"
+                  >
+                    <div className="h-44 w-full relative bg-stone-100 overflow-hidden">
+                      {m.image ? (
+                        <Image
+                          src={m.image}
+                          alt={m.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-stone-300">
+                          <UtensilsCrossed className="w-10 h-10" />
+                        </div>
+                      )}
+                      <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] text-[#EA580C] font-bold shadow-sm">
+                        Chef&apos;s Pick
                       </div>
-                    )}
-                    <div className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-amber-500/30 text-amber-300 text-[10px] font-bold">
-                      Michelin Grade
-                    </div>
-                  </div>
-
-                  <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                    <div>
-                      <h3 className="font-serif font-black text-base text-white group-hover:text-amber-300 transition-colors">
-                        {item.name}
-                      </h3>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed line-clamp-3">
-                        {item.description}
-                      </p>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                    <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
                       <div>
-                        <span className="text-[10px] text-slate-500 block uppercase tracking-wider font-semibold">
-                          Harga per Porsi
-                        </span>
-                        <span className="text-base font-black text-amber-400 font-mono">
-                          {formatIDR(item.price)}
-                        </span>
+                        <h4 className="font-display font-bold text-base text-[#18181B] group-hover:text-[#EA580C] transition-colors">
+                          {m.name}
+                        </h4>
+                        <p className="text-xs text-[#64748B] mt-1 line-clamp-2 leading-relaxed">
+                          {m.description || "Hidangan haute cuisine racikan Executive Chef."}
+                        </p>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => addToCart(item)}
-                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition-all cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Pilih Menu</span>
-                      </button>
+                      <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between">
+                        <span className="font-display font-bold text-base text-[#18181B]">
+                          {formatIDR(m.price)}
+                        </span>
+
+                        {inCart ? (
+                          <div className="flex items-center gap-2 bg-[#FDFBF7] border border-[#E2E8F0] rounded-full p-1">
+                            <button
+                              type="button"
+                              onClick={() => updateCartQty(m.id, -1)}
+                              className="w-7 h-7 rounded-full bg-white text-[#18181B] border border-[#E2E8F0] flex items-center justify-center text-xs font-bold hover:bg-stone-100 cursor-pointer shadow-sm"
+                            >
+                              -
+                            </button>
+                            <span className="w-6 text-center text-xs font-bold text-[#EA580C]">
+                              {inCart.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateCartQty(m.id, 1)}
+                              className="w-7 h-7 rounded-full bg-[#EA580C] text-white flex items-center justify-center text-xs font-bold hover:bg-[#C2410C] cursor-pointer shadow-sm"
+                            >
+                              +
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => addToCart(m)}
+                            className="px-4 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold flex items-center gap-1.5 shadow-cta transition-all cursor-pointer"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Pilih Menu</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            {/* FLOATING LUXURY BILL BOTTOM BAR */}
-            <div className="sticky bottom-4 z-40 bg-slate-900/95 border border-amber-500/40 rounded-3xl p-4 sm:p-5 shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <Receipt className="w-6 h-6" />
-                </div>
-                <div>
-                  <span className="text-xs text-slate-400">
-                    {cart.reduce((s, i) => s + i.quantity, 0)} Porsi Hidangan Terpilih
-                  </span>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-xl sm:text-2xl font-black text-amber-300 font-mono">
-                      {formatIDR(totalAmount)}
-                    </span>
-                    <span className="text-[10px] text-slate-400">
-                      (Termasuk Pajak PB1 10% & Layanan 5%)
-                    </span>
-                  </div>
-                </div>
+            {/* Sticky Floating Bottom Bar for Cart Summary */}
+            <div className="sticky bottom-6 z-30 max-w-2xl mx-auto bg-[#14281D] text-white p-4 rounded-full shadow-2xl border border-emerald-500/30 flex items-center justify-between">
+              <div className="pl-3">
+                <span className="text-[11px] text-stone-300 block font-mono">
+                  {cart.length} Jenis Menu Dipilih
+                </span>
+                <span className="font-display text-lg font-bold text-[#F59E0B]">
+                  {formatIDR(subtotal)}
+                </span>
               </div>
 
-              <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => setCurrentStep(1)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer"
                 >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Ubah Jadwal</span>
+                  ← Kembali
                 </button>
-
                 <button
                   type="button"
                   disabled={cart.length === 0}
                   onClick={() => setCurrentStep(3)}
-                  className="flex-1 sm:flex-none px-6 py-2.5 bg-linear-to-r from-amber-400 to-yellow-600 hover:from-amber-500 hover:to-yellow-700 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+                  className="px-6 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs flex items-center gap-1.5 shadow-cta disabled:opacity-40 cursor-pointer"
                 >
-                  <span>Lanjut ke Pemilihan Meja</span>
+                  <span>Pilih Meja</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
-
-            {/* Customization Modal */}
-            {customizingMenu && (
-              <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 max-w-lg w-full space-y-5 shadow-2xl">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <div>
-                      <h3 className="font-serif font-black text-lg text-white">
-                        Kustomisasi Hidangan
-                      </h3>
-                      <p className="text-xs text-amber-400">{customizingMenu.name}</p>
-                    </div>
-                    <button
-                      onClick={() => setCustomizingMenu(null)}
-                      className="text-slate-400 hover:text-white"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
-                    {customizingMenu.modifierGroups.map((group) => (
-                      <div key={group.id} className="space-y-2">
-                        <label className="text-xs font-bold text-amber-200 block">
-                          {group.name}
-                        </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {group.options.map((opt: any) => {
-                            const selected = (selectedModifiers[group.id] || []).includes(opt.id);
-                            return (
-                              <button
-                                key={opt.id}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedModifiers({
-                                    ...selectedModifiers,
-                                    [group.id]: [opt.id],
-                                  });
-                                }}
-                                className={`p-2.5 rounded-xl border text-xs text-left transition-all ${
-                                  selected
-                                    ? "bg-amber-500/20 border-amber-400 text-amber-300 font-bold"
-                                    : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
-                                }`}
-                              >
-                                <div className="flex justify-between items-center">
-                                  <span>{opt.name}</span>
-                                  {opt.price > 0 && (
-                                    <span className="text-[10px] text-amber-400 font-mono">
-                                      +{formatIDR(opt.price)}
-                                    </span>
-                                  )}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-
-                    <div>
-                      <label className="text-xs font-bold text-amber-200 block mb-1">
-                        Catatan Khusus untuk Chef
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Contoh: Saus disajikan terpisah, kurangi garam..."
-                        value={itemNotes}
-                        onChange={(e) => setItemNotes(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 pt-2 border-t border-slate-800">
-                    <button
-                      onClick={() => setCustomizingMenu(null)}
-                      className="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-300 text-xs font-bold hover:bg-slate-800"
-                    >
-                      Batal
-                    </button>
-                    <button
-                      onClick={confirmCustomization}
-                      className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs"
-                    >
-                      Tambahkan ke Keranjang
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
         {/* ============================================================== */}
-        {/* STEP 3: MEMILIH MEJA & SUASANA RESTORAN */}
+        {/* STEP 3: MEMILIH MEJA */}
         {/* ============================================================== */}
         {currentStep === 3 && (
           <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
             <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Tahap 3: Pemilihan Meja & Suasana Jamuan</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-serif font-black text-white">
+              <h2 className="text-3xl sm:text-4xl font-display font-bold text-[#18181B]">
                 Pilih Meja Eksklusif Favorit Anda
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-                Pilih suasana santap di Grand Salon berpendingin udara, Veranda romantis di tepi taman, atau Suite VIP privat di lantai 2.
+              <p className="text-xs sm:text-sm text-[#64748B] max-w-xl mx-auto">
+                Pilih suasana santap di Grand Salon berpendingin udara, Veranda romantis di tepi taman, atau Suite VIP privat.
               </p>
             </div>
 
@@ -838,24 +753,24 @@ export default function LuxuryReservationPage() {
                     onClick={() => {
                       if (isAvailable) setSelectedTable(tbl);
                     }}
-                    className={`rounded-3xl p-5 border transition-all flex flex-col justify-between ${
+                    className={`rounded-card p-6 border transition-all flex flex-col justify-between ${
                       isSelected
-                        ? "bg-amber-500/15 border-amber-400 shadow-xl shadow-amber-500/20 scale-[1.02]"
+                        ? "bg-[#EA580C]/10 border-[#EA580C] shadow-card-hover scale-[1.02]"
                         : isAvailable
-                        ? "bg-slate-900/80 border-slate-800 hover:border-amber-500/40 cursor-pointer"
-                        : "bg-slate-950/40 border-slate-900 opacity-50 cursor-not-allowed"
+                        ? "bg-white border-[#E2E8F0] hover:border-[#EA580C]/40 shadow-card cursor-pointer"
+                        : "bg-[#F3EFE6] border-[#E2E8F0] opacity-50 cursor-not-allowed"
                     }`}
                   >
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-amber-300 font-mono">
+                        <span className="text-[10px] px-3 py-1 rounded-full bg-[#FDFBF7] border border-[#E2E8F0] text-[#18181B] font-mono font-semibold">
                           {tbl.area}
                         </span>
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                             isAvailable
-                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                              : "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                              : "bg-rose-50 text-rose-800 border border-rose-200"
                           }`}
                         >
                           {isAvailable ? "Tersedia" : "Sudah Dipesan"}
@@ -863,29 +778,29 @@ export default function LuxuryReservationPage() {
                       </div>
 
                       <div>
-                        <h4 className="font-serif font-black text-base text-white">
+                        <h4 className="font-display font-bold text-base text-[#18181B]">
                           {tbl.tableNumber}
                         </h4>
-                        <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5 text-amber-400" />
+                        <p className="text-xs text-[#64748B] mt-1 flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-[#EA580C]" />
                           <span>Kapasitas hingga {tbl.capacity} Tamu</span>
                         </p>
                       </div>
 
                       {!isSuitable && isAvailable && (
-                        <p className="text-[10px] text-amber-400/80 italic">
+                        <p className="text-[10px] text-[#EA580C] italic">
                           *Kapasitas lebih kecil dari jumlah tamu ({guestCount} pax).
                         </p>
                       )}
                     </div>
 
-                    <div className="pt-4 border-t border-slate-800/80 mt-4 flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-400">
+                    <div className="pt-4 border-t border-[#E2E8F0] mt-4 flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#64748B]">
                         {isSelected ? "✓ Meja Terpilih" : "Klik untuk Memilih"}
                       </span>
                       <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                          isSelected ? "bg-amber-400 text-slate-950" : "bg-slate-800 text-slate-400"
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                          isSelected ? "bg-[#EA580C] text-white shadow-cta" : "bg-[#F3EFE6] text-[#64748B]"
                         }`}
                       >
                         {isSelected ? "★" : "→"}
@@ -897,11 +812,11 @@ export default function LuxuryReservationPage() {
             </div>
 
             {/* Navigation buttons */}
-            <div className="pt-6 border-t border-slate-800 flex items-center justify-between">
+            <div className="pt-6 border-t border-[#E2E8F0] flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setCurrentStep(2)}
-                className="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 hover:bg-slate-800 cursor-pointer"
+                className="px-6 py-3 rounded-full border border-[#E2E8F0] bg-white text-[#18181B] text-xs font-bold flex items-center gap-1.5 hover:bg-[#F3EFE6] cursor-pointer shadow-sm"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Kembali ke Menu</span>
@@ -911,7 +826,7 @@ export default function LuxuryReservationPage() {
                 type="button"
                 disabled={!selectedTable}
                 onClick={() => setCurrentStep(4)}
-                className="px-6 py-2.5 bg-linear-to-r from-amber-400 to-yellow-600 hover:from-amber-500 hover:to-yellow-700 text-slate-950 font-black rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+                className="px-8 py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center gap-2 shadow-cta disabled:opacity-50 cursor-pointer"
               >
                 <span>Lanjut ke Pembayaran</span>
                 <ChevronRight className="w-4 h-4" />
@@ -921,240 +836,179 @@ export default function LuxuryReservationPage() {
         )}
 
         {/* ============================================================== */}
-        {/* STEP 4: KONFIRMASI RINGKASAN & PEMBAYARAN */}
+        {/* STEP 4: RINGKASAN & PEMBAYARAN */}
         {/* ============================================================== */}
         {currentStep === 4 && (
           <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-300">
             <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Tahap 4: Pembayaran & Konfirmasi Resmi</span>
               </div>
-              <h2 className="text-3xl font-serif font-black text-white">
+              <h2 className="text-3xl font-display font-bold text-[#18181B]">
                 Konfirmasi Jamuan & Selesaikan Pembayaran
               </h2>
-              <p className="text-xs text-slate-400">
-                Lakukan pembayaran secara aman untuk langsung mengamankan meja dan menerima tanda terima resmi ber-barcode.
+              <p className="text-xs text-[#64748B]">
+                Selesaikan pembayaran secara aman untuk langsung mengamankan meja dan menerbitkan struk digital ber-QR code resmi.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
               {/* Order & Booking Summary */}
-              <div className="md:col-span-7 bg-slate-900/90 border border-amber-500/30 rounded-3xl p-6 space-y-4 shadow-xl">
-                <div className="border-b border-slate-800 pb-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
-                    Ringkasan Pemesanan Bintang 5
+              <div className="md:col-span-7 bg-white border border-[#E2E8F0] rounded-card p-6 sm:p-7 space-y-4 shadow-float">
+                <div className="border-b border-[#E2E8F0] pb-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#EA580C] font-mono">
+                    Ringkasan Pemesanan Meja
                   </span>
-                  <h3 className="text-lg font-serif font-bold text-white mt-0.5">
+                  <h3 className="text-lg font-display font-bold text-[#18181B] mt-0.5">
                     {selectedTable?.tableNumber}
                   </h3>
-                  <p className="text-xs text-slate-400">
-                    {selectedDate} • {selectedTimeSlot} • {guestCount} Tamu (Pax)
+                  <p className="text-xs text-[#64748B] flex items-center gap-2 mt-1">
+                    <span>{selectedDate}</span> • <span>{selectedTimeSlot}</span> • <span>{guestCount} Tamu</span>
                   </p>
                 </div>
 
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between text-slate-300">
-                    <span className="text-slate-400">Atas Nama:</span>
-                    <span className="font-bold text-white">{customerName}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-300">
-                    <span className="text-slate-400">Kontak WhatsApp:</span>
-                    <span className="font-mono text-white">{customerPhone}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-300">
-                    <span className="text-slate-400">Area Suasana:</span>
-                    <span className="text-amber-300">{selectedTable?.area}</span>
-                  </div>
-                  {specialRequests && (
-                    <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-amber-300/90 italic">
-                      Catatan: &ldquo;{specialRequests}&rdquo;
-                    </div>
-                  )}
-                </div>
-
-                {/* Items Breakdown */}
-                <div className="border-t border-slate-800 pt-3 space-y-2">
-                  <span className="text-xs font-bold text-amber-300 block">Daftar Hidangan:</span>
-                  <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
-                    {cart.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="p-2 rounded-xl bg-slate-950/80 border border-slate-800/80 flex items-start justify-between text-xs"
-                      >
-                        <div>
-                          <p className="font-bold text-white">
-                            {item.quantity}x {item.name}
-                          </p>
-                          {item.selectedVariants.length > 0 && (
-                            <p className="text-[10px] text-amber-400">
-                              {item.selectedVariants.map((v) => `${v.group}: ${v.option}`).join(", ")}
-                            </p>
-                          )}
-                          {item.notes && (
-                            <p className="text-[10px] text-slate-400 italic">Catatan: {item.notes}</p>
-                          )}
-                        </div>
-                        <span className="font-mono font-bold text-white">
-                          {formatIDR(item.price * item.quantity)}
-                        </span>
+                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                  {cart.map((item) => (
+                    <div key={item.menuId} className="flex items-center justify-between text-xs py-1.5 border-b border-[#E2E8F0]/60">
+                      <div>
+                        <span className="font-bold text-[#18181B]">{item.name}</span>
+                        <span className="text-[11px] text-[#64748B] ml-2">x{item.quantity}</span>
                       </div>
-                    ))}
-                  </div>
+                      <span className="font-mono font-bold text-[#18181B]">
+                        {formatIDR(item.price * item.quantity)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
 
-                {/* Price Breakdown */}
-                <div className="border-t border-slate-800 pt-3 space-y-1.5 text-xs font-mono">
-                  <div className="flex justify-between text-slate-400">
-                    <span>Subtotal Makanan & Minuman:</span>
-                    <span>{formatIDR(subtotal)}</span>
+                {/* Subtotal, Pajak, Service, Total */}
+                <div className="pt-3 border-t border-[#E2E8F0] space-y-1.5 text-xs">
+                  <div className="flex justify-between text-[#64748B]">
+                    <span>Subtotal Menu:</span>
+                    <span className="font-mono">{formatIDR(subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-slate-400">
+                  <div className="flex justify-between text-[#64748B]">
                     <span>Pajak Restoran PB1 (10%):</span>
-                    <span>{formatIDR(tax)}</span>
+                    <span className="font-mono">{formatIDR(taxAmount)}</span>
                   </div>
-                  <div className="flex justify-between text-slate-400">
-                    <span>Layanan Bintang 5 (5%):</span>
-                    <span>{formatIDR(service)}</span>
+                  <div className="flex justify-between text-[#64748B]">
+                    <span>Service Charge (5%):</span>
+                    <span className="font-mono">{formatIDR(serviceCharge)}</span>
                   </div>
-                  <div className="flex justify-between text-base font-black text-amber-300 pt-2 border-t border-slate-800">
-                    <span>TOTAL PEMBAYARAN:</span>
-                    <span>{formatIDR(totalAmount)}</span>
+                  <div className="flex justify-between text-base font-bold text-[#18181B] pt-2 border-t border-[#E2E8F0]">
+                    <span>Total Pembayaran:</span>
+                    <span className="text-[#EA580C] font-display text-lg">{formatIDR(totalAmount)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Payment Methods */}
-              <div className="md:col-span-5 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 space-y-5 shadow-xl">
+              <div className="md:col-span-5 bg-white border border-[#E2E8F0] rounded-card p-6 sm:p-7 space-y-5 shadow-float">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
-                    Metode Pembayaran Resmi
-                  </span>
-                  <h3 className="text-base font-bold text-white mt-0.5">Pilih Cara Bayar</h3>
+                  <h4 className="font-display font-bold text-base text-[#18181B]">
+                    Metode Pembayaran
+                  </h4>
+                  <p className="text-xs text-[#64748B] mt-0.5">
+                    Pilih saluran pembayaran resmi instan:
+                  </p>
                 </div>
 
                 <div className="space-y-2.5">
                   {/* QRIS */}
-                  <button
-                    type="button"
+                  <label
                     onClick={() => setPaymentMethod("qris")}
-                    className={`w-full p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                    className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
                       paymentMethod === "qris"
-                        ? "bg-amber-500/15 border-amber-400 text-white shadow-md shadow-amber-500/10"
-                        : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
+                        ? "bg-[#EA580C]/10 border-[#EA580C] shadow-sm"
+                        : "bg-[#FDFBF7] border-[#E2E8F0] hover:bg-white"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
-                        <QrCode className="w-5 h-5" />
+                      <div className="w-8 h-8 rounded-xl bg-[#EA580C]/15 text-[#EA580C] flex items-center justify-center font-bold">
+                        <QrCode className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-white">QRIS Instan Otomatis</div>
-                        <p className="text-[10px] text-slate-400">BCA, GoPay, OVO, Dana, ShopeePay</p>
+                        <span className="text-xs font-bold text-[#18181B] block">QRIS Dinamis</span>
+                        <span className="text-[10px] text-[#64748B]">BCA, Mandiri, GoPay, OVO</span>
                       </div>
                     </div>
-                    <span className="text-xs font-bold text-amber-400">Instant</span>
-                  </button>
+                    <input
+                      type="radio"
+                      name="pay"
+                      checked={paymentMethod === "qris"}
+                      onChange={() => setPaymentMethod("qris")}
+                      className="accent-[#EA580C]"
+                    />
+                  </label>
 
                   {/* Credit Card */}
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("credit_card")}
-                    className={`w-full p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
-                      paymentMethod === "credit_card"
-                        ? "bg-amber-500/15 border-amber-400 text-white shadow-md shadow-amber-500/10"
-                        : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
+                  <label
+                    onClick={() => setPaymentMethod("card")}
+                    className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
+                      paymentMethod === "card"
+                        ? "bg-[#EA580C]/10 border-[#EA580C] shadow-sm"
+                        : "bg-[#FDFBF7] border-[#E2E8F0] hover:bg-white"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center">
-                        <CreditCard className="w-5 h-5" />
+                      <div className="w-8 h-8 rounded-xl bg-[#14281D]/15 text-[#14281D] flex items-center justify-center font-bold">
+                        <CreditCard className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-white">Kartu Debit / Kredit Royale</div>
-                        <p className="text-[10px] text-slate-400">Visa, Mastercard, JCB, BCA Card</p>
+                        <span className="text-xs font-bold text-[#18181B] block">Kartu Kredit / Debit</span>
+                        <span className="text-[10px] text-[#64748B]">Visa, Mastercard, JCB</span>
                       </div>
                     </div>
-                    <span className="text-xs font-bold text-purple-400">Secure</span>
-                  </button>
+                    <input
+                      type="radio"
+                      name="pay"
+                      checked={paymentMethod === "card"}
+                      onChange={() => setPaymentMethod("card")}
+                      className="accent-[#EA580C]"
+                    />
+                  </label>
 
-                  {/* Cash / Concierge */}
-                  <button
-                    type="button"
+                  {/* Cash */}
+                  <label
                     onClick={() => setPaymentMethod("cash")}
-                    className={`w-full p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                    className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
                       paymentMethod === "cash"
-                        ? "bg-amber-500/15 border-amber-400 text-white shadow-md shadow-amber-500/10"
-                        : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
+                        ? "bg-[#EA580C]/10 border-[#EA580C] shadow-sm"
+                        : "bg-[#FDFBF7] border-[#E2E8F0] hover:bg-white"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
-                        <Receipt className="w-5 h-5" />
+                      <div className="w-8 h-8 rounded-xl bg-[#F59E0B]/20 text-[#F59E0B] flex items-center justify-center font-bold">
+                        <Smartphone className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-white">Bayar di Tempat (Concierge)</div>
-                        <p className="text-[10px] text-slate-400">Pelunasan langsung saat tiba di restoran</p>
+                        <span className="text-xs font-bold text-[#18181B] block">Concierge Cash</span>
+                        <span className="text-[10px] text-[#64748B]">Bayar saat tiba di kasir</span>
                       </div>
                     </div>
-                  </button>
+                    <input
+                      type="radio"
+                      name="pay"
+                      checked={paymentMethod === "cash"}
+                      onChange={() => setPaymentMethod("cash")}
+                      className="accent-[#EA580C]"
+                    />
+                  </label>
                 </div>
-
-                {/* QRIS / Card Simulator Details */}
-                {paymentMethod === "qris" && (
-                  <div className="p-4 rounded-2xl bg-slate-950 border border-amber-500/20 text-center space-y-2">
-                    <p className="text-xs font-bold text-amber-300">Simulasi Pembayaran QRIS Dinamis</p>
-                    <div className="w-32 h-32 mx-auto bg-white rounded-xl p-2 flex items-center justify-center shadow-lg">
-                      <QrCode className="w-28 h-28 text-slate-950" />
-                    </div>
-                    <p className="text-[10px] text-slate-400">
-                      Klik tombol di bawah untuk verifikasi pembayaran otomatis seketika.
-                    </p>
-                  </div>
-                )}
-
-                {paymentMethod === "credit_card" && (
-                  <div className="p-4 rounded-2xl bg-slate-950 border border-purple-500/20 space-y-2 text-xs">
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-400 block mb-1">
-                        Nomor Kartu Kredit / Debit
-                      </label>
-                      <input
-                        type="text"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl font-mono text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-400 block mb-1">
-                        Nama Pemegang Kartu
-                      </label>
-                      <input
-                        type="text"
-                        value={cardHolder || customerName}
-                        onChange={(e) => setCardHolder(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white"
-                      />
-                    </div>
-                  </div>
-                )}
 
                 <button
                   type="button"
                   disabled={isProcessingPayment}
-                  onClick={handleFinalPayment}
-                  className="w-full py-3.5 bg-linear-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-500 hover:to-yellow-700 text-slate-950 font-black rounded-2xl text-xs flex items-center justify-center gap-2 shadow-xl shadow-amber-500/25 transition-all cursor-pointer disabled:opacity-50"
+                  onClick={handleExecutePayment}
+                  className="w-full py-4 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs sm:text-sm flex items-center justify-center gap-2 shadow-cta transition-all cursor-pointer disabled:opacity-50"
                 >
                   {isProcessingPayment ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full border-2 border-slate-950 border-t-transparent animate-spin" />
-                      <span>Memverifikasi Pembayaran...</span>
-                    </span>
+                    <span>Memverifikasi Pembayaran...</span>
                   ) : (
                     <>
                       <ShieldCheck className="w-4 h-4" />
-                      <span>Konfirmasi & Bayar Sekarang ({formatIDR(totalAmount)})</span>
+                      <span>Konfirmasi & Bayar ({formatIDR(totalAmount)})</span>
                     </>
                   )}
                 </button>
@@ -1164,80 +1018,74 @@ export default function LuxuryReservationPage() {
         )}
 
         {/* ============================================================== */}
-        {/* STEP 5: STRUK DIGITAL BINTANG 5 LENGKAP (FULL LUXURY RECEIPT) */}
+        {/* STEP 5: DIGITAL RECEIPT & QR ENTRY PASS */}
         {/* ============================================================== */}
         {currentStep === 5 && completedOrder && (
           <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-500">
             <div className="text-center space-y-2">
-              <div className="w-16 h-16 rounded-3xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto shadow-xl shadow-amber-500/20">
-                <CheckCircle2 className="w-10 h-10" />
+              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-md">
+                <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h2 className="text-3xl font-serif font-black text-amber-300">
+              <h2 className="text-3xl font-display font-bold text-[#18181B]">
                 Pembayaran Berhasil & Terkonfirmasi
               </h2>
-              <p className="text-xs text-slate-400">
-                Tanda terima resmi perjamuan Anda telah diterbitkan. Tunjukkan barcode ini saat tiba di restoran.
+              <p className="text-xs text-[#64748B]">
+                Tanda terima resmi jamuan Anda telah diterbitkan. Tunjukkan kode QR ini saat tiba di restoran.
               </p>
             </div>
 
             {/* LUXURY OFFICIAL RECEIPT CARD */}
             <div
-              id="printable-luxury-receipt"
-              className="bg-white text-slate-900 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl border-4 border-amber-500/40 relative overflow-hidden"
+              id="printable-receipt"
+              className="bg-white text-[#18181B] rounded-card p-6 sm:p-8 space-y-6 shadow-float border border-[#E2E8F0] relative overflow-hidden"
             >
-              {/* Gold Ornament Top Banner */}
-              <div className="absolute top-0 left-0 right-0 h-2 bg-linear-to-r from-amber-400 via-yellow-500 to-amber-600" />
-
-              {/* Receipt Header */}
-              <div className="text-center space-y-1.5 border-b-2 border-dashed border-slate-200 pb-4">
-                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold uppercase tracking-widest">
-                  ★ Michelin 3-Star Haute Cuisine ★
-                </div>
-                <h3 className="font-serif font-black text-2xl tracking-tight text-slate-950">
-                  L&apos;ÉTOILE ROYALE
+              {/* Receipt Brand Banner */}
+              <div className="text-center space-y-1.5 border-b-2 border-dashed border-[#E2E8F0] pb-4">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#EA580C] font-mono">
+                  ★ Savoria Haute Restaurant ★
+                </span>
+                <h3 className="font-display font-black text-2xl tracking-tight text-[#18181B]">
+                  SAVORIA RESTAURANT
                 </h3>
-                <p className="text-xs text-slate-500 font-serif italic">
-                  Grand Restaurant & Private Dining Salon
+                <p className="text-xs text-[#64748B] italic">
+                  The Grand Pavilion • SCBD Financial District, Jakarta
                 </p>
-                <p className="text-[11px] text-slate-400 font-mono">
-                  Jl. Boulevard Royale No. 88, Menteng • Telp: (021) 8899-7700
-                </p>
-                <div className="inline-block mt-1 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black uppercase font-mono tracking-wider">
+                <div className="inline-block mt-1 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase font-mono tracking-wider">
                   STATUS: LUNAS / PAID IN FULL
                 </div>
               </div>
 
               {/* Booking & Schedule Identification */}
-              <div className="grid grid-cols-2 gap-3 text-xs font-mono bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <div className="grid grid-cols-2 gap-3 text-xs font-mono bg-[#FDFBF7] p-4 rounded-xl border border-[#E2E8F0]">
                 <div>
-                  <span className="text-slate-400 block text-[10px]">No. Bukti Reservasi:</span>
-                  <span className="font-bold text-slate-900">{completedOrder.orderNumber}</span>
+                  <span className="text-[#64748B] block text-[10px]">No. Bukti Reservasi:</span>
+                  <span className="font-bold text-[#18181B]">{completedOrder.orderNumber}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px]">Tanggal & Waktu Jamuan:</span>
-                  <span className="font-bold text-slate-900">
+                  <span className="text-[#64748B] block text-[10px]">Tanggal & Waktu Jamuan:</span>
+                  <span className="font-bold text-[#18181B]">
                     {completedOrder.reservationDate || selectedDate}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px]">Meja & Area:</span>
-                  <span className="font-bold text-amber-800">
-                    {completedOrder.table?.tableNumber || selectedTable?.tableNumber} ({completedOrder.table?.area || selectedTable?.area})
+                  <span className="text-[#64748B] block text-[10px]">Meja & Area:</span>
+                  <span className="font-bold text-[#EA580C]">
+                    {completedOrder.table?.tableNumber || selectedTable?.tableNumber}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px]">Sesi Waktu:</span>
-                  <span className="font-bold text-slate-900">
+                  <span className="text-[#64748B] block text-[10px]">Sesi Waktu:</span>
+                  <span className="font-bold text-[#18181B]">
                     {completedOrder.reservationTime || selectedTimeSlot}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px]">Atas Nama Tamu:</span>
-                  <span className="font-bold text-slate-900">{completedOrder.customerName}</span>
+                  <span className="text-[#64748B] block text-[10px]">Atas Nama Tamu:</span>
+                  <span className="font-bold text-[#18181B]">{completedOrder.customerName}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px]">Jumlah Tamu (Party Size):</span>
-                  <span className="font-bold text-slate-900">
+                  <span className="text-[#64748B] block text-[10px]">Jumlah Tamu:</span>
+                  <span className="font-bold text-[#18181B]">
                     {completedOrder.guestCount || guestCount} Orang
                   </span>
                 </div>
@@ -1245,26 +1093,21 @@ export default function LuxuryReservationPage() {
 
               {/* Items Breakdown Table */}
               <div className="space-y-2">
-                <span className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                <span className="text-xs font-bold text-[#18181B] block uppercase tracking-wider">
                   Rincian Pesanan Hidangan:
                 </span>
-                <div className="border-t border-b border-dashed border-slate-300 py-3 space-y-2 text-xs font-mono">
+                <div className="border-t border-b border-dashed border-[#E2E8F0] py-3 space-y-2 text-xs font-mono">
                   {completedOrder.items?.map((it: any) => (
                     <div key={it.id} className="flex justify-between items-start">
                       <div>
-                        <span className="font-bold text-slate-900">
+                        <span className="font-bold text-[#18181B]">
                           {it.quantity}x {it.menu?.name}
                         </span>
-                        {it.selectedVariants && (
-                          <p className="text-[10px] text-slate-500">
-                            {JSON.parse(it.selectedVariants).map((v: any) => `${v.group}: ${v.option}`).join(", ")}
-                          </p>
-                        )}
                         {it.notes && (
-                          <p className="text-[10px] text-amber-800 italic">Catatan: {it.notes}</p>
+                          <p className="text-[10px] text-[#EA580C] italic">Catatan: {it.notes}</p>
                         )}
                       </div>
-                      <span className="font-bold text-slate-900 whitespace-nowrap pl-4">
+                      <span className="font-bold text-[#18181B] whitespace-nowrap pl-4">
                         {formatIDR(it.subtotal)}
                       </span>
                     </div>
@@ -1274,101 +1117,68 @@ export default function LuxuryReservationPage() {
 
               {/* Financial Calculation Breakdown */}
               <div className="space-y-1.5 text-xs font-mono">
-                <div className="flex justify-between text-slate-500">
+                <div className="flex justify-between text-[#64748B]">
                   <span>Subtotal:</span>
                   <span>{formatIDR(completedOrder.subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-slate-500">
+                <div className="flex justify-between text-[#64748B]">
                   <span>PB1 / Pajak Restoran (10%):</span>
                   <span>{formatIDR(completedOrder.taxAmount)}</span>
                 </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Service Charge Layanan Bintang 5 (5%):</span>
+                <div className="flex justify-between text-[#64748B]">
+                  <span>Service Charge (5%):</span>
                   <span>{formatIDR(completedOrder.serviceCharge)}</span>
                 </div>
-                <div className="flex justify-between text-base font-black text-slate-950 pt-2 border-t-2 border-slate-900">
+                <div className="flex justify-between text-base font-bold text-[#18181B] pt-2 border-t-2 border-[#18181B]">
                   <span>TOTAL DIBAYAR:</span>
-                  <span className="text-amber-700">{formatIDR(completedOrder.totalAmount)}</span>
-                </div>
-                <div className="flex justify-between text-[11px] text-slate-500 pt-1">
-                  <span>Metode Pembayaran:</span>
-                  <span className="font-bold uppercase text-slate-700">
-                    {(completedOrder.paymentMethod || paymentMethod).toUpperCase()} (TERVERIFIKASI)
-                  </span>
+                  <span className="text-[#EA580C] font-display text-lg">{formatIDR(completedOrder.totalAmount)}</span>
                 </div>
               </div>
 
-              {/* QR Code Verification for Reception Maître D' */}
-              <div className="border-t-2 border-dashed border-slate-200 pt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-center sm:text-left space-y-1">
-                  <span className="text-xs font-bold text-slate-800 block">
-                    Kode Masuk Verifikasi Meja
-                  </span>
-                  <p className="text-[11px] text-slate-500 max-w-xs">
-                    Tunjukkan QR Code ini kepada Maître D&apos; atau pelayan saat tiba untuk diantar langsung ke meja Anda.
-                  </p>
-                  <p className="text-[10px] text-slate-400 font-mono">
-                    Waktu Terbit: {formatDate(completedOrder.createdAt)}
-                  </p>
-                </div>
-
-                {receiptQrDataUrl && (
-                  <div className="p-2 rounded-2xl bg-slate-50 border border-slate-200 shrink-0 text-center">
+              {/* QR Code Entry Pass */}
+              {receiptQrDataUrl && (
+                <div className="text-center pt-2 border-t border-dashed border-[#E2E8F0] space-y-2">
+                  <div className="w-40 h-40 mx-auto relative p-2 bg-[#FDFBF7] rounded-xl border border-[#E2E8F0]">
                     <Image
                       src={receiptQrDataUrl}
-                      alt="Verification QR"
-                      width={100}
-                      height={100}
-                      className="mx-auto"
+                      alt="Receipt QR Entry Pass"
+                      fill
+                      className="object-contain p-2"
                     />
-                    <span className="text-[9px] font-mono text-slate-500 mt-1 block font-bold">
-                      SCAN FOR ENTRY
-                    </span>
                   </div>
-                )}
-              </div>
-
-              {/* Hospitality Disclaimer */}
-              <div className="text-center pt-2 text-[10px] text-slate-400 font-serif italic border-t border-slate-100">
-                &ldquo;Merupakan kehormatan tertinggi bagi kami untuk menyambut Anda di L&apos;Étoile Royale.&rdquo;
-              </div>
+                  <span className="text-[11px] text-[#64748B] block font-mono">
+                    Scan QR ini di meja atau tunjukkan ke Maître D&apos; kasir.
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="w-full sm:flex-1 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 border border-slate-700 cursor-pointer shadow-md"
+                className="flex-1 py-3.5 bg-white border border-[#E2E8F0] text-[#18181B] hover:bg-[#F3EFE6] font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
               >
-                <Printer className="w-4 h-4 text-amber-400" />
-                <span>Cetak / Simpan Struk (Print)</span>
+                <Printer className="w-4 h-4 text-[#EA580C]" />
+                <span>Cetak Struk Resmi (PDF / Thermal)</span>
               </button>
 
               <Link
                 href="/user"
-                className="w-full sm:flex-1 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                className="flex-1 py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta transition-all"
               >
-                <Receipt className="w-4 h-4" />
-                <span>Buka di Portal Pesanan Saya</span>
-              </Link>
-
-              <Link
-                href="/"
-                className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-xs flex items-center justify-center border border-slate-800"
-              >
-                Kembali ke Beranda
+                <span>Buka Portal Tamu VIP</span>
+                <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
         )}
       </main>
 
-      {/* FOOTER */}
-      <footer className="border-t border-slate-800/80 px-6 py-6 text-center text-xs text-slate-500">
-        <p className="font-serif">
-          L&apos;Étoile Royale Haute Gastronomie • An Exclusive Luxury Experience by RestoSync OS
-        </p>
+      {/* Footer */}
+      <footer className="border-t border-[#E2E8F0] px-6 py-6 text-center text-xs text-[#64748B] bg-white mt-12">
+        <p>© 2026 Savoria Modern Restaurant • Reservation & Dining System</p>
       </footer>
     </div>
   );

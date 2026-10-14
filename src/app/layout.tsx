@@ -3,8 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
-  title: "L'Étoile Royale — Haute Gastronomie & Fine Dining Experience",
-  description: "Restoran Bintang Lima berstandar Michelin 3-Star dengan sistem reservasi terpadu, POS terminal, dan manajemen restoran.",
+  title: "SAVORIA — Modern Gourmet Dining & Restaurant Experience",
+  description: "Modern Gourmet Dining Restaurant with integrated table reservations, smart POS terminal, and kitchen management.",
 };
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <body
-        className="min-h-screen bg-[#0a0c10] text-slate-100 antialiased selection:bg-amber-500 selection:text-black"
+        className="min-h-screen bg-[#FDFBF7] text-[#18181B] antialiased selection:bg-[#EA580C] selection:text-white"
         suppressHydrationWarning
       >
         <AuthProvider>{children}</AuthProvider>
