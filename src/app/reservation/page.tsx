@@ -91,12 +91,14 @@ const MenuCustomizationModal = dynamic(
 );
 
 const TIME_SLOTS: TimeSlotOption[] = [
-  { label: "12:00 PM - Luncheon Soirée", desc: "Sesi siang segar & elegan" },
+  { label: "11:30 AM - Early Lunch Soirée", desc: "Sesi makan siang awal & segar" },
+  { label: "12:30 PM - Luncheon Soirée", desc: "Makan siang utama & bisnis" },
   { label: "01:30 PM - Midday Gourmet", desc: "Santap siang tenang & privat" },
-  { label: "05:30 PM - Sunset & Aperitivo", desc: "Golden hour starter & mocktail" },
-  { label: "06:30 PM - Romantic Dinner", desc: "Suasana romantis lilin malam" },
-  { label: "07:30 PM - Prime Evening Gala", desc: "Sesi makan malam utama terfavorit" },
-  { label: "08:30 PM - Late Night Soirée", desc: "Makan malam intim eksklusif" },
+  { label: "05:00 PM - Early Sunset Dining", desc: "Makan malam awal & sunset golden hour" },
+  { label: "06:00 PM - Romantic Dusk", desc: "Suasana romantis lilin temaram" },
+  { label: "07:00 PM - Prime Evening Gala", desc: "Sesi jamuan malam utama terfavorit" },
+  { label: "08:30 PM - Late Night Soirée", desc: "Makan malam intim eksklusif & lounge" },
+  { label: "09:30 PM - Midnight Degustation", desc: "Sesi penutup malam degustasi chef" },
 ];
 
 export default function SavoriaReservationPage() {
@@ -109,7 +111,7 @@ export default function SavoriaReservationPage() {
 
   // STEP 1 STATE: Date, Time Session, Guests, Contact
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("07:30 PM - Prime Evening Gala");
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("07:00 PM - Prime Evening Gala");
   const [guestCount, setGuestCount] = useState<number>(2);
   const [specialRequests, setSpecialRequests] = useState<string>("");
   const [customerName, setCustomerName] = useState<string>("");
@@ -136,15 +138,33 @@ export default function SavoriaReservationPage() {
   const [completedOrder, setCompletedOrder] = useState<any>(null);
   const [receiptQrDataUrl, setReceiptQrDataUrl] = useState<string>("");
 
-  // Prefill customer name if logged in
+  // Prefill customer name if logged in & URL search params if navigated from landing
   useEffect(() => {
     if (user) {
       if (!customerName) setCustomerName(user.name);
       if (!customerPhone && user.phone) setCustomerPhone(user.phone);
     }
+
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const qDate = sp.get("date");
+      const qTime = sp.get("time");
+      const qGuests = sp.get("guests");
+      const minDate = new Date().toISOString().slice(0, 10);
+
+      if (qDate && qDate >= minDate) setSelectedDate(qDate);
+      if (qTime) {
+        const match = TIME_SLOTS.find((s) => s.label.toLowerCase().includes(qTime.toLowerCase()));
+        if (match) setSelectedTimeSlot(match.label);
+      }
+      if (qGuests) {
+        const parsed = parseInt(qGuests, 10);
+        if (!isNaN(parsed) && parsed > 0) setGuestCount(parsed);
+      }
+    }
   }, [user]);
 
-  // Fetch initial data: Menus & Tables
+  // Fetch Menus
   useEffect(() => {
     fetch("/api/v1/customer/menus")
       .then((res) => res.json())
@@ -152,14 +172,36 @@ export default function SavoriaReservationPage() {
         if (data.success) setCategories(data.data);
       })
       .catch(() => {});
+  }, []);
 
-    fetch("/api/v1/pos/tables")
+  // Dynamic Table Availability Fetching based on selected Date & Time Slot
+  useEffect(() => {
+    if (!selectedDate) return;
+    const params = new URLSearchParams({
+      date: selectedDate,
+      timeSlot: selectedTimeSlot || "",
+    });
+
+    fetch(`/api/v1/customer/tables?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setTables(data.data);
+        if (data.success) {
+          setTables(data.data);
+          // If the currently selected table became occupied on this date & time, reset selection
+          if (selectedTable) {
+            const found = data.data.find((t: any) => t.id === selectedTable.id);
+            if (found && found.status !== "available") {
+              setSelectedTable(null);
+              toast.warning(
+                `Meja ${selectedTable.tableNumber} tidak tersedia pada jadwal yang dipilih (${selectedDate} - ${selectedTimeSlot}). Silakan pilih meja lain.`,
+                "Jadwal Meja Direservasi"
+              );
+            }
+          }
+        }
       })
       .catch(() => {});
-  }, []);
+  }, [selectedDate, selectedTimeSlot]);
 
   // Auto-check table capacity eligibility when guest count changes
   useEffect(() => {

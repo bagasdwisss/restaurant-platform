@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
-import { Calendar, Clock, Users, ArrowRight, ShieldCheck } from "lucide-react";
+import React, { useMemo, useEffect } from "react";
+import { Calendar, Clock, Users, ArrowRight, ShieldCheck, AlertCircle } from "lucide-react";
 import { TimeSlotOption } from "./types";
+import { LuxuryCalendarPicker } from "./LuxuryCalendarPicker";
 
 interface ReservationScheduleStepProps {
   selectedDate: string;
@@ -21,6 +22,31 @@ interface ReservationScheduleStepProps {
   onNext: () => void;
 }
 
+/**
+ * Helper to parse time string like "12:00 PM - Luncheon Soirée" or "07:30 PM" into minutes from midnight (0 - 1439).
+ */
+function parseTimeToMinutes(timeStr: string): number {
+  if (!timeStr) return 0;
+  const match12 = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (match12) {
+    let hours = parseInt(match12[1], 10);
+    const minutes = parseInt(match12[2], 10);
+    const meridiem = match12[3].toUpperCase();
+    if (meridiem === "PM" && hours < 12) hours += 12;
+    if (meridiem === "AM" && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+
+  const match24 = timeStr.match(/(\d{1,2}):(\d{2})/);
+  if (match24) {
+    const hours = parseInt(match24[1], 10);
+    const minutes = parseInt(match24[2], 10);
+    return hours * 60 + minutes;
+  }
+
+  return 0;
+}
+
 export function ReservationScheduleStep({
   selectedDate,
   onChangeDate,
@@ -37,7 +63,38 @@ export function ReservationScheduleStep({
   onChangeCustomerPhone,
   onNext,
 }: ReservationScheduleStepProps) {
-  const minDate = new Date().toISOString().slice(0, 10);
+  const minDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const todayStr = minDate;
+  const isSelectedDateToday = selectedDate === todayStr;
+
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  // If selected date is today, evaluate which slots have passed
+  const availableUpcomingSlots = useMemo(() => {
+    return timeSlots.map((slot) => {
+      const slotMinutes = parseTimeToMinutes(slot.label);
+      const isPassed = isSelectedDateToday && slotMinutes <= currentMinutes;
+      return {
+        ...slot,
+        isPassed,
+        slotMinutes,
+      };
+    });
+  }, [timeSlots, isSelectedDateToday, currentMinutes]);
+
+  // If today is chosen and the currently selected slot has already passed, auto-select first upcoming available slot
+  useEffect(() => {
+    if (isSelectedDateToday) {
+      const currentSlotMinutes = parseTimeToMinutes(selectedTimeSlot);
+      if (currentSlotMinutes <= currentMinutes) {
+        const firstAvailable = availableUpcomingSlots.find((s) => !s.isPassed);
+        if (firstAvailable) {
+          onChangeTimeSlot(firstAvailable.label);
+        }
+      }
+    }
+  }, [isSelectedDateToday, currentMinutes, selectedTimeSlot, availableUpcomingSlots, onChangeTimeSlot]);
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-fadeIn">
@@ -51,7 +108,7 @@ export function ReservationScheduleStep({
             Pilih Waktu Kedatangan & Jumlah Tamu
           </h2>
           <p className="text-xs sm:text-sm text-[#64748B] mt-1 leading-relaxed">
-            Pilih tanggal, sesi jamuan makan malam, dan jumlah orang. Kapasitas denah meja akan otomatis disesuaikan secara presisi dengan jumlah tamu yang Anda tentukan.
+            Pilih tanggal melalui kalender eksklusif, sesi jamuan makan, dan jumlah orang. Kapasitas denah meja akan otomatis disesuaikan secara presisi dengan jumlah tamu yang Anda tentukan.
           </p>
         </div>
       </div>
@@ -59,30 +116,64 @@ export function ReservationScheduleStep({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Date, Time, Pax */}
         <div className="lg:col-span-2 space-y-6">
-          {/* 1. Date Picker */}
+          {/* 1. Custom Luxury Calendar Picker */}
           <div className="bg-white border border-[#E2E8F0] rounded-3xl p-5 sm:p-6 shadow-xs space-y-3">
-            <label className="text-xs font-bold text-[#18181B] flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#EA580C]" />
-              <span>Tanggal Reservasi Jamuan</span>
+            <label className="text-xs font-bold text-[#18181B] flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-[#EA580C]" />
+                <span>Pilih Tanggal Reservasi Jamuan</span>
+              </span>
+              <span className="text-[10px] font-mono font-bold text-slate-400">
+                (Tidak dapat memilih tanggal lampau)
+              </span>
             </label>
-            <input
-              type="date"
-              min={minDate}
-              value={selectedDate}
-              onChange={(e) => onChangeDate(e.target.value)}
-              className="w-full sm:w-auto p-3 text-xs sm:text-sm font-semibold border border-slate-200 rounded-2xl bg-slate-50/50 focus:ring-2 focus:ring-[#EA580C] focus:outline-none cursor-pointer"
+
+            <LuxuryCalendarPicker
+              selectedDate={selectedDate}
+              onSelectDate={onChangeDate}
+              minDate={minDate}
             />
           </div>
 
-          {/* 2. Time Slots */}
+          {/* 2. Time Slots with Pass-Time Protection */}
           <div className="bg-white border border-[#E2E8F0] rounded-3xl p-5 sm:p-6 shadow-xs space-y-3">
-            <label className="text-xs font-bold text-[#18181B] flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#EA580C]" />
-              <span>Sesi Waktu Bersantap (Dining Session)</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-[#18181B] flex items-center gap-2">
+                <Clock className="w-4 h-4 text-[#EA580C]" />
+                <span>Sesi Waktu Bersantap (Dining Session)</span>
+              </label>
+              {isSelectedDateToday && (
+                <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                  Slot Waktu Nyata (Live Filter)
+                </span>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {timeSlots.map((slot) => {
+              {availableUpcomingSlots.map((slot) => {
                 const isSelected = selectedTimeSlot === slot.label;
+                const isPassed = slot.isPassed;
+
+                if (isPassed) {
+                  return (
+                    <div
+                      key={slot.label}
+                      title="Sesi ini telah berlalu untuk hari ini dan tidak dapat dipesan lagi."
+                      className="p-3.5 rounded-2xl border border-slate-200/60 bg-slate-50/70 text-slate-400 opacity-60 cursor-not-allowed select-none"
+                    >
+                      <div className="flex items-center justify-between gap-1">
+                        <p className="text-xs font-bold line-through truncate">{slot.label}</p>
+                        <span className="text-[9px] font-mono font-bold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-md shrink-0">
+                          Sesi Berakhir
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Jam telah lewat pada hari ini
+                      </p>
+                    </div>
+                  );
+                }
+
                 return (
                   <button
                     key={slot.label}

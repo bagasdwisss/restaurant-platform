@@ -73,6 +73,7 @@ export function ReservationSection({
               </label>
               <input
                 type="date"
+                min={new Date().toISOString().slice(0, 10)}
                 value={resDate}
                 onChange={(e) => setResDate(e.target.value)}
                 className="w-full text-xs font-semibold text-white bg-white/10 border border-white/20 rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-[#EA580C]"

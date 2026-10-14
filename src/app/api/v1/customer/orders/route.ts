@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateOrderNumber } from "@/lib/utils";
+import { generateOrderNumber, parseTimeToMinutes } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
@@ -96,6 +96,38 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    // Check for conflicting reservations on that table, date & time window (2 hours)
+    if (isReservation && reservationDate && reservationTime) {
+      const targetMinutes = parseTimeToMinutes(reservationTime);
+      const existingReservations = await prisma.order.findMany({
+        where: {
+          tableId: table.id,
+          reservationDate,
+          status: { notIn: ["cancelled", "voided"] },
+        },
+        select: {
+          id: true,
+          reservationTime: true,
+          customerName: true,
+        },
+      });
+
+      for (const res of existingReservations) {
+        if (!res.reservationTime) continue;
+        const resMinutes = parseTimeToMinutes(res.reservationTime);
+        if (Math.abs(targetMinutes - resMinutes) < 120) {
+          return NextResponse.json(
+            {
+              success: false,
+              code: "TABLE_ALREADY_BOOKED",
+              message: `Meja ${table.tableNumber} telah direservasi oleh pengunjung lain pada ${reservationDate} untuk sesi ${res.reservationTime}. Meja berjarak 2 jam baru dapat dipesan kembali. Silakan pilih meja lain atau waktu berbeda.`,
+            },
+            { status: 409 }
+          );
+        }
+      }
     }
 
     // Get active cashier shift if any
@@ -245,11 +277,15 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Update table status to occupied or reserved
-      await tx.table.update({
-        where: { id: table.id },
-        data: { status: isDirect ? "occupied" : "reserved" },
-      });
+      // Only update physical table status if it's an immediate dine-in order or today's current session
+      const todayDate = new Date().toISOString().slice(0, 10);
+      const isImmediateSession = !isReservation || reservationDate === todayDate;
+      if (isImmediateSession) {
+        await tx.table.update({
+          where: { id: table.id },
+          data: { status: isDirect ? "occupied" : "reserved" },
+        });
+      }
 
       await tx.auditLog.create({
         data: {
