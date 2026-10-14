@@ -113,10 +113,86 @@ export function UsersTab({
         </div>
       </div>
 
-      {/* Users List Table */}
+      {/* Users List Container */}
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        {/* Mobile View: Cards */}
+        <div className="block md:hidden divide-y divide-slate-100 p-3 space-y-3">
+          {loadingUsers ? (
+            <div className="py-8 text-center text-xs text-[#64748B]">Memuat daftar pengguna...</div>
+          ) : usersList.length === 0 ? (
+            <div className="py-8 text-center text-xs text-[#64748B]">Belum ada data pengguna.</div>
+          ) : (
+            usersList.map((u) => {
+              const isCurrent = currentUser?.id === u.id;
+              const roleBadge =
+                u.role === "admin"
+                  ? "bg-[#14281D] text-white"
+                  : u.role === "kasir"
+                  ? "bg-[#EA580C] text-white"
+                  : "bg-emerald-100 text-emerald-800 border border-emerald-300";
+
+              const roleLabel =
+                u.role === "admin"
+                  ? "ADMIN"
+                  : u.role === "kasir"
+                  ? "KASIR"
+                  : "PEMBELI";
+
+              return (
+                <div key={u.id} className="p-3 bg-[#FDFBF7] rounded-2xl border border-slate-200/80 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-slate-200 text-[#18181B] font-bold flex items-center justify-center font-mono text-xs">
+                        {u.name?.charAt(0) || "U"}
+                      </div>
+                      <div>
+                        <span className="font-bold text-[#18181B] block">{u.name}</span>
+                        {isCurrent && (
+                          <span className="text-[10px] text-emerald-700 font-semibold font-mono">
+                            (Akun Anda Saat Ini)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-wider ${roleBadge}`}>
+                      {roleLabel}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-200/60 font-mono">
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Username & Email</span>
+                      <span className="text-slate-800 font-semibold">@{u.username}</span>
+                      <span className="text-slate-500 block truncate">{u.email}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">Kontak HP</span>
+                      <span className="text-slate-700">{u.phone || "-"}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 text-[10px] text-slate-400">
+                    <span>Terdaftar: {formatDate(u.createdAt)}</span>
+                    {!isCurrent && (
+                      <button
+                        onClick={() => onDeleteUser(u.id, u.name)}
+                        className="px-2 py-1 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Hapus</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop View: Full Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left text-xs min-w-[650px]">
             <thead className="bg-[#FDFBF7] border-b border-slate-200/80 text-[#64748B] font-mono uppercase text-[10px]">
               <tr>
                 <th className="py-3.5 px-4 font-bold">Profil Pengguna</th>
@@ -211,8 +287,8 @@ export function UsersTab({
 
       {/* MODAL: ADD USER / STAFF */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-serif font-bold text-[#18181B] text-base">

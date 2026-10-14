@@ -137,9 +137,95 @@ export function MenusTab({
         </div>
       </div>
 
-      {/* Menu Table */}
+      {/* Menu Container */}
       <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+        {/* Mobile View: Cards */}
+        <div className="block md:hidden divide-y divide-slate-100 p-3 space-y-3">
+          {filteredMenus.length === 0 ? (
+            <div className="py-8 text-center text-xs text-[#64748B]">
+              Tidak ada menu yang sesuai dengan filter pencarian.
+            </div>
+          ) : (
+            filteredMenus.map((menu) => (
+              <div key={menu.id} className="p-3 bg-[#FDFBF7] rounded-2xl border border-slate-200/80 space-y-2.5 text-xs">
+                <div className="flex items-center gap-3">
+                  <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                    {menu.image ? (
+                      <Image
+                        src={menu.image}
+                        alt={menu.name}
+                        fill
+                        className="object-cover"
+                        sizes="56px"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <Coffee className="w-6 h-6 m-auto text-slate-400" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <p className="font-serif font-bold text-sm text-[#18181B] truncate">{menu.name}</p>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 shrink-0">
+                        {menu.category?.name || "-"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#64748B] line-clamp-1 mt-0.5">
+                      {menu.description || "Tidak ada deskripsi"}
+                    </p>
+                    <p className="font-mono font-bold text-xs text-amber-900 mt-1">
+                      {formatIDR(menu.price)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                  <button
+                    onClick={() => onToggleAvailability(menu.id, menu.isAvailable)}
+                    className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                      menu.isAvailable
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-rose-100 text-rose-800"
+                    }`}
+                  >
+                    {menu.isAvailable ? "Tersedia (Ready)" : "Habis (Sold Out)"}
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        setEditMenuForm({
+                          id: menu.id,
+                          name: menu.name,
+                          categoryId: String(menu.categoryId),
+                          description: menu.description || "",
+                          price: String(menu.price),
+                          image: menu.image || "",
+                          isAvailable: menu.isAvailable,
+                        });
+                        setShowEditModal(true);
+                      }}
+                      className="p-1.5 text-[#64748B] hover:text-[#EA580C] hover:bg-orange-50 rounded-lg cursor-pointer transition-colors"
+                      title="Edit Menu"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => onDeleteMenu(menu.id, menu.name)}
+                      className="p-1.5 text-[#64748B] hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                      title="Hapus Menu"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs min-w-[650px]">
             <thead className="bg-[#FDFBF7] border-b border-slate-200/80 text-[#64748B] font-bold uppercase tracking-wider text-[11px]">
               <tr>
@@ -239,8 +325,8 @@ export function MenusTab({
 
       {/* MODAL: ADD MENU */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-serif font-bold text-[#18181B] text-base">Tambah Menu Baru</h3>
               <button
@@ -322,8 +408,8 @@ export function MenusTab({
 
       {/* MODAL: EDIT MENU */}
       {showEditModal && editMenuForm && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-serif font-bold text-[#18181B] text-base">Edit Menu</h3>
               <button

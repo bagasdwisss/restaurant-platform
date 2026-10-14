@@ -103,8 +103,8 @@ export function InventoryTab({ ingredients, onRestock }: InventoryTabProps) {
 
       {/* MODAL: RESTOCK INGREDIENT */}
       {showRestockModal && selectedIngredient && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-serif font-bold text-[#18181B] text-base">Restock Bahan Baku</h3>

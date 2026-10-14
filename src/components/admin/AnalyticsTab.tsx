@@ -38,7 +38,7 @@ export function AnalyticsTab({
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={onRefresh}
             disabled={isLoading}

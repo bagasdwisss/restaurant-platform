@@ -11,6 +11,7 @@ import {
   Users,
   LogOut,
   Sparkles,
+  X,
 } from "lucide-react";
 
 export type AdminTab = "analytics" | "menus" | "tables" | "inventory" | "shifts" | "users";
@@ -23,6 +24,8 @@ interface AdminSidebarProps {
   ingredientCount: number;
   userCount: number;
   onLogout: () => void;
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export function AdminSidebar({
@@ -33,6 +36,8 @@ export function AdminSidebar({
   ingredientCount,
   userCount,
   onLogout,
+  mobileOpen = false,
+  onCloseMobile,
 }: AdminSidebarProps) {
   const tabs = [
     { id: "analytics" as AdminTab, label: "Ringkasan & Sales", icon: TrendingUp },
@@ -43,28 +48,39 @@ export function AdminSidebar({
     { id: "users" as AdminTab, label: "Staff & Hak Akses", icon: Users, count: userCount },
   ];
 
-  return (
-    <aside className="w-full md:w-64 bg-white border-r border-[#E2E8F0] p-4 flex flex-col justify-between shrink-0">
+  const sidebarContent = (
+    <div className="flex flex-col justify-between h-full">
       <div className="space-y-6">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5 px-2">
-          <div className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-display font-black text-xl shadow-cta">
-            S
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-display text-lg font-bold tracking-tight text-[#18181B]">
-                SAVOR<span className="text-[#EA580C]">IA</span>
-              </span>
-              <span className="text-[10px] bg-[#14281D] text-white px-2 py-0.5 rounded-full font-mono uppercase font-bold">
-                Admin
-              </span>
+        <div className="flex items-center justify-between px-2">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-display font-black text-xl shadow-cta">
+              S
             </div>
-            <p className="text-[10px] text-[#64748B] uppercase font-mono tracking-wider">
-              Executive Back-Office
-            </p>
-          </div>
-        </Link>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-display text-lg font-bold tracking-tight text-[#18181B]">
+                  SAVOR<span className="text-[#EA580C]">IA</span>
+                </span>
+                <span className="text-[10px] bg-[#14281D] text-white px-2 py-0.5 rounded-full font-mono uppercase font-bold">
+                  Admin
+                </span>
+              </div>
+              <p className="text-[10px] text-[#64748B] uppercase font-mono tracking-wider">
+                Executive Back-Office
+              </p>
+            </div>
+          </Link>
+          {onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="md:hidden p-2 rounded-full hover:bg-slate-100 text-[#64748B]"
+              title="Tutup Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
 
         {/* Navigation */}
         <nav className="space-y-1">
@@ -74,7 +90,10 @@ export function AdminSidebar({
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  onCloseMobile?.();
+                }}
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
                   isActive
                     ? "bg-[#14281D] text-white shadow-sm"
@@ -117,6 +136,28 @@ export function AdminSidebar({
           <span>Keluar Sesi (Logout)</span>
         </button>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Drawer Backdrop */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex animate-fadeIn">
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            onClick={onCloseMobile}
+          />
+          <aside className="relative w-72 max-w-[85vw] bg-white h-full p-4 shadow-2xl z-10 flex flex-col justify-between">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+
+      {/* Desktop Persistent Sidebar */}
+      <aside className="hidden md:flex w-64 bg-white border-r border-[#E2E8F0] p-4 flex-col justify-between shrink-0 h-screen sticky top-0">
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

@@ -64,6 +64,8 @@ export default function AdminDashboardPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<AdminTab>("analytics");
 
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   // Data states
   const [salesData, setSalesData] = useState<any>(null);
   const [menus, setMenus] = useState<any[]>([]);
@@ -72,6 +74,8 @@ export default function AdminDashboardPage() {
   const [ingredients, setIngredients] = useState<any[]>([]);
   const [shiftHistory, setShiftHistory] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [cashierOrders, setCashierOrders] = useState<any[]>([]);
+  const [systemUpdates, setSystemUpdates] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
 
   // Visible lazy loading states for each tab
@@ -149,8 +153,10 @@ export default function AdminDashboardPage() {
       const res = await fetch("/api/v1/admin/reports/shifts");
       const data = await res.json();
       if (data.success) {
-        setShiftHistory(data.data.shifts);
-        setAuditLogs(data.data.auditLogs);
+        setShiftHistory(data.data.shifts || []);
+        setAuditLogs(data.data.auditLogs || []);
+        setCashierOrders(data.data.cashierOrders || []);
+        setSystemUpdates(data.data.systemUpdates || []);
       }
     } catch {
       console.error("Failed to load shifts");
@@ -515,10 +521,12 @@ export default function AdminDashboardPage() {
         ingredientCount={ingredients.length}
         userCount={usersList.length}
         onLogout={logout}
+        mobileOpen={mobileSidebarOpen}
+        onCloseMobile={() => setMobileSidebarOpen(false)}
       />
 
       {/* MAIN ADMIN WORKSPACE */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen md:h-screen md:overflow-hidden">
         {/* TOP HEADER BAR */}
         <AdminHeader
           user={user}
@@ -537,6 +545,7 @@ export default function AdminDashboardPage() {
           }
           isRefreshing={isRefreshing}
           onRefresh={refreshAllData}
+          onToggleMobileSidebar={() => setMobileSidebarOpen((prev) => !prev)}
         />
 
         <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
@@ -594,6 +603,8 @@ export default function AdminDashboardPage() {
               <ShiftsTab
                 shiftHistory={shiftHistory}
                 auditLogs={auditLogs}
+                cashierOrders={cashierOrders}
+                systemUpdates={systemUpdates}
               />
             )
           )}
