@@ -7,13 +7,13 @@ console.log('🚀 RESTOSYNC — SETUP DATABASE CLOUD POSTGRESQL');
 console.log('====================================================\n');
 
 // 1. Get database URL from command line or .env
-let dbUrl = process.argv[2];
+let dbUrl = process.argv[2] || process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL;
 
 if (!dbUrl) {
   const envPath = path.join(__dirname, '..', '.env');
   if (fs.existsSync(envPath)) {
     const envContent = fs.readFileSync(envPath, 'utf8');
-    const match = envContent.match(/DATABASE_URL=["']?([^"'\r\n]+)["']?/);
+    const match = envContent.match(/(?:DATABASE_URL|POSTGRES_PRISMA_URL|POSTGRES_URL)=["']?([^"'\r\n]+)["']?/);
     if (match && (match[1].startsWith('postgresql://') || match[1].startsWith('postgres://'))) {
       dbUrl = match[1];
     }

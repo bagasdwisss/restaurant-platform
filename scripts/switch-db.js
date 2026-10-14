@@ -3,14 +3,17 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 // Load .env if not already loaded in environment
-let dbUrl = process.env.DATABASE_URL;
+let dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL;
 if (!dbUrl) {
   const envPath = path.join(__dirname, '..', '.env');
   if (fs.existsSync(envPath)) {
     const envContent = fs.readFileSync(envPath, 'utf8');
-    const match = envContent.match(/DATABASE_URL=["']?([^"'\r\n]+)["']?/);
+    const match = envContent.match(/(?:DATABASE_URL|POSTGRES_PRISMA_URL|POSTGRES_URL)=["']?([^"'\r\n]+)["']?/);
     if (match) dbUrl = match[1];
   }
+}
+if (dbUrl && !process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = dbUrl;
 }
 
 let targetProvider = process.argv[2]?.toLowerCase();
@@ -34,21 +37,25 @@ const providerName = targetProvider === 'postgres' ? 'postgresql' : targetProvid
 const schemaPath = path.join(__dirname, '..', 'prisma', 'schema.prisma');
 
 let content = fs.readFileSync(schemaPath, 'utf8');
+const matchProvider = content.match(/datasource db\s*\{\s*provider\s*=\s*"([^"]+)"/m);
+const currentProvider = matchProvider ? matchProvider[1] : null;
 
-// Replace provider in datasource db block
-content = content.replace(
-  /datasource db\s*\{\s*provider\s*=\s*"[^"]+"/m,
-  `datasource db {\n  provider = "${providerName}"`
-);
+if (currentProvider !== providerName) {
+  content = content.replace(
+    /datasource db\s*\{\s*provider\s*=\s*"[^"]+"/m,
+    `datasource db {\n  provider = "${providerName}"`
+  );
+  fs.writeFileSync(schemaPath, content, 'utf8');
+  console.log(`✅ prisma/schema.prisma updated to provider: "${providerName}"`);
 
-fs.writeFileSync(schemaPath, content, 'utf8');
-console.log(`✅ prisma/schema.prisma updated to provider: "${providerName}"`);
-
-try {
-  console.log('Generating Prisma Client...');
-  execSync('npx prisma generate', { stdio: 'inherit' });
-  console.log(`✨ Successfully generated Prisma Client for ${providerName}!`);
-} catch (err) {
-  console.error('Failed to generate Prisma client:', err.message);
-  process.exit(1);
+  try {
+    console.log('Generating Prisma Client...');
+    execSync('npx prisma generate', { stdio: 'inherit' });
+    console.log(`✨ Successfully generated Prisma Client for ${providerName}!`);
+  } catch (err) {
+    console.error('Failed to generate Prisma client:', err.message);
+    process.exit(1);
+  }
+} else {
+  console.log(`ℹ️ prisma/schema.prisma is already configured for provider: "${providerName}". Skipping re-generation.`);
 }
