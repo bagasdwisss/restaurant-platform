@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Star, Plus } from "lucide-react";
+import { Star, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { CatalogDish, MenuFilterTab } from "@/data/landing-menu";
 
@@ -14,6 +14,8 @@ interface MenuCatalogSectionProps {
   onAddToCart: (dishName: string) => void;
 }
 
+const INITIAL_DISPLAY_LIMIT = 6;
+
 export function MenuCatalogSection({
   tabs,
   activeTab,
@@ -21,6 +23,25 @@ export function MenuCatalogSection({
   dishes,
   onAddToCart,
 }: MenuCatalogSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Reset expansion state when changing category tab
+  useEffect(() => {
+    setIsExpanded(false);
+  }, [activeTab]);
+
+  const hasMore = dishes.length > INITIAL_DISPLAY_LIMIT;
+  const visibleDishes = isExpanded ? dishes : dishes.slice(0, INITIAL_DISPLAY_LIMIT);
+  const remainingCount = dishes.length - INITIAL_DISPLAY_LIMIT;
+
+  const handleCollapse = () => {
+    setIsExpanded(false);
+    const menuEl = document.getElementById("menu");
+    if (menuEl) {
+      menuEl.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <section id="menu" className="py-14 sm:py-24 lg:py-28 bg-[#FDFBF7] border-b border-[#E2E8F0]">
       <div className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12 space-y-8 sm:space-y-12">
@@ -56,7 +77,7 @@ export function MenuCatalogSection({
 
         {/* Menu Catalog Grid with Perfectly Aligned Cards and Buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {dishes.map((item) => (
+          {visibleDishes.map((item) => (
             <div
               key={item.id}
               className="bg-white rounded-2xl border border-[#E2E8F0] p-3.5 sm:p-4 flex flex-col xs:flex-row gap-3.5 sm:gap-4 items-stretch hover:shadow-card hover:border-[#EA580C]/30 transition-all group h-full"
@@ -123,6 +144,32 @@ export function MenuCatalogSection({
             </div>
           ))}
         </div>
+
+        {/* View More / Expand & Collapse Button Row */}
+        {hasMore && (
+          <div className="flex flex-col items-center justify-center pt-4 sm:pt-6 space-y-2">
+            {!isExpanded ? (
+              <button
+                onClick={() => setIsExpanded(true)}
+                className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-white hover:bg-[#F3EFE6] text-[#18181B] hover:text-[#EA580C] border border-[#E2E8F0] shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 text-xs font-bold cursor-pointer group"
+              >
+                <span>Tampilkan Seluruh Menu (+{remainingCount} Hidangan Lainnya)</span>
+                <ChevronDown className="w-4 h-4 text-[#EA580C] group-hover:translate-y-0.5 transition-transform" />
+              </button>
+            ) : (
+              <button
+                onClick={handleCollapse}
+                className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-white hover:bg-stone-100 text-[#64748B] hover:text-[#18181B] border border-[#E2E8F0] shadow-sm transition-all flex items-center justify-center gap-2 text-xs font-bold cursor-pointer group"
+              >
+                <span>Tampilkan Lebih Ringkas</span>
+                <ChevronUp className="w-4 h-4 text-[#64748B] group-hover:-translate-y-0.5 transition-transform" />
+              </button>
+            )}
+            <p className="text-[11px] text-[#64748B] font-mono">
+              Menampilkan {visibleDishes.length} dari {dishes.length} hidangan
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
