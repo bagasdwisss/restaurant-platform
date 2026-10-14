@@ -2,26 +2,33 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('--- Cleaning previous database records ---');
-  await prisma.payment.deleteMany();
-  await prisma.orderItem.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.cashierShift.deleteMany();
-  await prisma.waiterCall.deleteMany();
-  await prisma.recipe.deleteMany();
-  await prisma.ingredient.deleteMany();
-  await prisma.modifierOption.deleteMany();
-  await prisma.modifierGroup.deleteMany();
-  await prisma.menu.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.table.deleteMany();
-  await prisma.auditLog.deleteMany();
-  await prisma.user.deleteMany();
+  const isForceClean = process.argv.includes('--force-clean');
+  if (isForceClean) {
+    console.log('--- Cleaning previous database records (--force-clean detected) ---');
+    await prisma.payment.deleteMany();
+    await prisma.orderItem.deleteMany();
+    await prisma.order.deleteMany();
+    await prisma.cashierShift.deleteMany();
+    await prisma.waiterCall.deleteMany();
+    await prisma.recipe.deleteMany();
+    await prisma.ingredient.deleteMany();
+    await prisma.modifierOption.deleteMany();
+    await prisma.modifierGroup.deleteMany();
+    await prisma.menu.deleteMany();
+    await prisma.category.deleteMany();
+    await prisma.table.deleteMany();
+    await prisma.auditLog.deleteMany();
+    await prisma.user.deleteMany();
+  } else {
+    console.log('--- Safe Non-Destructive Mode: Preserving all existing users, orders, shifts, and audit logs ---');
+  }
 
-  console.log('--- Seeding 3 Roles with Dedicated Unique Keys ---');
+  console.log('--- Seeding / Ensuring 3 Roles with Dedicated Unique Keys ---');
   // 1. ADMIN
-  const adminUser = await prisma.user.create({
-    data: {
+  const adminUser = await prisma.user.upsert({
+    where: { username: 'admin' },
+    update: {},
+    create: {
       username: 'admin',
       email: 'admin@savoria.com',
       password: 'admin123',
@@ -33,8 +40,10 @@ async function main() {
   });
 
   // 2. KASIR
-  const kasirUser = await prisma.user.create({
-    data: {
+  const kasirUser = await prisma.user.upsert({
+    where: { username: 'kasir' },
+    update: {},
+    create: {
       username: 'kasir',
       email: 'kasir@savoria.com',
       password: 'kasir123',
@@ -46,8 +55,10 @@ async function main() {
   });
 
   // 3. USER
-  const customerUser = await prisma.user.create({
-    data: {
+  const customerUser = await prisma.user.upsert({
+    where: { username: 'user' },
+    update: {},
+    create: {
       username: 'user',
       email: 'user@savoria.com',
       password: 'user123',
@@ -58,7 +69,7 @@ async function main() {
     },
   });
 
-  console.log('--- Seeding 8 Exclusive Dining Tables ---');
+  console.log('--- Seeding / Ensuring 8 Exclusive Dining Tables ---');
   const tableData = [
     { tableNumber: 'T01', capacity: 2, qrToken: 'qr-table-01', area: 'Indoor Romantic Chamber' },
     { tableNumber: 'T02', capacity: 2, qrToken: 'qr-table-02', area: 'Indoor Romantic Chamber' },
@@ -71,33 +82,51 @@ async function main() {
   ];
 
   for (const t of tableData) {
-    await prisma.table.create({ data: t });
+    await prisma.table.upsert({
+      where: { tableNumber: t.tableNumber },
+      update: {},
+      create: t,
+    });
   }
 
-  console.log('--- Seeding 7 Culinary Categories ---');
-  const catAppetizers = await prisma.category.create({
-    data: { name: 'Premier Appetizers & Starters', slug: 'appetizers', sortOrder: 1 },
+  console.log('--- Seeding / Ensuring 7 Culinary Categories ---');
+  const catAppetizers = await prisma.category.upsert({
+    where: { slug: 'appetizers' },
+    update: {},
+    create: { name: 'Premier Appetizers & Starters', slug: 'appetizers', sortOrder: 1 },
   });
-  const catMains = await prisma.category.create({
-    data: { name: 'World Signature Mains & Steaks', slug: 'mains', sortOrder: 2 },
+  const catMains = await prisma.category.upsert({
+    where: { slug: 'mains' },
+    update: {},
+    create: { name: 'World Signature Mains & Steaks', slug: 'mains', sortOrder: 2 },
   });
-  const catPasta = await prisma.category.create({
-    data: { name: 'Artisanal Pasta & Truffle Risotto', slug: 'pasta-risotto', sortOrder: 3 },
+  const catPasta = await prisma.category.upsert({
+    where: { slug: 'pasta-risotto' },
+    update: {},
+    create: { name: 'Artisanal Pasta & Truffle Risotto', slug: 'pasta-risotto', sortOrder: 3 },
   });
-  const catSeafood = await prisma.category.create({
-    data: { name: 'Seafood Extravaganza & Ocean Treasures', slug: 'seafood', sortOrder: 4 },
+  const catSeafood = await prisma.category.upsert({
+    where: { slug: 'seafood' },
+    update: {},
+    create: { name: 'Seafood Extravaganza & Ocean Treasures', slug: 'seafood', sortOrder: 4 },
   });
-  const catNusantaraAsia = await prisma.category.create({
-    data: { name: 'Asian & Nusantara Heritage Reimagined', slug: 'nusantara-asia', sortOrder: 5 },
+  const catNusantaraAsia = await prisma.category.upsert({
+    where: { slug: 'nusantara-asia' },
+    update: {},
+    create: { name: 'Asian & Nusantara Heritage Reimagined', slug: 'nusantara-asia', sortOrder: 5 },
   });
-  const catDesserts = await prisma.category.create({
-    data: { name: 'Chef\'s Atelier Desserts & Pâtisserie', slug: 'desserts', sortOrder: 6 },
+  const catDesserts = await prisma.category.upsert({
+    where: { slug: 'desserts' },
+    update: {},
+    create: { name: 'Chef\'s Atelier Desserts & Pâtisserie', slug: 'desserts', sortOrder: 6 },
   });
-  const catBeverages = await prisma.category.create({
-    data: { name: 'Grands Crus, Elixirs & Mocktails', slug: 'beverages', sortOrder: 7 },
+  const catBeverages = await prisma.category.upsert({
+    where: { slug: 'beverages' },
+    update: {},
+    create: { name: 'Grands Crus, Elixirs & Mocktails', slug: 'beverages', sortOrder: 7 },
   });
 
-  console.log('--- Seeding Raw Ingredients for Recipe BOM ---');
+  console.log('--- Seeding / Ensuring Raw Ingredients for Recipe BOM ---');
   const rawIngredients = [
     { name: 'Miyazaki Wagyu A5 BMS 12 (g)', unit: 'g', stockQuantity: 30000, minStock: 3000 },
     { name: 'Australian Black Angus MB7 (g)', unit: 'g', stockQuantity: 45000, minStock: 5000 },
@@ -119,8 +148,11 @@ async function main() {
 
   const ingMap = {};
   for (const ing of rawIngredients) {
-    const created = await prisma.ingredient.create({ data: ing });
-    ingMap[ing.name] = created.id;
+    let existing = await prisma.ingredient.findFirst({ where: { name: ing.name } });
+    if (!existing) {
+      existing = await prisma.ingredient.create({ data: ing });
+    }
+    ingMap[ing.name] = existing.id;
   }
 
   console.log('--- Seeding 50 Worldwide Gourmet Menus with Modifiers ---');
@@ -623,47 +655,53 @@ async function main() {
   ];
 
   for (const item of dishes) {
-    const createdMenu = await prisma.menu.create({
-      data: {
-        categoryId: item.categoryId,
-        name: item.name,
-        country: item.country,
-        description: item.description,
-        price: item.price,
-        image: item.image,
-        isAvailable: true,
-      },
+    let createdMenu = await prisma.menu.findFirst({
+      where: { name: item.name },
     });
 
-    // Create modifiers if any
-    if (item.modifiers && item.modifiers.length > 0) {
-      for (const mod of item.modifiers) {
-        await prisma.modifierGroup.create({
-          data: {
-            menuId: createdMenu.id,
-            name: mod.name,
-            minSelection: mod.minSelection,
-            maxSelection: mod.maxSelection,
-            options: {
-              create: mod.options,
-            },
-          },
-        });
-      }
-    }
+    if (!createdMenu) {
+      createdMenu = await prisma.menu.create({
+        data: {
+          categoryId: item.categoryId,
+          name: item.name,
+          country: item.country,
+          description: item.description,
+          price: item.price,
+          image: item.image,
+          isAvailable: true,
+        },
+      });
 
-    // Create recipes if any
-    if (item.recipes && item.recipes.length > 0) {
-      for (const rec of item.recipes) {
-        const ingredientId = ingMap[rec.ingName];
-        if (ingredientId) {
-          await prisma.recipe.create({
+      // Create modifiers if any
+      if (item.modifiers && item.modifiers.length > 0) {
+        for (const mod of item.modifiers) {
+          await prisma.modifierGroup.create({
             data: {
               menuId: createdMenu.id,
-              ingredientId: ingredientId,
-              quantityNeeded: rec.qty,
+              name: mod.name,
+              minSelection: mod.minSelection,
+              maxSelection: mod.maxSelection,
+              options: {
+                create: mod.options,
+              },
             },
           });
+        }
+      }
+
+      // Create recipes if any
+      if (item.recipes && item.recipes.length > 0) {
+        for (const rec of item.recipes) {
+          const ingredientId = ingMap[rec.ingName];
+          if (ingredientId) {
+            await prisma.recipe.create({
+              data: {
+                menuId: createdMenu.id,
+                ingredientId: ingredientId,
+                quantityNeeded: rec.qty,
+              },
+            });
+          }
         }
       }
     }

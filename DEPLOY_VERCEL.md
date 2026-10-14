@@ -45,15 +45,13 @@ Pada halaman konfigurasi proyek Vercel (atau di menu **Settings > Environment Va
 
 ---
 
-### Langkah 4: Atur Build Command Otomatis (Seed Data & Menu)
-Agar seluruh tabel, akun kasir/admin/user, dan 35+ menu gourmet dunia langsung terbuat secara otomatis saat deploy:
-1. Masuk ke **Settings** > **General** di Vercel.
-2. Gulir ke bagian **Build & Development Settings**.
-3. Aktifkan saklar **Override** pada **Build Command**, dan masukkan perintah berikut:
-   ```bash
-   prisma db push --accept-data-loss && node prisma/seed.js && prisma generate && next build
-   ```
-4. Simpan (**Save**).
+### Langkah 4: Build & Deployment Setting
+Karena database Neon sudah langsung terhubung lewat tab **Storage** Vercel (`Connected Projects: restaurant-platform`), Vercel sudah otomatis memiliki variabel `DATABASE_URL`!
+- Pada menu **Settings** > **General** > **Build & Development Settings**, gunakan Build Command default atau:
+  ```bash
+  npm run build
+  ```
+- File `prisma/seed.js` kini bersifat **Safe Non-Destructive**, sehingga data akun baru, transaksi pesanan, shift kasir, dan audit log tidak akan pernah terhapus saat build/update dijalankan.
 
 ---
 
