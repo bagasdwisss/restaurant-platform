@@ -164,7 +164,7 @@ export function PosCatalogTab({
                 className="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-all text-left flex flex-col justify-between group cursor-pointer relative"
               >
                 <div>
-                  <div className="relative aspect-4/3 w-full bg-slate-100 overflow-hidden">
+                  <div className="relative h-36 sm:h-44 w-full aspect-[4/3] bg-slate-100 overflow-hidden">
                     <DishImage
                       src={menu.image}
                       alt={menu.name}

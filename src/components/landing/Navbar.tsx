@@ -53,7 +53,15 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
         </nav>
 
         {/* Right Action Group */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Mobile Instant Booking Button */}
+          <Link
+            href="/reservation"
+            className="sm:hidden px-3 py-1.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-xs flex items-center gap-1"
+          >
+            <span>Booking</span>
+          </Link>
+
           {/* Cart Icon with Badge */}
           <Link
             href="/reservation"
@@ -70,10 +78,10 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
 
           {/* User Session or Login */}
           {mounted && user ? (
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <Link
                 href={user.role === "admin" ? "/admin" : user.role === "kasir" ? "/pos" : "/user"}
-                className="px-4 py-2 rounded-full bg-[#14281D] hover:bg-[#0f1f16] text-white font-semibold text-xs shadow-md transition-all flex items-center gap-1.5"
+                className="px-3.5 py-2 rounded-full bg-[#14281D] hover:bg-[#0f1f16] text-white font-semibold text-xs shadow-md transition-all flex items-center gap-1.5"
               >
                 <span>Dashboard</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -81,7 +89,7 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
               <button
                 onClick={logout}
                 title="Keluar"
-                className="p-2 rounded-full bg-white hover:bg-rose-50 text-[#64748B] hover:text-rose-600 border border-[#E2E8F0] transition-colors"
+                className="p-2 rounded-full bg-white hover:bg-rose-50 text-[#64748B] hover:text-rose-600 border border-[#E2E8F0] transition-colors cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -90,21 +98,22 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
             <div className="hidden sm:flex items-center gap-2">
               <Link
                 href="/login"
-                className="px-4 py-2 rounded-full border border-[#18181B]/20 hover:border-[#18181B] text-[#18181B] font-semibold text-xs bg-white transition-all shadow-sm flex items-center gap-1.5"
+                className="px-3.5 py-2 rounded-full border border-[#18181B]/20 hover:border-[#18181B] text-[#18181B] font-semibold text-xs bg-white transition-all shadow-sm flex items-center gap-1.5"
               >
                 <LogIn className="w-3.5 h-3.5 text-[#EA580C]" />
                 <span>Unique Key</span>
               </Link>
-
-              <Link
-                href="/reservation"
-                className="px-5 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-cta transition-all flex items-center gap-1.5"
-              >
-                <span>Reserve a Table</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
             </div>
           )}
+
+          {/* Always Visible Primary CTA: Booking Reservasi */}
+          <Link
+            href="/reservation"
+            className="hidden sm:flex px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-cta transition-all items-center gap-1.5"
+          >
+            <span>Booking Reservasi</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
 
           {/* Mobile Hamburger Trigger */}
           <button
@@ -147,19 +156,53 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
           >
             Reviews
           </a>
-          <div className="pt-2 border-t border-[#E2E8F0] flex gap-2">
-            <Link
-              href="/login"
-              className="flex-1 text-center py-2 text-xs font-semibold rounded-full border border-[#18181B]/20 text-[#18181B]"
-            >
-              Unique Key Login
-            </Link>
-            <Link
-              href="/reservation"
-              className="flex-1 text-center py-2 text-xs font-bold rounded-full bg-[#EA580C] text-white"
-            >
-              Reserve Table
-            </Link>
+          <div className="pt-2 border-t border-[#E2E8F0]">
+            {mounted && user ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <Link
+                    href={user.role === "admin" ? "/admin" : user.role === "kasir" ? "/pos" : "/user"}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 text-center py-2 text-xs font-semibold rounded-full bg-[#14281D] text-white"
+                  >
+                    Dashboard ({user.name})
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="px-4 py-2 text-xs font-semibold rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50"
+                  >
+                    Keluar
+                  </button>
+                </div>
+                <Link
+                  href="/reservation"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-center py-2 text-xs font-bold rounded-full bg-[#EA580C] text-white"
+                >
+                  Booking Reservasi
+                </Link>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2 text-xs font-semibold rounded-full border border-[#18181B]/20 text-[#18181B]"
+                >
+                  Unique Key Login
+                </Link>
+                <Link
+                  href="/reservation"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2 text-xs font-bold rounded-full bg-[#EA580C] text-white"
+                >
+                  Booking Reservasi
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

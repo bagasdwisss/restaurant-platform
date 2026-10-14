@@ -71,6 +71,7 @@ interface FloorTableFurnitureProps {
   isSelected?: boolean;
   guestCount?: number;
   onSelect?: (table: TableItemData) => void;
+  onConfirm?: (table: TableItemData) => void;
   onOpenBill?: (table: TableItemData) => void;
   onPayOrder?: (order: any) => void;
   onMoveTable?: (table: TableItemData) => void;
@@ -82,6 +83,7 @@ export function FloorTableFurniture({
   isSelected = false,
   guestCount = 2,
   onSelect,
+  onConfirm,
   onOpenBill,
   onPayOrder,
   onMoveTable,
@@ -193,7 +195,9 @@ export function FloorTableFurniture({
         return;
       }
 
-      if (onSelect) {
+      if (onConfirm) {
+        onConfirm(table);
+      } else if (onSelect) {
         onSelect(table);
       }
     } else if (mode === "pos") {

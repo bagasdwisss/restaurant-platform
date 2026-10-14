@@ -43,7 +43,9 @@ interface ReservationPaymentStepProps {
   selectedTimeSlot: string;
   guestCount: number;
   customerName: string;
+  onChangeCustomerName?: (name: string) => void;
   customerPhone: string;
+  onChangeCustomerPhone?: (phone: string) => void;
   paymentMethod: PaymentMethodId;
   onChangePaymentMethod: (method: PaymentMethodId) => void;
   paymentCategory: string;
@@ -60,7 +62,9 @@ export function ReservationPaymentStep({
   selectedTimeSlot,
   guestCount,
   customerName,
+  onChangeCustomerName,
   customerPhone,
+  onChangeCustomerPhone,
   paymentMethod,
   onChangePaymentMethod,
   isProcessingPayment,
@@ -547,14 +551,32 @@ export function ReservationPaymentStep({
               </div>
             </div>
 
-            {/* Customer review */}
-            <div className="p-3 bg-slate-50/70 border border-slate-200/60 rounded-2xl text-[11px] space-y-0.5">
-              <p className="text-[#64748B]">
-                Pemesan: <strong className="text-[#18181B]">{customerName}</strong>
-              </p>
-              <p className="text-[#64748B]">
-                Telepon: <strong className="text-[#18181B]">{customerPhone}</strong>
-              </p>
+            {/* Customer review & input confirmation */}
+            <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-[11px] space-y-2">
+              <div>
+                <label className="text-[10px] font-bold text-[#64748B] block mb-1">
+                  Nama Tamu Pemesan <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Nama Lengkap Pemesan"
+                  value={customerName}
+                  onChange={(e) => onChangeCustomerName?.(e.target.value)}
+                  className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none font-medium text-[#18181B]"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-[#64748B] block mb-1">
+                  Nomor Telepon / WhatsApp <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  placeholder="0812xxxxxxxx"
+                  value={customerPhone}
+                  onChange={(e) => onChangeCustomerPhone?.(e.target.value)}
+                  className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none font-medium text-[#18181B]"
+                />
+              </div>
             </div>
 
             {/* Execute Payment Button */}

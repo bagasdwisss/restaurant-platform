@@ -404,7 +404,7 @@ export default function SavoriaReservationPage() {
   // Nav validation
   const canNavigateTo = (step: number): boolean => {
     if (step === 1) return true;
-    if (step === 2) return Boolean(customerName && customerPhone);
+    if (step === 2) return true; // Menu catalog is always browsable
     if (step === 3) return Boolean(cart.length > 0);
     if (step === 4) return Boolean(selectedTable);
     if (step === 5) return Boolean(completedOrder);
@@ -494,10 +494,6 @@ export default function SavoriaReservationPage() {
             customerPhone={customerPhone}
             onChangeCustomerPhone={setCustomerPhone}
             onNext={() => {
-              if (!customerName.trim() || !customerPhone.trim()) {
-                toast.warning("Lengkapi nama tamu dan nomor telepon untuk melanjutkan.", "Data Pemesan Diperlukan");
-                return;
-              }
               setCurrentStep(2);
             }}
           />
@@ -542,7 +538,9 @@ export default function SavoriaReservationPage() {
             selectedTimeSlot={selectedTimeSlot}
             guestCount={guestCount}
             customerName={customerName}
+            onChangeCustomerName={setCustomerName}
             customerPhone={customerPhone}
+            onChangeCustomerPhone={setCustomerPhone}
             paymentMethod={paymentMethod}
             onChangePaymentMethod={setPaymentMethod}
             paymentCategory={paymentCategory}

@@ -181,6 +181,7 @@ export function VisualFloorPlan({
               isSelected={selectedTable?.id === tbl.id}
               guestCount={guestCount}
               onSelect={onSelectTable}
+              onConfirm={onConfirmTable}
               onOpenBill={onOpenBill}
               onPayOrder={onPayOrder}
               onMoveTable={onMoveTable}

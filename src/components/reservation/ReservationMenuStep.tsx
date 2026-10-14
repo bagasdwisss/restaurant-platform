@@ -112,7 +112,7 @@ export function ReservationMenuStep({
               className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group h-full"
             >
               <div>
-                <div className="relative aspect-4/3 w-full bg-slate-100 overflow-hidden shrink-0">
+                <div className="relative h-44 sm:h-48 w-full aspect-[4/3] bg-slate-100 overflow-hidden shrink-0">
                   <DishImage
                     src={menu.image}
                     alt={menu.name}

@@ -41,12 +41,14 @@ export function DishImage({
       src={currentSrc}
       alt={alt || "Menu Dish"}
       fill={shouldUseFill}
+      unoptimized
       loading="lazy"
       sizes={sizes || (shouldUseFill ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" : undefined)}
       className={className}
       onError={() => {
         if (currentSrc !== fallbackSrc) {
           setCurrentSrc(fallbackSrc);
+        } else {
           setHasError(true);
         }
       }}

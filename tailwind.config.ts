@@ -37,6 +37,9 @@ const config: Config = {
         card: "0 10px 30px -5px rgba(24, 24, 27, 0.05)",
         "card-hover": "0 20px 35px -5px rgba(234, 88, 12, 0.12)",
       },
+      aspectRatio: {
+        "4/3": "4 / 3",
+      },
     },
   },
   plugins: [],
