@@ -109,13 +109,15 @@ export function ReservationMenuStep({
           return (
             <div
               key={menu.id}
-              className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
+              className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group h-full"
             >
               <div>
-                <div className="relative aspect-4/3 w-full bg-slate-100 overflow-hidden">
+                <div className="relative aspect-4/3 w-full bg-slate-100 overflow-hidden shrink-0">
                   <DishImage
                     src={menu.image}
                     alt={menu.name}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   {hasModifiers && (
@@ -134,10 +136,10 @@ export function ReservationMenuStep({
                 </div>
 
                 <div className="p-4 space-y-1.5">
-                  <h3 className="font-serif font-bold text-sm text-[#18181B] line-clamp-1 group-hover:text-[#EA580C] transition-colors">
+                  <h3 className="font-serif font-bold text-sm text-[#18181B] line-clamp-1 min-h-[20px] group-hover:text-[#EA580C] transition-colors">
                     {menu.name}
                   </h3>
-                  <p className="text-[11px] text-[#64748B] line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-[#64748B] line-clamp-2 min-h-[32px] leading-relaxed">
                     {menu.description || "Hidangan istimewa racikan koki eksekutif Savoria."}
                   </p>
                 </div>

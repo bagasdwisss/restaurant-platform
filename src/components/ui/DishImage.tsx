@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Image, { ImageProps } from "next/image";
-import { UtensilsCrossed } from "lucide-react";
 
 export const DEFAULT_DISH_IMAGE =
   "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80";
@@ -17,6 +16,8 @@ export function DishImage({
   alt,
   fallbackSrc = DEFAULT_DISH_IMAGE,
   className = "",
+  fill,
+  sizes,
   ...props
 }: DishImageProps) {
   const [currentSrc, setCurrentSrc] = useState<string>(src || fallbackSrc);
@@ -33,10 +34,14 @@ export function DishImage({
     }
   }, [src, fallbackSrc]);
 
+  const shouldUseFill = fill !== undefined ? fill : !props.width && !props.height;
+
   return (
     <Image
       src={currentSrc}
       alt={alt || "Menu Dish"}
+      fill={shouldUseFill}
+      sizes={sizes || (shouldUseFill ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" : undefined)}
       className={className}
       onError={() => {
         if (currentSrc !== fallbackSrc) {
