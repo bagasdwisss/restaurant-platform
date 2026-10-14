@@ -35,11 +35,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const showToast = useCallback(
-    ({ type, message, title, duration = 4500 }: { type: ToastType; message: string; title?: string; duration?: number }) => {
+    ({ type, message, title, duration = 4000 }: { type: ToastType; message: string; title?: string; duration?: number }) => {
       const id = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
       const newToast: ToastItem = { id, type, title, message, duration };
 
-      setToasts((prev) => [...prev, newToast]);
+      setToasts((prev) => {
+        // Prevent duplicate toast with identical message
+        const isDuplicate = prev.some((t) => t.message === message && t.type === type);
+        if (isDuplicate) return prev;
+        const next = [...prev, newToast];
+        return next.slice(-3); // Limit max 3 visible toasts
+      });
 
       if (duration > 0) {
         setTimeout(() => {
@@ -50,12 +56,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     [dismissToast]
   );
 
-  const toast = {
-    success: (message: string, title?: string) => showToast({ type: "success", message, title: title || "Berhasil" }),
-    error: (message: string, title?: string) => showToast({ type: "error", message, title: title || "Terjadi Kendala" }),
-    warning: (message: string, title?: string) => showToast({ type: "warning", message, title: title || "Perhatian" }),
-    info: (message: string, title?: string) => showToast({ type: "info", message, title: title || "Informasi" }),
-  };
+  const toast = React.useMemo(
+    () => ({
+      success: (message: string, title?: string) => showToast({ type: "success", message, title: title || "Berhasil" }),
+      error: (message: string, title?: string) => showToast({ type: "error", message, title: title || "Terjadi Kendala" }),
+      warning: (message: string, title?: string) => showToast({ type: "warning", message, title: title || "Perhatian" }),
+      info: (message: string, title?: string) => showToast({ type: "info", message, title: title || "Informasi" }),
+    }),
+    [showToast]
+  );
 
   return (
     <ToastContext.Provider value={{ toasts, showToast, toast, dismissToast }}>
