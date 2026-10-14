@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { ToastProvider } from "@/lib/toast-context";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -24,7 +25,9 @@ export default function RootLayout({
         className="min-h-screen bg-[#FDFBF7] text-[#18181B] antialiased selection:bg-[#EA580C] selection:text-white"
         suppressHydrationWarning
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

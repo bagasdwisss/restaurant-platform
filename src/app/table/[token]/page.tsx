@@ -4,6 +4,7 @@ import React, { useEffect, useState, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast-context";
 import {
   UtensilsCrossed,
   Search,
@@ -63,6 +64,7 @@ export default function CustomerTablePage({
 }) {
   const resolvedParams = use(params);
   const token = resolvedParams.token;
+  const { toast } = useToast();
 
   // Table state
   const [table, setTable] = useState<any>(null);
@@ -172,10 +174,11 @@ export default function CustomerTablePage({
       const data = await res.json();
       if (data.success) {
         setWaiterCalledSuccess(true);
+        toast.success("Pelayan telah menerima notifikasi dan segera menuju meja Anda.", "Pelayan Dipanggil");
         setTimeout(() => setWaiterCalledSuccess(false), 5000);
       }
     } catch (err) {
-      alert("Gagal memanggil pelayan. Silakan panggil langsung.");
+      toast.error("Gagal memanggil pelayan melalui sistem. Silakan panggil staf terdekat secara langsung.", "Panggilan Gagal");
     } finally {
       setCallingWaiter(false);
     }
@@ -299,11 +302,12 @@ export default function CustomerTablePage({
         setActiveOrder(data.data);
         cart.clearCart();
         setIsCartOpen(false);
+        toast.success(`Pesanan #${data.data.orderNumber} berhasil dikirim ke dapur!`, "Pesanan Diterima");
       } else {
-        alert(data.message || "Gagal mengirim pesanan.");
+        toast.error(data.message || "Gagal mengirim pesanan.", "Pesanan Gagal");
       }
     } catch (err: any) {
-      alert("Terjadi kesalahan koneksi saat mengirim pesanan.");
+      toast.error("Terjadi kesalahan koneksi saat mengirim pesanan. Silakan periksa jaringan Anda.", "Gangguan Koneksi");
     } finally {
       setIsSubmitting(false);
     }

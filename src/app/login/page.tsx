@@ -4,6 +4,7 @@ import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast-context";
 import {
   KeyRound,
   ShieldCheck,
@@ -27,6 +28,7 @@ function LoginContent() {
   const redirectUrl = searchParams.get("redirect");
 
   const { loginWithKey, login } = useAuth();
+  const { toast } = useToast();
 
   // Mode: "key" (Premier Unique Key Authentication) or "credential" (Manual Username/Password)
   const [authMode, setAuthMode] = useState<"key" | "credential">("key");
@@ -64,6 +66,7 @@ function LoginContent() {
     e.preventDefault();
     if (!uniqueKeyInput.trim()) {
       setErrorMsg("Harap masukkan Unique Key otorisasi Anda.");
+      toast.warning("Harap masukkan Unique Key otorisasi Anda.", "Key Belum Diisi");
       return;
     }
 
@@ -76,11 +79,13 @@ function LoginContent() {
 
     if (res.success && res.user) {
       setSuccessMsg(res.message);
+      toast.success(res.message, "Otorisasi Berhasil");
       setTimeout(() => {
         navigateBasedOnRole(res.user!.role);
       }, 700);
     } else {
       setErrorMsg(res.message);
+      toast.error(res.message, "Otorisasi Ditolak");
     }
   };
 
@@ -90,6 +95,7 @@ function LoginContent() {
     setErrorMsg("");
     setSuccessMsg("");
     setCopiedKey(key);
+    toast.info("Unique Key disalin ke kolom otorisasi.", "Preset Dipilih");
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
@@ -105,11 +111,13 @@ function LoginContent() {
 
     if (res.success && res.user) {
       setSuccessMsg(res.message);
+      toast.success(res.message, "Login Berhasil");
       setTimeout(() => {
         navigateBasedOnRole(res.user!.role);
       }, 600);
     } else {
       setErrorMsg(res.message);
+      toast.error(res.message, "Login Gagal");
     }
   };
 

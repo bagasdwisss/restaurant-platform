@@ -33,9 +33,11 @@ import {
 import Link from "next/link";
 import { formatIDR, formatDate } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast-context";
 
 export default function AdminDashboardPage() {
   const { user, logout, quickLogin, loading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"analytics" | "menus" | "tables" | "inventory" | "shifts" | "users">("analytics");
 
   // User management state
@@ -172,7 +174,7 @@ export default function AdminDashboardPage() {
 
   const handleCreateUser = async () => {
     if (!userForm.name || !userForm.username || !userForm.email || !userForm.password) {
-      alert("Harap lengkapi semua data akun.");
+      toast.warning("Harap lengkapi semua data akun staf.", "Data Belum Lengkap");
       return;
     }
     try {
@@ -186,11 +188,12 @@ export default function AdminDashboardPage() {
         setShowAddUserModal(false);
         setUserForm({ name: "", username: "", email: "", password: "", role: "kasir", phone: "" });
         fetchUsers();
+        toast.success(`Akun staf "${userForm.name}" berhasil dibuat!`, "Akun Dibuat");
       } else {
-        alert(data.message || "Gagal membuat akun.");
+        toast.error(data.message || "Gagal membuat akun.", "Gagal Membuat Akun");
       }
     } catch {
-      alert("Terjadi kesalahan koneksi.");
+      toast.error("Terjadi kesalahan koneksi saat membuat akun.", "Gangguan Koneksi");
     }
   };
 
@@ -201,11 +204,12 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       if (data.success) {
         fetchUsers();
+        toast.success(`Akun "${name}" berhasil dihapus.`, "Akun Dihapus");
       } else {
-        alert(data.message || "Gagal menghapus user.");
+        toast.error(data.message || "Gagal menghapus user.", "Gagal Hapus");
       }
     } catch {
-      alert("Terjadi kesalahan.");
+      toast.error("Terjadi kesalahan saat menghapus akun.", "Gangguan Koneksi");
     }
   };
 
@@ -222,11 +226,12 @@ export default function AdminDashboardPage() {
         setShowEditMenuModal(false);
         setEditMenuForm(null);
         fetchMenus();
+        toast.success(`Menu "${editMenuForm.name}" berhasil diperbarui!`, "Menu Diperbarui");
       } else {
-        alert(data.message || "Gagal memperbarui menu.");
+        toast.error(data.message || "Gagal memperbarui menu.", "Gagal Update Menu");
       }
     } catch {
-      alert("Terjadi kesalahan saat memperbarui menu.");
+      toast.error("Terjadi kesalahan saat memperbarui menu.", "Gangguan Koneksi");
     }
   };
 
@@ -275,12 +280,13 @@ export default function AdminDashboardPage() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Penjualan");
 
     XLSX.writeFile(workbook, `Laporan-SAVORIA-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success("Laporan penjualan Excel berhasil diekspor dan diunduh!", "Ekspor Selesai");
   };
 
   // Add Menu Handler
   const handleCreateMenu = async () => {
     if (!menuForm.name || !menuForm.price || !menuForm.categoryId) {
-      alert("Harap lengkapi nama menu, harga, dan kategori.");
+      toast.warning("Harap lengkapi nama menu, harga, dan kategori.", "Form Belum Lengkap");
       return;
     }
 
@@ -302,11 +308,12 @@ export default function AdminDashboardPage() {
           isAvailable: true,
         });
         fetchMenus();
+        toast.success(`Menu "${menuForm.name}" berhasil ditambahkan ke katalog!`, "Menu Ditambahkan");
       } else {
-        alert(data.message || "Gagal membuat menu.");
+        toast.error(data.message || "Gagal membuat menu.", "Gagal Tambah Menu");
       }
     } catch (err) {
-      alert("Terjadi kesalahan koneksi.");
+      toast.error("Terjadi kesalahan koneksi saat membuat menu.", "Gangguan Koneksi");
     }
   };
 
@@ -319,8 +326,9 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ isAvailable: !current }),
       });
       fetchMenus();
+      toast.info(`Status menu berhasil diubah menjadi ${!current ? "Tersedia" : "Habis"}.`, "Status Menu");
     } catch (err) {
-      console.error(err);
+      toast.error("Gagal mengubah ketersediaan menu.", "Gagal Update");
     }
   };
 
@@ -330,15 +338,16 @@ export default function AdminDashboardPage() {
     try {
       await fetch(`/api/v1/admin/menus/${menuId}`, { method: "DELETE" });
       fetchMenus();
+      toast.success(`Menu "${menuName}" berhasil dihapus.`, "Menu Dihapus");
     } catch (err) {
-      console.error(err);
+      toast.error("Gagal menghapus menu.", "Gagal Hapus");
     }
   };
 
   // Add Table Handler
   const handleCreateTable = async () => {
     if (!tableForm.tableNumber) {
-      alert("Nomor meja wajib diisi.");
+      toast.warning("Nomor meja wajib diisi.", "Nomor Meja Diperlukan");
       return;
     }
     try {
@@ -352,11 +361,12 @@ export default function AdminDashboardPage() {
         setShowAddTableModal(false);
         setTableForm({ tableNumber: "", capacity: "4", area: "Indoor" });
         fetchTables();
+        toast.success(`Meja #${tableForm.tableNumber} berhasil didaftarkan!`, "Meja Ditambahkan");
       } else {
-        alert(data.message || "Gagal membuat meja.");
+        toast.error(data.message || "Gagal membuat meja.", "Gagal Buat Meja");
       }
     } catch (err) {
-      alert("Terjadi kesalahan.");
+      toast.error("Terjadi kesalahan saat membuat meja.", "Gangguan Koneksi");
     }
   };
 
@@ -371,14 +381,14 @@ export default function AdminDashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
-        alert("QR Token baru berhasil digenerate!");
+        toast.success("QR Token baru berhasil digenerate dan diperbarui!", "QR Token Diperbarui");
         fetchTables();
         if (selectedTableQr?.id === tableId) {
           setSelectedTableQr(data.data);
         }
       }
     } catch (err) {
-      console.error(err);
+      toast.error("Gagal meregenerasi token QR meja.", "Gagal Update");
     }
   };
 
@@ -396,15 +406,16 @@ export default function AdminDashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
+        toast.success(`Stok ${selectedIngredient.name} berhasil ditambahkan!`, "Restock Berhasil");
         setShowRestockModal(false);
         setRestockAmount("");
         setSelectedIngredient(null);
         fetchIngredients();
       } else {
-        alert(data.message || "Gagal memperbarui stok.");
+        toast.error(data.message || "Gagal memperbarui stok.", "Restock Gagal");
       }
     } catch (err) {
-      alert("Terjadi kesalahan memperbarui stok.");
+      toast.error("Terjadi kesalahan koneksi saat memperbarui stok.", "Gangguan Koneksi");
     }
   };
 

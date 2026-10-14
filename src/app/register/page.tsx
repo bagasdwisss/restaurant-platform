@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast-context";
 import {
   User,
   Mail,
@@ -21,6 +22,7 @@ import {
 export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
+  const { toast } = useToast();
 
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -51,11 +53,13 @@ export default function RegisterPage() {
 
     if (res.success && res.user) {
       setSuccessMsg(res.message);
+      toast.success("Pendaftaran Berhasil", res.message);
       setTimeout(() => {
         router.push("/user");
       }, 700);
     } else {
       setErrorMsg(res.message);
+      toast.error("Pendaftaran Gagal", res.message);
     }
   };
 

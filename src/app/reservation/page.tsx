@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import QRCode from "qrcode";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast-context";
 import { formatIDR, formatDate } from "@/lib/utils";
 import {
   Calendar,
@@ -61,6 +62,7 @@ interface CartItem {
 
 export default function SavoriaReservationPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
 
   // Wizard Step: 1 (Date/Time/Pax), 2 (Menu), 3 (Table), 4 (Payment), 5 (Receipt)
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -220,13 +222,13 @@ export default function SavoriaReservationPage() {
   // Process Complete Reservation & Payment
   const handleExecutePayment = async () => {
     if (!selectedTable) {
-      alert("Harap pilih meja terlebih dahulu.");
+      toast.warning("Harap tentukan nomor meja jamuan Anda terlebih dahulu.", "Meja Belum Dipilih");
       setCurrentStep(3);
       return;
     }
 
     if (cart.length === 0) {
-      alert("Pilih setidaknya 1 menu santap adiboga.");
+      toast.warning("Pilih setidaknya 1 hidangan untuk jamuan Anda.", "Keranjang Menu Kosong");
       setCurrentStep(2);
       return;
     }
@@ -275,12 +277,13 @@ export default function SavoriaReservationPage() {
         });
         setReceiptQrDataUrl(qrUrl);
 
+        toast.success("Reservasi & Pembayaran berhasil dikonfirmasi!", "Pembayaran Diterima");
         setCurrentStep(5); // Go to Receipt step!
       } else {
-        alert(data.message || "Gagal memproses reservasi & pembayaran.");
+        toast.error(data.message || "Gagal memproses reservasi & pembayaran.", "Transaksi Gagal");
       }
     } catch {
-      alert("Terjadi gangguan koneksi saat memproses reservasi.");
+      toast.error("Terjadi gangguan koneksi saat memproses reservasi. Silakan periksa jaringan Anda.", "Gangguan Koneksi");
     } finally {
       setIsProcessingPayment(false);
     }
@@ -548,7 +551,7 @@ export default function SavoriaReservationPage() {
                   type="button"
                   onClick={() => {
                     if (!customerName) {
-                      alert("Harap masukkan nama pemesan terlebih dahulu.");
+                      toast.warning("Harap masukkan nama pemesan terlebih dahulu.", "Nama Pemesan Diperlukan");
                       return;
                     }
                     setCurrentStep(2);

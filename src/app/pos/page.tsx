@@ -32,9 +32,11 @@ import {
 import Link from "next/link";
 import { formatIDR, formatDate } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/lib/toast-context";
 
 export default function PosCashierPage() {
   const { user, logout, quickLogin, loading: authLoading } = useAuth();
+  const { toast } = useToast();
 
   // Current active shift state
   const [currentShift, setCurrentShift] = useState<any>(null);
@@ -194,18 +196,19 @@ export default function PosCashierPage() {
       if (data.success) {
         setShowOpenShiftModal(false);
         fetchShift();
+        toast.success(`Shift kasir berhasil dibuka oleh ${cashierNameInput}.`, "Shift Dibuka");
       } else {
-        alert(data.message || "Gagal membuka shift.");
+        toast.error(data.message || "Gagal membuka shift.", "Gagal Buka Shift");
       }
     } catch (err) {
-      alert("Terjadi kesalahan membuka shift.");
+      toast.error("Terjadi kesalahan koneksi saat membuka shift.", "Gangguan Koneksi");
     }
   };
 
   // Close Shift
   const handleCloseShift = async () => {
     if (!endCashActualInput) {
-      alert("Masukkan nominal uang kas fisik di laci.");
+      toast.warning("Masukkan nominal uang kas fisik di laci kasir.", "Input Kas Diperlukan");
       return;
     }
     try {
@@ -218,14 +221,14 @@ export default function PosCashierPage() {
       });
       const data = await res.json();
       if (data.success) {
-        alert(`Shift berhasil ditutup! Selisih kas: ${formatIDR(data.data.variance)}`);
+        toast.success(`Shift berhasil ditutup! Selisih kas: ${formatIDR(data.data.variance)}`, "Shift Ditutup");
         setShowCloseShiftModal(false);
         fetchShift();
       } else {
-        alert(data.message || "Gagal menutup shift.");
+        toast.error(data.message || "Gagal menutup shift.", "Gagal Tutup Shift");
       }
     } catch (err) {
-      alert("Terjadi kesalahan menutup shift.");
+      toast.error("Terjadi kesalahan koneksi saat menutup shift.", "Gangguan Koneksi");
     }
   };
 
@@ -320,11 +323,12 @@ export default function PosCashierPage() {
         setOrderToPay(data.data);
         setCashPaidInput(data.data.totalAmount);
         setShowPaymentModal(true);
+        toast.success(`Order POS #${data.data.orderNumber} berhasil dibuat!`, "Order Berhasil");
       } else {
-        alert(data.message || "Gagal membuat order POS.");
+        toast.error(data.message || "Gagal membuat order POS.", "Order POS Gagal");
       }
     } catch (err) {
-      alert("Terjadi kesalahan saat memproses pesanan.");
+      toast.error("Terjadi kesalahan koneksi saat memproses pesanan.", "Gangguan Koneksi");
     }
   };
 
@@ -339,11 +343,12 @@ export default function PosCashierPage() {
       const data = await res.json();
       if (data.success) {
         fetchAllData();
+        toast.success(`Status pesanan berhasil diperbarui ke "${status}".`, "Status Diperbarui");
       } else {
-        alert(data.message || "Gagal mengubah status pesanan.");
+        toast.error(data.message || "Gagal mengubah status pesanan.", "Gagal Update Status");
       }
     } catch (err) {
-      alert("Terjadi kesalahan koneksi.");
+      toast.error("Terjadi kesalahan koneksi saat memperbarui status.", "Gangguan Koneksi");
     }
   };
 
@@ -374,18 +379,19 @@ export default function PosCashierPage() {
         setShowPaymentModal(false);
         fetchShift();
         fetchAllData();
+        toast.success(`Pembayaran untuk order #${orderToPay.orderNumber} berhasil diproses!`, "Pembayaran Lunas");
       } else {
-        alert(data.message || "Pembayaran gagal diproses.");
+        toast.error(data.message || "Pembayaran gagal diproses.", "Pembayaran Gagal");
       }
     } catch (err) {
-      alert("Terjadi kesalahan saat memproses pembayaran.");
+      toast.error("Terjadi kesalahan saat memproses pembayaran.", "Gangguan Koneksi");
     }
   };
 
   // Void Action with Supervisor PIN
   const handleExecuteVoid = async () => {
     if (!voidTarget || !supervisorPin || !voidReason) {
-      alert("PIN Supervisor dan alasan void wajib diisi.");
+      toast.warning("PIN Supervisor dan alasan void wajib diisi.", "Validasi Void");
       return;
     }
 
@@ -402,17 +408,17 @@ export default function PosCashierPage() {
 
       const data = await res.json();
       if (data.success) {
-        alert(data.message);
+        toast.success(data.message || "Item berhasil di-void.", "Void Disetujui");
         setShowVoidModal(false);
         setSupervisorPin("");
         setVoidReason("");
         setVoidTarget(null);
         fetchAllData();
       } else {
-        alert(data.message || "Void gagal.");
+        toast.error(data.message || "Void gagal.", "Void Ditolak");
       }
     } catch (err) {
-      alert("Gagal memproses void.");
+      toast.error("Gagal memproses void.", "Gangguan Koneksi");
     }
   };
 
@@ -431,16 +437,16 @@ export default function PosCashierPage() {
       });
       const data = await res.json();
       if (data.success) {
-        alert(data.message);
+        toast.success(data.message || "Meja tamu berhasil dipindahkan.", "Pindah Meja Berhasil");
         setShowMoveTableModal(false);
         setMoveFromTable(null);
         setMoveToTableId("");
         fetchAllData();
       } else {
-        alert(data.message || "Gagal memindahkan meja.");
+        toast.error(data.message || "Gagal memindahkan meja.", "Pindah Meja Gagal");
       }
     } catch (err) {
-      alert("Terjadi kesalahan memindahkan meja.");
+      toast.error("Terjadi kesalahan memindahkan meja.", "Gangguan Koneksi");
     }
   };
 

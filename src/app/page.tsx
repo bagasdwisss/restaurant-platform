@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { Check } from "lucide-react";
+import { useToast } from "@/lib/toast-context";
 import {
   SIGNATURE_POPULAR_DISHES,
   ALL_CATALOG_DISHES,
@@ -25,12 +25,12 @@ import {
 export default function DribbbleModernLandingPage() {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
 
   // Cart & Wishlist state
   const [cartCount, setCartCount] = useState(2);
   const [wishlist, setWishlist] = useState<number[]>([102]);
-  const [cartToast, setCartToast] = useState<string | null>(null);
 
   // Active Menu Category Filter
   const [activeTab, setActiveTab] = useState("all");
@@ -53,15 +53,16 @@ export default function DribbbleModernLandingPage() {
   const toggleWishlist = (id: number) => {
     if (wishlist.includes(id)) {
       setWishlist(wishlist.filter((x) => x !== id));
+      toast.info("Menu dihapus dari daftar favorit.", "Favorit");
     } else {
       setWishlist([...wishlist, id]);
+      toast.success("Menu ditambahkan ke daftar favorit!", "Favorit");
     }
   };
 
   const handleAddToCart = (dishName: string) => {
     setCartCount((prev) => prev + 1);
-    setCartToast(`"${dishName}" ditambahkan ke keranjang pesanan!`);
-    setTimeout(() => setCartToast(null), 3000);
+    toast.success(`"${dishName}" berhasil ditambahkan ke keranjang pesanan!`, "Menu Ditambahkan");
   };
 
   const handleInlineReservation = (e: React.FormEvent) => {
@@ -78,13 +79,6 @@ export default function DribbbleModernLandingPage() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex flex-col justify-between selection:bg-[#EA580C] selection:text-white font-sans antialiased">
-      {/* Toast Notification */}
-      {cartToast && (
-        <div className="fixed top-20 right-6 z-50 bg-[#14281D] text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-2.5 text-xs font-semibold animate-bounce border border-emerald-500/30">
-          <Check className="w-4 h-4 text-emerald-400" />
-          <span>{cartToast}</span>
-        </div>
-      )}
 
       {/* 1. Header & Navigation */}
       <Navbar
