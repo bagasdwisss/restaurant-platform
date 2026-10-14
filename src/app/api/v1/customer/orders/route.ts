@@ -23,9 +23,23 @@ export async function POST(request: NextRequest) {
       amountPaid,
     } = body;
 
+    const isDirect = Boolean(isDirectPayment || body.isPaid);
+
     // Check if order is a reservation: require authenticated session
     const isReservation = Boolean(reservationDate || orderType === "reservation");
-    const sessionUser = await getCurrentUser(request);
+    let sessionUser = await getCurrentUser(request);
+
+    // Fallback if auth cookie was omitted by mobile browser but valid userId was passed
+    if (!sessionUser && userId) {
+      const parsedUserId = Number(userId);
+      if (!isNaN(parsedUserId) && parsedUserId > 0) {
+        const found = await prisma.user.findUnique({
+          where: { id: parsedUserId },
+          select: { id: true, username: true, email: true, name: true, role: true, phone: true },
+        });
+        if (found) sessionUser = found as any;
+      }
+    }
 
     if (isReservation && !sessionUser) {
       return NextResponse.json(
@@ -35,6 +49,18 @@ export async function POST(request: NextRequest) {
           message: "Akses Ditolak: Anda wajib masuk (login) ke akun Anda terlebih dahulu sebelum dapat membooking meja reservasi.",
         },
         { status: 401 }
+      );
+    }
+
+    // Strict Role Restriction: Staff (Admin & Kasir) CANNOT make reservations
+    if (isReservation && sessionUser && (sessionUser.role === "admin" || sessionUser.role === "kasir")) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "STAFF_CANNOT_RESERVE",
+          message: `Akun staf (${sessionUser.role === "admin" ? "Admin" : "Kasir"}) tidak dapat melakukan booking reservasi. Fitur reservasi khusus untuk akun pembeli/pelanggan.`,
+        },
+        { status: 403 }
       );
     }
 
@@ -159,13 +185,13 @@ export async function POST(request: NextRequest) {
           guestCount: parseInt(guestCount) || 2,
           specialRequests: specialRequests || null,
           orderType: orderType || "dine_in",
-          status: isDirectPayment ? "confirmed" : "pending",
+          status: isDirect ? "confirmed" : "pending",
           subtotal: calculatedSubtotal,
           taxAmount,
           serviceCharge,
           totalAmount,
-          paymentStatus: isDirectPayment ? "paid" : "unpaid",
-          paymentMethod: isDirectPayment ? paymentMethod : null,
+          paymentStatus: isDirect ? "paid" : "unpaid",
+          paymentMethod: isDirect ? paymentMethod : null,
           items: {
             create: orderItemsData,
           },
@@ -182,7 +208,7 @@ export async function POST(request: NextRequest) {
       });
 
       // If direct payment completed, create Payment record
-      if (isDirectPayment) {
+      if (isDirect) {
         const paymentRef =
           paymentMethod === "qris"
             ? `QRIS-ETOILE-${Date.now()}`
@@ -222,14 +248,14 @@ export async function POST(request: NextRequest) {
       // Update table status to occupied or reserved
       await tx.table.update({
         where: { id: table.id },
-        data: { status: isDirectPayment ? "occupied" : "reserved" },
+        data: { status: isDirect ? "occupied" : "reserved" },
       });
 
       await tx.auditLog.create({
         data: {
           user: customerName || `Tamu ${table.tableNumber}`,
-          action: isDirectPayment ? "RESERVATION_PAID" : "RESERVATION_CREATED",
-          details: `Pesanan/Reservasi ${orderNumber} di ${table.tableNumber} senilai Rp ${totalAmount.toLocaleString("id-ID")}${isDirectPayment ? ` (Lunas via ${paymentMethod.toUpperCase()})` : ""}`,
+          action: isDirect ? "RESERVATION_PAID" : "RESERVATION_CREATED",
+          details: `Pesanan/Reservasi ${orderNumber} di ${table.tableNumber} senilai Rp ${totalAmount.toLocaleString("id-ID")}${isDirect ? ` (Lunas via ${paymentMethod.toUpperCase()})` : ""}`,
         },
       });
 

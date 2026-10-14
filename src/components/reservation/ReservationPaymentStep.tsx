@@ -583,8 +583,12 @@ export function ReservationPaymentStep({
             <button
               type="button"
               onClick={onExecutePayment}
+              onMouseDown={(e) => {
+                // Prevent input blur from canceling button click
+                e.preventDefault();
+              }}
               disabled={isProcessingPayment}
-              className="w-full py-4 px-4 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#EA580C]/25 transition-all cursor-pointer"
+              className="w-full py-4 px-4 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#EA580C]/25 transition-all cursor-pointer active:scale-[0.98]"
             >
               {isProcessingPayment ? (
                 <>
@@ -606,6 +610,37 @@ export function ReservationPaymentStep({
               Transaksi otomatis mencatat bukti pembayaran sah dan mencetak struk digital dengan QR Check-in langsung ke perangkat Anda.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Sticky Floating Payment Dock (Ensures 1-Click Access from Anywhere on Mobile) */}
+      <div className="lg:hidden fixed bottom-3 left-3 right-3 z-40 pointer-events-none">
+        <div className="bg-[#18181B]/95 backdrop-blur-md text-white rounded-2xl p-3 shadow-2xl flex items-center justify-between border border-white/10 gap-3 pointer-events-auto">
+          <div className="min-w-0">
+            <span className="text-[10px] text-slate-400 block font-mono">Total Pembayaran:</span>
+            <span className="text-sm font-bold text-[#EA580C] font-mono leading-none">
+              {formatIDR(totalAmount)}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onExecutePayment}
+            onMouseDown={(e) => e.preventDefault()}
+            disabled={isProcessingPayment}
+            className="px-5 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-500 text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#EA580C]/30 shrink-0 cursor-pointer active:scale-95 transition-all"
+          >
+            {isProcessingPayment ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Memproses...</span>
+              </>
+            ) : (
+              <>
+                <CreditCard className="w-3.5 h-3.5" />
+                <span>Bayar Sekarang</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

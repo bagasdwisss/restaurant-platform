@@ -325,6 +325,14 @@ export default function SavoriaReservationPage() {
       return;
     }
 
+    if (user.role === "admin" || user.role === "kasir") {
+      toast.error(
+        "Akun Admin & Kasir tidak dapat melakukan booking reservasi. Fitur reservasi khusus untuk akun pembeli/pelanggan.",
+        "Akses Terbatas"
+      );
+      return;
+    }
+
     if (!selectedTable) {
       toast.warning("Harap tentukan nomor meja jamuan Anda terlebih dahulu.", "Meja Belum Dipilih");
       setCurrentStep(3);
@@ -344,12 +352,13 @@ export default function SavoriaReservationPage() {
         qrToken: selectedTable.qrToken,
         customerName: customerName.trim() || (user ? user.name : "Tamu VIP Savoria"),
         customerPhone: customerPhone.trim(),
-        orderType: "dine_in",
+        orderType: "reservation",
         reservationDate: selectedDate,
         reservationTime: selectedTimeSlot,
         guestCount: guestCount,
         specialRequests: specialRequests.trim(),
         paymentMethod: paymentMethod,
+        isDirectPayment: true,
         isPaid: true,
         userId: user ? user.id : undefined,
         items: cart.map((i) => ({
@@ -363,6 +372,7 @@ export default function SavoriaReservationPage() {
       const res = await fetch("/api/v1/customer/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -478,6 +488,31 @@ export default function SavoriaReservationPage() {
 
       {/* MAIN STEP CONTENT */}
       <main className="max-w-[1280px] w-full mx-auto p-4 sm:p-6 md:p-8 flex-1">
+        {/* Staff Warning Banner */}
+        {user && (user.role === "admin" || user.role === "kasir") && (
+          <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-amber-50 border border-amber-300/80 text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 shadow-sm animate-fadeIn">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-200/90 text-amber-900 flex items-center justify-center shrink-0 font-bold text-lg">
+                ⚠️
+              </div>
+              <div>
+                <h4 className="text-xs font-bold font-mono uppercase tracking-wider text-amber-900">
+                  Akses Dibatasi: Akun Staf ({user.role === "admin" ? "Administrator" : "Kasir"})
+                </h4>
+                <p className="text-[11px] sm:text-xs text-amber-800 mt-0.5">
+                  Fitur booking reservasi meja jamuan hanya diperuntukkan bagi akun <strong>Pelanggan/Pembeli</strong>. Silakan beralih akun atau kembali ke dashboard staf.
+                </p>
+              </div>
+            </div>
+            <Link
+              href={user.role === "admin" ? "/admin" : "/pos"}
+              className="px-4 py-2 rounded-full bg-amber-800 hover:bg-amber-900 text-white text-xs font-bold transition-all shadow-xs shrink-0 self-end sm:self-auto"
+            >
+              Ke Dashboard Staf
+            </Link>
+          </div>
+        )}
+
         {currentStep === 1 && (
           <ReservationScheduleStep
             selectedDate={selectedDate}

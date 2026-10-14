@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ShoppingBag, ChevronRight, LogIn, LogOut, ArrowRight, Menu as MenuIcon } from "lucide-react";
+import { ShoppingBag, ChevronRight, LogIn, LogOut, ArrowRight, Menu as MenuIcon, User as UserIcon } from "lucide-react";
+import { useToast } from "@/lib/toast-context";
 
 interface NavbarProps {
   mounted: boolean;
@@ -13,6 +14,19 @@ interface NavbarProps {
 
 export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { toast } = useToast();
+
+  const isStaff = Boolean(user && (user.role === "admin" || user.role === "kasir"));
+
+  const handleBookingClick = (e: React.MouseEvent) => {
+    if (isStaff) {
+      e.preventDefault();
+      toast.warning(
+        "Akun Admin & Kasir tidak dapat melakukan booking reservasi. Fitur reservasi khusus untuk akun pembeli/pelanggan.",
+        "Akses Khusus Pembeli"
+      );
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#E2E8F0]/70 px-3.5 sm:px-6 lg:px-12 py-3.5 sm:py-4 transition-all">
@@ -55,12 +69,22 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
         {/* Right Action Group */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Mobile Instant Booking Button */}
-          <Link
-            href="/reservation"
-            className="sm:hidden px-3 py-1.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-xs flex items-center gap-1"
-          >
-            <span>Booking</span>
-          </Link>
+          {isStaff ? (
+            <button
+              type="button"
+              onClick={handleBookingClick}
+              className="sm:hidden px-3 py-1.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-xs flex items-center gap-1 cursor-pointer"
+            >
+              <span>Booking</span>
+            </button>
+          ) : (
+            <Link
+              href="/reservation"
+              className="sm:hidden px-3 py-1.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-xs flex items-center gap-1"
+            >
+              <span>Booking</span>
+            </Link>
+          )}
 
           {/* Cart Icon with Badge */}
           <Link
@@ -79,13 +103,46 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
           {/* User Session or Login */}
           {mounted && user ? (
             <div className="hidden sm:flex items-center gap-2">
+              {/* 1. Left Button: Profile (for buyer/user) or Dashboard (for admin/kasir) */}
               <Link
                 href={user.role === "admin" ? "/admin" : user.role === "kasir" ? "/pos" : "/user"}
                 className="px-3.5 py-2 rounded-full bg-[#14281D] hover:bg-[#0f1f16] text-white font-semibold text-xs shadow-md transition-all flex items-center gap-1.5"
               >
-                <span>Dashboard</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                {user.role === "user" ? (
+                  <>
+                    <UserIcon className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Profile</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Dashboard</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </>
+                )}
               </Link>
+
+              {/* 2. Middle Button: Booking Reservasi (between Dashboard/Profile and Logout) */}
+              {isStaff ? (
+                <button
+                  type="button"
+                  onClick={handleBookingClick}
+                  className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#EA580C]/85 hover:bg-[#EA580C] text-white font-bold text-xs shadow-cta transition-all flex items-center gap-1.5 cursor-pointer"
+                  title="Khusus Pelanggan/Pembeli"
+                >
+                  <span>Booking Reservasi</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <Link
+                  href="/reservation"
+                  className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-cta transition-all flex items-center gap-1.5"
+                >
+                  <span>Booking Reservasi</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              )}
+
+              {/* 3. Right Button: Logout */}
               <button
                 onClick={logout}
                 title="Keluar"
@@ -103,17 +160,16 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
                 <LogIn className="w-3.5 h-3.5 text-[#EA580C]" />
                 <span>Unique Key</span>
               </Link>
+
+              <Link
+                href="/reservation"
+                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-cta transition-all flex items-center gap-1.5"
+              >
+                <span>Booking Reservasi</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           )}
-
-          {/* Always Visible Primary CTA: Booking Reservasi */}
-          <Link
-            href="/reservation"
-            className="hidden sm:flex px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-cta transition-all items-center gap-1.5"
-          >
-            <span>Booking Reservasi</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
 
           {/* Mobile Hamburger Trigger */}
           <button
@@ -163,27 +219,47 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
                   <Link
                     href={user.role === "admin" ? "/admin" : user.role === "kasir" ? "/pos" : "/user"}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex-1 text-center py-2 text-xs font-semibold rounded-full bg-[#14281D] text-white"
+                    className="flex-1 text-center py-2 text-xs font-semibold rounded-full bg-[#14281D] text-white flex items-center justify-center gap-1.5"
                   >
-                    Dashboard ({user.name})
+                    {user.role === "user" ? (
+                      <>
+                        <UserIcon className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Profile ({user.name})</span>
+                      </>
+                    ) : (
+                      <span>Dashboard ({user.name})</span>
+                    )}
                   </Link>
                   <button
                     onClick={() => {
                       logout();
                       setMobileMenuOpen(false);
                     }}
-                    className="px-4 py-2 text-xs font-semibold rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50"
+                    className="px-4 py-2 text-xs font-semibold rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 cursor-pointer"
                   >
                     Keluar
                   </button>
                 </div>
-                <Link
-                  href="/reservation"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-center py-2 text-xs font-bold rounded-full bg-[#EA580C] text-white"
-                >
-                  Booking Reservasi
-                </Link>
+                {isStaff ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      handleBookingClick(e);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full text-center py-2 text-xs font-bold rounded-full bg-[#EA580C]/85 hover:bg-[#EA580C] text-white cursor-pointer"
+                  >
+                    Booking Reservasi
+                  </button>
+                ) : (
+                  <Link
+                    href="/reservation"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-center py-2 text-xs font-bold rounded-full bg-[#EA580C] text-white"
+                  >
+                    Booking Reservasi
+                  </Link>
+                )}
               </div>
             ) : (
               <div className="flex gap-2">

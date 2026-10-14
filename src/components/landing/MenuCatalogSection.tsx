@@ -76,71 +76,71 @@ export function MenuCatalogSection({
           ))}
         </div>
 
-        {/* Menu Catalog Grid with Perfectly Aligned Cards and Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* Menu Catalog Grid with Uniform Aspect Ratio & High-Res Dish Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {visibleDishes.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-2xl border border-[#E2E8F0] p-3.5 sm:p-4 flex flex-col xs:flex-row gap-3.5 sm:gap-4 items-stretch hover:shadow-card hover:border-[#EA580C]/30 transition-all group h-full"
+              className="bg-white border border-[#E2E8F0] rounded-3xl overflow-hidden shadow-xs hover:shadow-card hover:border-[#EA580C]/30 transition-all flex flex-col justify-between group h-full"
             >
-              {/* Image Container with high-res object cover */}
-              <div className="w-full xs:w-24 sm:w-28 h-36 xs:h-24 sm:h-28 rounded-xl overflow-hidden relative shrink-0 bg-stone-100 self-center border border-[#E2E8F0]/60">
-                <DishImage
-                  src={item.image}
-                  alt={item.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  sizes="(max-width: 640px) 100vw, 112px"
-                />
-              </div>
+              <div>
+                {/* Full-width Photo matching Reservation Step aspect-[4/3] & height */}
+                <div className="relative h-44 sm:h-48 w-full aspect-[4/3] bg-stone-100 overflow-hidden shrink-0">
+                  <DishImage
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  />
+                  {item.country && (
+                    <span className="absolute top-3 left-3 text-[10px] font-bold text-[#18181B] bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full border border-[#E2E8F0] shadow-xs">
+                      {item.country}
+                    </span>
+                  )}
+                </div>
 
-              {/* Content Container: flex flex-col justify-between with mt-auto on action row */}
-              <div className="flex-1 flex flex-col justify-between min-w-0">
-                <div>
+                {/* Content Container */}
+                <div className="p-4 sm:p-5 space-y-2">
                   <div className="flex items-center justify-between text-[11px] text-[#F59E0B]">
                     <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-[#F59E0B]" />
+                      <Star className="w-3.5 h-3.5 fill-[#F59E0B]" />
                       <span className="font-bold text-[#18181B]">{item.rating}</span>
                     </div>
-                    {item.country && (
-                      <span className="text-[10px] text-[#64748B] font-medium bg-[#FDFBF7] px-2 py-0.5 rounded-full border border-[#E2E8F0] truncate max-w-[90px]">
-                        {item.country}
-                      </span>
-                    )}
                   </div>
 
                   <h3
-                    className="font-display text-base font-bold text-[#18181B] group-hover:text-[#EA580C] transition-colors line-clamp-1 mt-1"
+                    className="font-display text-base font-bold text-[#18181B] group-hover:text-[#EA580C] transition-colors line-clamp-1"
                     title={item.name}
                   >
                     {item.name}
                   </h3>
 
-                  <p className="text-[11px] text-[#64748B] line-clamp-2 leading-relaxed mt-0.5 min-h-[32px]">
+                  <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed min-h-[36px]">
                     {item.description}
                   </p>
                 </div>
+              </div>
 
-                {/* Aligned Bottom Action Bar (Sejajar Sempurna) */}
-                <div className="pt-2 border-t border-[#F3EFE6] mt-auto flex items-center justify-between gap-2">
-                  <div className="leading-tight">
-                    <span className="font-display text-sm font-bold text-[#EA580C] block">
-                      {item.priceUSD}
-                    </span>
-                    <span className="text-[10px] text-[#64748B] font-mono">
-                      ({formatIDR(item.priceIDR)})
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => onAddToCart(item.name)}
-                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#18181B] group-hover:bg-[#EA580C] hover:bg-[#EA580C] text-white text-[11px] font-bold transition-all shadow-sm shrink-0 active:scale-95 cursor-pointer"
-                    title={`Pesan ${item.name}`}
-                  >
-                    <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-                    <span className="leading-none">Order</span>
-                  </button>
+              {/* Aligned Bottom Action Bar */}
+              <div className="p-4 sm:p-5 pt-0 mt-auto border-t border-[#F3EFE6] pt-3 flex items-center justify-between gap-2">
+                <div className="leading-tight">
+                  <span className="font-display text-sm sm:text-base font-bold text-[#EA580C] block">
+                    {item.priceUSD}
+                  </span>
+                  <span className="text-[10px] sm:text-[11px] text-[#64748B] font-mono">
+                    ({formatIDR(item.priceIDR)})
+                  </span>
                 </div>
+
+                <button
+                  onClick={() => onAddToCart(item.name)}
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#18181B] group-hover:bg-[#EA580C] hover:bg-[#EA580C] text-white text-xs font-bold transition-all shadow-sm shrink-0 active:scale-95 cursor-pointer"
+                  title={`Pesan ${item.name}`}
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
+                  <span>Pesan</span>
+                </button>
               </div>
             </div>
           ))}

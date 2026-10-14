@@ -72,6 +72,13 @@ export default function DribbbleModernLandingPage() {
 
   const handleInlineReservation = (e: React.FormEvent) => {
     e.preventDefault();
+    if (user && (user.role === "admin" || user.role === "kasir")) {
+      toast.warning(
+        "Akun Admin & Kasir tidak dapat melakukan booking reservasi. Harap gunakan akun pembeli/pelanggan.",
+        "Akses Terbatas"
+      );
+      return;
+    }
     router.push(
       `/reservation?guests=${encodeURIComponent(resGuests)}&date=${resDate}&time=${encodeURIComponent(resTime)}`
     );
