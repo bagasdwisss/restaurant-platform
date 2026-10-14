@@ -57,6 +57,7 @@ export default function PosCashierPage() {
 
   // Tabs: 'pos' (Catalog + Bill), 'orders' (Incoming/Active orders), 'tables' (Table Map)
   const [activeTab, setActiveTab] = useState<"pos" | "orders" | "tables">("pos");
+  const [mobilePosView, setMobilePosView] = useState<"catalog" | "bill">("catalog");
 
   // Master Data
   const [categories, setCategories] = useState<any[]>([]);
@@ -512,61 +513,85 @@ export default function PosCashierPage() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col text-[#18181B]">
       {/* 1. TOP CASHIER BAR */}
-      <header className="bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 flex items-center justify-between shadow-xs sticky top-0 z-30">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2.5">
+      <header className="bg-white border-b border-slate-200/80 px-3 sm:px-6 py-2.5 sm:py-3 shadow-xs sticky top-0 z-30 space-y-2">
+        {/* Row 1: Brand & Status & Quick Actions */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
             <Link
               href="/"
-              className="w-9 h-9 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-bold text-base shadow-sm shadow-[#EA580C]/30"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-bold text-sm sm:text-base shadow-sm shrink-0"
             >
               S
             </Link>
-            <div>
-              <h1 className="font-serif font-bold text-base text-[#18181B] flex items-center gap-1.5 leading-none">
-                SAVORIA <span className="text-[10px] bg-[#EA580C]/10 text-[#EA580C] px-2 py-0.5 rounded-full font-bold uppercase font-mono">POS Terminal</span>
+            <div className="min-w-0">
+              <h1 className="font-serif font-bold text-sm sm:text-base text-[#18181B] flex items-center gap-1.5 leading-none truncate">
+                SAVORIA <span className="text-[10px] bg-[#EA580C]/10 text-[#EA580C] px-2 py-0.5 rounded-full font-bold uppercase font-mono hidden xs:inline-block">POS Terminal</span>
               </h1>
             </div>
           </div>
 
-          {/* Shift Indicator */}
-          {currentShift ? (
-            <div className="hidden lg:flex items-center gap-3 text-xs bg-[#FDFBF7] px-3.5 py-1.5 rounded-full border border-slate-200/80 shadow-2xs">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[#64748B]">
-                Petugas: <strong className="text-[#18181B]">{currentShift.cashierName}</strong>
-              </span>
-              <span className="text-slate-300">|</span>
-              <span className="text-[#64748B]">
-                Modal: <strong className="text-emerald-700 font-mono">{formatIDR(currentShift.startCash)}</strong>
-              </span>
-              <span className="text-slate-300">|</span>
-              <span className="text-[#64748B]">
-                Estimasi Kas: <strong className="text-[#EA580C] font-mono">{formatIDR(currentShift.expectedCash || currentShift.startCash)}</strong>
-              </span>
-            </div>
-          ) : (
-            <div className="text-xs bg-rose-50 text-rose-700 px-3 py-1 rounded-full border border-rose-200 flex items-center gap-1.5 font-medium">
-              <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-              <span>Shift Kasir Belum Dibuka</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Shift Indicator or alert */}
+            {currentShift ? (
+              <div className="flex items-center gap-1.5 text-[11px] bg-[#FDFBF7] px-2.5 py-1 rounded-full border border-slate-200/80">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="hidden sm:inline text-[#64748B]">Kasir:</span>
+                <strong className="text-[#18181B] truncate max-w-[100px] sm:max-w-none">{currentShift.cashierName}</strong>
+              </div>
+            ) : (
+              <div className="text-[10px] bg-rose-50 text-rose-700 px-2 py-1 rounded-full border border-rose-200 flex items-center gap-1 font-medium">
+                <AlertTriangle className="w-3 h-3 text-rose-500" />
+                <span>Shift Tutup</span>
+              </div>
+            )}
+
+            {/* Shift Close / Open button */}
+            {currentShift ? (
+              <button
+                onClick={() => {
+                  setEndCashActualInput("");
+                  setShowCloseShiftModal(true);
+                }}
+                className="px-2.5 sm:px-3.5 py-1 bg-white hover:bg-rose-50 text-rose-600 border border-slate-200/80 text-[11px] font-bold rounded-full transition-all flex items-center gap-1 cursor-pointer shadow-sm"
+              >
+                <LogOut className="w-3 h-3" />
+                <span className="hidden sm:inline">Tutup Shift</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowOpenShiftModal(true)}
+                className="px-2.5 sm:px-3.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-full transition-all shadow-sm cursor-pointer"
+              >
+                Buka Shift
+              </button>
+            )}
+
+            <Link
+              href="/admin"
+              className="px-2 sm:px-3.5 py-1 bg-white hover:bg-slate-50 text-[#18181B] border border-slate-200/80 text-[11px] font-semibold rounded-full shadow-sm"
+            >
+              Admin ↗
+            </Link>
+
+            {user && (
+              <button
+                onClick={logout}
+                title="Keluar / Logout"
+                className="p-1.5 rounded-full bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-[#64748B] transition-colors cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Action Controls & Navigation */}
-        <div className="flex items-center gap-2">
-          {/* Waiter Calls Badge Alert */}
-          {waiterCalls.length > 0 && (
-            <div className="flex items-center gap-1.5 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse shadow-sm">
-              <BellRing className="w-3.5 h-3.5" />
-              <span>{waiterCalls.length} Panggilan Pelayan!</span>
-            </div>
-          )}
-
+        {/* Row 2: Tabs and Alerts */}
+        <div className="flex items-center justify-between gap-2 overflow-x-auto scrollbar-none pb-0.5">
           {/* Tab Selector */}
-          <div className="bg-[#FDFBF7] border border-slate-200/80 p-1 rounded-full flex items-center text-xs font-semibold">
+          <div className="bg-[#FDFBF7] border border-slate-200/80 p-0.5 sm:p-1 rounded-full flex items-center text-xs font-semibold shrink-0">
             <button
               onClick={() => setActiveTab("pos")}
-              className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
+              className={`px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "pos" ? "bg-[#EA580C] text-white shadow-xs" : "text-[#64748B] hover:text-[#18181B]"
               }`}
             >
@@ -574,7 +599,7 @@ export default function PosCashierPage() {
             </button>
             <button
               onClick={() => setActiveTab("orders")}
-              className={`px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 activeTab === "orders" ? "bg-[#EA580C] text-white shadow-xs" : "text-[#64748B] hover:text-[#18181B]"
               }`}
             >
@@ -587,7 +612,7 @@ export default function PosCashierPage() {
             </button>
             <button
               onClick={() => setActiveTab("tables")}
-              className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer ${
+              className={`px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === "tables" ? "bg-[#EA580C] text-white shadow-xs" : "text-[#64748B] hover:text-[#18181B]"
               }`}
             >
@@ -595,48 +620,11 @@ export default function PosCashierPage() {
             </button>
           </div>
 
-          {/* Shift Button */}
-          {currentShift ? (
-            <button
-              onClick={() => {
-                setEndCashActualInput("");
-                setShowCloseShiftModal(true);
-              }}
-              className="px-3.5 py-1.5 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 border border-slate-200/80 text-xs font-bold rounded-full transition-all flex items-center gap-1 cursor-pointer shadow-sm"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Tutup Shift</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => setShowOpenShiftModal(true)}
-              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-full transition-all shadow-sm cursor-pointer"
-            >
-              Buka Shift
-            </button>
-          )}
-
-          <Link
-            href="/admin"
-            className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-[#18181B] border border-slate-200/80 text-xs font-semibold rounded-full shadow-sm"
-          >
-            Admin ↗
-          </Link>
-
-          {/* User Profile & Logout */}
-          {user && (
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-              <div className="hidden sm:flex flex-col text-right">
-                <span className="text-[11px] font-bold text-[#18181B] leading-tight">{user.name}</span>
-                <span className="text-[9px] text-[#EA580C] font-mono uppercase">{user.role}</span>
-              </div>
-              <button
-                onClick={logout}
-                title="Keluar / Logout"
-                className="p-1.5 rounded-full bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-[#64748B] transition-colors cursor-pointer"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
+          {/* Waiter Calls Badge Alert */}
+          {waiterCalls.length > 0 && (
+            <div className="flex items-center gap-1.5 bg-amber-500 text-white px-2.5 sm:px-3 py-1 rounded-full text-[11px] font-bold animate-pulse shadow-sm whitespace-nowrap shrink-0">
+              <BellRing className="w-3 h-3" />
+              <span>{waiterCalls.length} Panggilan!</span>
             </div>
           )}
         </div>
@@ -644,22 +632,22 @@ export default function PosCashierPage() {
 
       {/* Waiter Calls Floating Notification Bar */}
       {waiterCalls.length > 0 && (
-        <div className="bg-amber-50 border-b border-amber-200 px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs text-amber-900">
+        <div className="bg-amber-50 border-b border-amber-200 px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900">
           <div className="flex items-center gap-2">
-            <BellRing className="w-4 h-4 text-amber-600 animate-bounce" />
-            <span className="font-bold">Perhatian Kasir & Pelayan:</span>
+            <BellRing className="w-4 h-4 text-amber-600 animate-bounce shrink-0" />
+            <span className="font-bold">Perhatian:</span>
             <span>
-              {waiterCalls.map((c) => c.tableNumber).join(", ")} memanggil bantuan pelayan ke meja!
+              {waiterCalls.map((c) => c.tableNumber).join(", ")} memanggil bantuan pelayan!
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {waiterCalls.map((c) => (
               <button
                 key={c.id}
                 onClick={() => handleResolveWaiterCall(c.id)}
-                className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-full text-[11px] transition-colors cursor-pointer shadow-sm"
+                className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-full text-[10px] transition-colors cursor-pointer shadow-sm"
               >
-                Selesai Tangani ({c.tableNumber})
+                Selesai ({c.tableNumber})
               </button>
             ))}
           </div>
@@ -670,11 +658,13 @@ export default function PosCashierPage() {
       <div className="flex-1 flex overflow-hidden">
         {/* TAB 1: POS CATALOG & BILLING */}
         {activeTab === "pos" && (
-          <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+          <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
             {/* Left Column: Menu Catalog Grid */}
-            <div className="flex-1 flex flex-col bg-[#FDFBF7] border-r border-slate-200/80 overflow-hidden">
+            <div className={`flex-1 flex flex-col bg-[#FDFBF7] border-r border-slate-200/80 overflow-hidden ${
+              mobilePosView === "bill" ? "hidden md:flex" : "flex"
+            }`}>
               {/* Category & Search Topbar */}
-              <div className="p-4 bg-white border-b border-slate-200/80 space-y-3 shadow-2xs">
+              <div className="p-3 sm:p-4 bg-white border-b border-slate-200/80 space-y-2.5 sm:space-y-3 shadow-2xs">
                 <div className="relative">
                   <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
@@ -683,15 +673,15 @@ export default function PosCashierPage() {
                     placeholder="Cari Menu Cepat (Shortcut F2)..."
                     value={posSearch}
                     onChange={(e) => setPosSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#FDFBF7] border border-slate-200/80 rounded-full text-xs text-[#18181B] focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
+                    className="w-full pl-10 pr-4 py-2 sm:py-2.5 bg-[#FDFBF7] border border-slate-200/80 rounded-full text-xs text-[#18181B] focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
                   />
                 </div>
 
                 {/* Categories */}
-                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none">
                   <button
                     onClick={() => setSelectedCategory("all")}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                    className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                       selectedCategory === "all"
                         ? "bg-[#EA580C] text-white shadow-xs"
                         : "bg-[#FDFBF7] text-[#64748B] hover:text-[#18181B] border border-slate-200/80"
@@ -703,7 +693,7 @@ export default function PosCashierPage() {
                     <button
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.slug)}
-                      className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                      className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                         selectedCategory === cat.slug
                           ? "bg-[#EA580C] text-white shadow-xs"
                           : "bg-[#FDFBF7] text-[#64748B] hover:text-[#18181B] border border-slate-200/80"
@@ -716,7 +706,7 @@ export default function PosCashierPage() {
               </div>
 
               {/* Menu Items Grid */}
-              <div className="flex-1 p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+              <div className="flex-1 p-3 sm:p-4 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3 pb-24 md:pb-4">
                 {menus
                   .filter(
                     (m) =>
@@ -728,18 +718,18 @@ export default function PosCashierPage() {
                     <div
                       key={menu.id}
                       onClick={() => addToPosCart(menu)}
-                      className={`bg-white rounded-2xl border border-slate-200/80 p-3 flex flex-col justify-between hover:border-[#EA580C] hover:shadow-md transition-all cursor-pointer active:scale-95 shadow-sm group ${
+                      className={`bg-white rounded-2xl border border-slate-200/80 p-2.5 sm:p-3 flex flex-col justify-between hover:border-[#EA580C] hover:shadow-md transition-all cursor-pointer active:scale-95 shadow-sm group ${
                         !menu.isAvailable ? "opacity-50 cursor-not-allowed" : ""
                       }`}
                     >
-                      <div className="relative w-full h-28 rounded-xl overflow-hidden bg-slate-100 mb-2.5">
+                      <div className="relative w-full h-24 sm:h-28 rounded-xl overflow-hidden bg-slate-100 mb-2">
                         {menu.image ? (
                           <Image
                             src={menu.image}
                             alt={menu.name}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform"
-                            sizes="180px"
+                            sizes="(max-width: 640px) 150px, 180px"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-400">
@@ -763,10 +753,48 @@ export default function PosCashierPage() {
                     </div>
                   ))}
               </div>
+
+              {/* Floating Mobile Cart Summary Pill */}
+              {posCart.length > 0 && (
+                <div className="md:hidden sticky bottom-3 px-3 z-20">
+                  <button
+                    onClick={() => setMobilePosView("bill")}
+                    className="w-full bg-[#14281D] text-white p-3.5 rounded-2xl shadow-xl flex items-center justify-between cursor-pointer border border-emerald-500/30 active:scale-95 transition-transform"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-6 h-6 rounded-full bg-[#EA580C] text-white text-xs font-bold flex items-center justify-center font-mono">
+                        {posCart.reduce((s, i) => s + i.quantity, 0)}
+                      </span>
+                      <div className="text-left leading-tight">
+                        <span className="text-[10px] text-stone-300 block">Total Tagihan Kasir</span>
+                        <span className="text-sm font-bold font-mono text-[#F59E0B]">{formatIDR(posTotal)}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs font-bold text-white bg-[#EA580C] px-3.5 py-1.5 rounded-full shadow-sm">
+                      <span>Buka Tagihan</span>
+                      <span>→</span>
+                    </div>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Right Column: Active Bill / Cart */}
-            <div className="w-full md:w-96 bg-white flex flex-col border-l border-slate-200/80 shadow-sm">
+            <div className={`w-full md:w-96 bg-white flex flex-col border-l border-slate-200/80 shadow-sm ${
+              mobilePosView === "catalog" ? "hidden md:flex" : "flex"
+            }`}>
+              {/* Mobile Back Button to Catalog */}
+              <div className="md:hidden p-3 bg-white border-b border-slate-200 flex items-center justify-between">
+                <button
+                  onClick={() => setMobilePosView("catalog")}
+                  className="px-3 py-1.5 rounded-full bg-slate-100 text-xs font-bold text-[#18181B] flex items-center gap-1.5 cursor-pointer hover:bg-slate-200"
+                >
+                  <span>← Kembali ke Menu</span>
+                </button>
+                <span className="text-xs font-bold text-[#EA580C] font-mono">
+                  {posCart.length} Jenis Menu
+                </span>
+              </div>
               {/* Table & Order Type Selector */}
               <div className="p-4 border-b border-slate-200/80 bg-[#FDFBF7] space-y-3">
                 <div className="flex items-center justify-between">
@@ -907,7 +935,7 @@ export default function PosCashierPage() {
 
         {/* TAB 2: ACTIVE & INCOMING ORDERS */}
         {activeTab === "orders" && (
-          <div className="flex-1 p-6 overflow-y-auto space-y-4">
+          <div className="flex-1 p-3.5 sm:p-6 overflow-y-auto space-y-4">
             <div className="flex items-center justify-between pb-2">
               <div>
                 <h2 className="font-serif text-lg sm:text-xl font-bold text-[#18181B]">
@@ -1106,7 +1134,7 @@ export default function PosCashierPage() {
 
         {/* TAB 3: TABLE MAP DASHBOARD */}
         {activeTab === "tables" && (
-          <div className="flex-1 p-6 overflow-y-auto space-y-6">
+          <div className="flex-1 p-3.5 sm:p-6 overflow-y-auto space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="font-serif text-lg sm:text-xl font-bold text-[#18181B]">Denah Visual Meja Restoran</h2>

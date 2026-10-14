@@ -62,39 +62,40 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex flex-col justify-between selection:bg-[#EA580C] selection:text-white font-sans">
       {/* Header */}
-      <header className="border-b border-[#E2E8F0] px-6 lg:px-12 py-4 bg-white/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-[1280px] mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-display font-black text-xl shadow-cta group-hover:scale-105 transition-transform">
+      <header className="border-b border-[#E2E8F0] px-3 sm:px-6 lg:px-12 py-3.5 sm:py-4 bg-white/90 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-2">
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-display font-black text-lg sm:text-xl shadow-cta group-hover:scale-105 transition-transform shrink-0">
               S
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-display text-xl font-bold tracking-tight text-[#18181B]">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-display text-lg sm:text-xl font-bold tracking-tight text-[#18181B]">
                   SAVOR<span className="text-[#EA580C]">IA</span>
                 </span>
-                <span className="text-[10px] bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 px-2 py-0.5 rounded-full font-mono uppercase font-semibold">
-                  Member Portal
+                <span className="hidden xs:inline-block text-[10px] bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 px-2 py-0.5 rounded-full font-mono uppercase font-semibold">
+                  Member
                 </span>
               </div>
-              <p className="text-[11px] text-[#64748B] font-normal uppercase tracking-wider">
-                Registrasi Tamu Pelanggan VIP
+              <p className="text-[10px] sm:text-[11px] text-[#64748B] font-normal uppercase tracking-wider truncate">
+                VIP Patron Registration
               </p>
             </div>
           </Link>
 
           <Link
             href="/login"
-            className="text-xs text-[#64748B] hover:text-[#EA580C] border border-[#E2E8F0] bg-white px-4 py-2 rounded-full transition-all shadow-sm font-semibold"
+            className="text-xs text-[#64748B] hover:text-[#EA580C] border border-[#E2E8F0] bg-white px-3 sm:px-4 py-2 rounded-full transition-all shadow-sm font-semibold shrink-0"
           >
-            Sudah Punya Akun? Masuk
+            <span className="hidden sm:inline">Sudah Punya Akun? Masuk</span>
+            <span className="sm:hidden">Masuk</span>
           </Link>
         </div>
       </header>
 
       {/* Main Card */}
-      <main className="max-w-md mx-auto px-4 py-12 w-full flex-1 flex flex-col justify-center">
-        <div className="bg-white border border-[#E2E8F0] rounded-card p-6 sm:p-8 shadow-float space-y-6">
+      <main className="max-w-md mx-auto px-3.5 sm:px-4 py-8 sm:py-12 w-full flex-1 flex flex-col justify-center">
+        <div className="bg-white border border-[#E2E8F0] rounded-card p-4 sm:p-8 shadow-float space-y-6">
           <div className="text-center space-y-1">
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />

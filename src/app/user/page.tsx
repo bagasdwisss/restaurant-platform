@@ -156,34 +156,34 @@ export default function UserPortalPage() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex flex-col justify-between selection:bg-[#EA580C] selection:text-white">
       {/* Navigation Header */}
-      <header className="border-b border-slate-200/80 px-6 py-4 backdrop-blur-md sticky top-0 z-40 bg-[#FDFBF7]/90">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
+      <header className="border-b border-slate-200/80 px-3 sm:px-6 py-3.5 sm:py-4 backdrop-blur-md sticky top-0 z-40 bg-[#FDFBF7]/90">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
             <Link
               href="/"
-              className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-serif font-black text-xl shadow-md shadow-[#EA580C]/20 hover:scale-105 transition-transform"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-serif font-black text-lg sm:text-xl shadow-md shadow-[#EA580C]/20 hover:scale-105 transition-transform shrink-0"
             >
               S
             </Link>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-serif text-lg font-bold tracking-tight text-[#18181B]">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="font-serif text-base sm:text-lg font-bold tracking-tight text-[#18181B] truncate">
                   SAVORIA Patron Lounge
                 </h1>
-                <span className="text-[10px] bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 px-2.5 py-0.5 rounded-full font-mono uppercase font-semibold">
+                <span className="hidden xs:inline-block text-[10px] bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 px-2 py-0.5 rounded-full font-mono uppercase font-semibold">
                   VIP Guest
                 </span>
               </div>
-              <p className="text-[11px] text-[#64748B]">
+              <p className="text-[10px] sm:text-[11px] text-[#64748B] truncate">
                 {user ? `Selamat Datang, ${user.name} (@${user.username})` : "Sesi Tamu Terdaftar"}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Link
               href="/reservation"
-              className="px-4 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-md shadow-[#EA580C]/25 transition-all flex items-center gap-1.5"
+              className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-md shadow-[#EA580C]/25 transition-all flex items-center gap-1.5"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Reservasi 5 Langkah</span>
@@ -197,7 +197,7 @@ export default function UserPortalPage() {
                 </span>
                 <button
                   onClick={logout}
-                  className="px-3.5 py-2 rounded-full bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 border border-slate-200/80 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer text-[#64748B] shadow-sm"
+                  className="px-3 sm:px-3.5 py-2 rounded-full bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 border border-slate-200/80 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer text-[#64748B] shadow-sm"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Keluar</span>
@@ -206,9 +206,9 @@ export default function UserPortalPage() {
             ) : (
               <Link
                 href="/login"
-                className="px-4 py-2.5 rounded-full bg-white hover:bg-slate-50 text-[#18181B] border border-slate-200/80 text-xs font-bold transition-all shadow-sm"
+                className="px-3.5 sm:px-4 py-2 rounded-full bg-white hover:bg-slate-50 text-[#18181B] border border-slate-200/80 text-xs font-bold transition-all shadow-sm"
               >
-                Masuk / Login
+                Masuk
               </Link>
             )}
           </div>
@@ -216,9 +216,9 @@ export default function UserPortalPage() {
       </header>
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full flex-1 space-y-6">
+      <main className="max-w-7xl mx-auto px-3.5 sm:px-6 py-6 sm:py-8 w-full flex-1 space-y-6">
         {/* Luxury Banner */}
-        <div className="bg-[#14281D] text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+        <div className="bg-[#14281D] text-white rounded-3xl p-4 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 sm:gap-6 shadow-xl relative overflow-hidden">
           {/* Subtle background glow */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#EA580C]/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -235,10 +235,10 @@ export default function UserPortalPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0 relative z-10">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0 relative z-10 w-full sm:w-auto">
             <Link
               href="/reservation"
-              className="px-6 py-3.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs sm:text-sm shadow-xl shadow-[#EA580C]/30 flex items-center gap-2 hover:scale-[1.02] transition-all"
+              className="flex-1 sm:flex-initial px-5 sm:px-6 py-3 sm:py-3.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs sm:text-sm shadow-xl shadow-[#EA580C]/30 flex items-center justify-center gap-2 hover:scale-[1.02] transition-all"
             >
               <Sparkles className="w-4 h-4" />
               <span>Reservasi Baru (5 Langkah)</span>
@@ -248,7 +248,7 @@ export default function UserPortalPage() {
             {activeOrdersList.length > 0 && (
               <button
                 onClick={() => setActiveTab("active")}
-                className="px-4 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer backdrop-blur-sm"
+                className="px-4 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer backdrop-blur-sm"
               >
                 <Clock className="w-4 h-4 text-[#EA580C]" />
                 <span>{activeOrdersList.length} Reservasi Aktif</span>
@@ -258,10 +258,10 @@ export default function UserPortalPage() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 pb-1 overflow-x-auto">
+        <div className="flex items-center gap-2 pb-1 overflow-x-auto scrollbar-none -mx-3.5 px-3.5 sm:mx-0 sm:px-0 whitespace-nowrap">
           <button
             onClick={() => setActiveTab("reserve")}
-            className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === "reserve"
                 ? "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/25"
                 : "bg-white text-[#64748B] hover:text-[#18181B] border border-slate-200/80 shadow-sm"
@@ -273,7 +273,7 @@ export default function UserPortalPage() {
 
           <button
             onClick={() => setActiveTab("active")}
-            className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer relative ${
+            className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 relative ${
               activeTab === "active"
                 ? "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/25"
                 : "bg-white text-[#64748B] hover:text-[#18181B] border border-slate-200/80 shadow-sm"
@@ -290,7 +290,7 @@ export default function UserPortalPage() {
 
           <button
             onClick={() => setActiveTab("history")}
-            className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === "history"
                 ? "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/25"
                 : "bg-white text-[#64748B] hover:text-[#18181B] border border-slate-200/80 shadow-sm"
@@ -305,7 +305,7 @@ export default function UserPortalPage() {
 
           <button
             onClick={() => setActiveTab("menu")}
-            className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === "menu"
                 ? "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/25"
                 : "bg-white text-[#64748B] hover:text-[#18181B] border border-slate-200/80 shadow-sm"
@@ -320,7 +320,7 @@ export default function UserPortalPage() {
         {activeTab === "reserve" && (
           <div className="space-y-6">
             {/* Quick 5-Step Card banner */}
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-[0_10px_30px_rgba(0,0,0,0.04)] space-y-5">
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-4 sm:p-8 shadow-[0_10px_30px_rgba(0,0,0,0.04)] space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-[#EA580C] font-mono">
@@ -335,7 +335,7 @@ export default function UserPortalPage() {
                 </div>
                 <Link
                   href="/reservation"
-                  className="px-5 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-[#EA580C]/25 self-start sm:self-auto transition-all"
+                  className="px-5 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-[#EA580C]/25 w-full sm:w-auto transition-all"
                 >
                   <span>Mulai Reservasi</span>
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -343,26 +343,26 @@ export default function UserPortalPage() {
               </div>
 
               {/* 5 mini steps */}
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 pt-4 border-t border-slate-100 text-xs">
-                <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3 pt-4 border-t border-slate-100 text-xs">
+                <div className="p-3 sm:p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
                   <span className="text-[#EA580C] font-bold block mb-1">1. Tanggal & Pax</span>
-                  <p className="text-[11px] text-[#64748B]">Tentukan jadwal & jumlah tamu</p>
+                  <p className="text-[10px] sm:text-[11px] text-[#64748B]">Tentukan jadwal & jumlah tamu</p>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
+                <div className="p-3 sm:p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
                   <span className="text-[#EA580C] font-bold block mb-1">2. Menu Pilihan</span>
-                  <p className="text-[11px] text-[#64748B]">Pilih hidangan & varian rasa</p>
+                  <p className="text-[10px] sm:text-[11px] text-[#64748B]">Pilih hidangan & varian rasa</p>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
+                <div className="p-3 sm:p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
                   <span className="text-[#EA580C] font-bold block mb-1">3. Pilih Meja</span>
-                  <p className="text-[11px] text-[#64748B]">Main Hall, Terrace, atau VIP</p>
+                  <p className="text-[10px] sm:text-[11px] text-[#64748B]">Main Hall, Terrace, atau VIP</p>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
+                <div className="p-3 sm:p-4 rounded-2xl bg-[#FDFBF7] border border-slate-200/80">
                   <span className="text-[#EA580C] font-bold block mb-1">4. Pembayaran</span>
-                  <p className="text-[11px] text-[#64748B]">QRIS, Kartu Kredit, atau Tunai</p>
+                  <p className="text-[10px] sm:text-[11px] text-[#64748B]">QRIS, Kartu Kredit, atau Tunai</p>
                 </div>
-                <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200">
+                <div className="p-3 sm:p-4 rounded-2xl bg-amber-50/60 border border-amber-200 col-span-2 sm:col-span-1">
                   <span className="text-amber-800 font-bold block mb-1">5. Struk & QR Pass</span>
-                  <p className="text-[11px] text-amber-700">Digital receipt dengan verifikasi</p>
+                  <p className="text-[10px] sm:text-[11px] text-amber-700">Digital receipt dengan verifikasi</p>
                 </div>
               </div>
             </div>

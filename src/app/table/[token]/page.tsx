@@ -352,24 +352,24 @@ export default function CustomerTablePage({
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] pb-28 selection:bg-[#EA580C] selection:text-white">
       {/* Top Header */}
-      <header className="sticky top-0 z-30 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-3.5 shadow-2xs">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 py-3 sm:py-3.5 shadow-2xs">
+        <div className="max-w-lg mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
             <Link
               href="/"
-              className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center shadow-md shadow-[#EA580C]/20 font-serif font-black text-lg"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center shadow-md shadow-[#EA580C]/20 font-serif font-black text-base sm:text-lg shrink-0"
             >
               S
             </Link>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-serif font-bold text-[#18181B] text-base leading-tight">SAVORIA</h1>
-                <span className="px-2.5 py-0.5 bg-[#EA580C]/10 text-[#EA580C] text-[10px] font-bold rounded-full font-mono uppercase">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="font-serif font-bold text-[#18181B] text-sm sm:text-base leading-tight">SAVORIA</h1>
+                <span className="px-2 py-0.5 bg-[#EA580C]/10 text-[#EA580C] text-[10px] font-bold rounded-full font-mono uppercase truncate max-w-[90px] sm:max-w-none">
                   {table.tableNumber}
                 </span>
               </div>
-              <p className="text-[11px] text-[#64748B]">
-                Area: {table.area} • Kapasitas {table.capacity} Orang
+              <p className="text-[10px] sm:text-[11px] text-[#64748B] truncate">
+                Area: {table.area} • {table.capacity} Tamu
               </p>
             </div>
           </div>
@@ -378,14 +378,26 @@ export default function CustomerTablePage({
           <button
             onClick={handleCallWaiter}
             disabled={callingWaiter || waiterCalledSuccess}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all shadow-sm cursor-pointer ${
+            className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-semibold transition-all shadow-sm cursor-pointer shrink-0 ${
               waiterCalledSuccess
                 ? "bg-emerald-600 text-white"
                 : "bg-white hover:bg-amber-50 text-amber-900 border border-amber-200 active:scale-95"
             }`}
           >
             <BellRing className={`w-3.5 h-3.5 ${callingWaiter ? "animate-bounce" : "text-[#EA580C]"}`} />
-            <span>{waiterCalledSuccess ? "Pelayan Menuju Meja!" : "Panggil Pelayan"}</span>
+            <span>
+              {waiterCalledSuccess ? (
+                <>
+                  <span className="hidden xs:inline">Pelayan Menuju Meja!</span>
+                  <span className="xs:hidden">Pelayan Datang!</span>
+                </>
+              ) : (
+                <>
+                  <span className="hidden xs:inline">Panggil Pelayan</span>
+                  <span className="xs:hidden">Pelayan</span>
+                </>
+              )}
+            </span>
           </button>
         </div>
       </header>

@@ -469,23 +469,42 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col md:flex-row text-[#18181B]">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-[#14281D] text-white flex flex-col shrink-0 shadow-xl">
-        <div className="p-5 border-b border-white/10 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-bold text-base shadow-md shadow-[#EA580C]/30">
+      <aside className="w-full md:w-64 bg-[#14281D] text-white flex flex-col shrink-0 shadow-xl sticky top-0 z-40 md:static">
+        {/* Top brand & quick actions bar */}
+        <div className="p-3.5 sm:p-5 border-b border-white/10 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-bold text-sm sm:text-base shadow-md shadow-[#EA580C]/30 shrink-0">
               S
             </div>
             <div>
-              <h1 className="font-serif font-bold text-base tracking-tight leading-tight">SAVORIA</h1>
-              <p className="text-[10px] text-amber-300 font-semibold uppercase tracking-wider">
+              <h1 className="font-serif font-bold text-sm sm:text-base tracking-tight leading-tight">SAVORIA</h1>
+              <p className="text-[9px] sm:text-[10px] text-amber-300 font-semibold uppercase tracking-wider">
                 Executive Suite
               </p>
             </div>
           </Link>
+
+          {/* Quick links & Logout for Mobile */}
+          <div className="flex md:hidden items-center gap-2">
+            <Link
+              href="/pos"
+              className="px-2.5 py-1 bg-white/10 text-white rounded-full text-[11px] font-semibold flex items-center gap-1"
+            >
+              <span>POS</span>
+              <ArrowUpRight className="w-3 h-3" />
+            </Link>
+            <button
+              onClick={logout}
+              title="Keluar / Logout"
+              className="p-1.5 rounded-full bg-white/10 text-slate-300 hover:text-white cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
-        {/* Admin User Profile pill */}
-        <div className="p-3.5 mx-3.5 my-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between backdrop-blur-xs">
+        {/* Admin User Profile pill (hidden on mobile to save vertical space, shown on desktop) */}
+        <div className="hidden md:flex p-3.5 mx-3.5 my-3 rounded-2xl bg-white/5 border border-white/10 items-center justify-between backdrop-blur-xs">
           <div className="truncate">
             <span className="text-[9px] font-bold text-[#EA580C] uppercase tracking-wider block font-mono">
               {user.role}
@@ -501,7 +520,8 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
-        <nav className="p-3 space-y-1.5 flex-1">
+        {/* Nav tabs: Horizontal on mobile, Vertical on desktop */}
+        <nav className="p-2 sm:p-2.5 md:p-3 flex md:flex-col gap-1.5 overflow-x-auto scrollbar-none whitespace-nowrap">
           {[
             { id: "analytics", label: "Ringkasan Finansial", icon: TrendingUp },
             { id: "menus", label: "Master Data Menu", icon: UtensilsCrossed },
@@ -516,21 +536,21 @@ export default function AdminDashboardPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 sm:gap-3 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full md:rounded-2xl text-xs font-bold transition-all cursor-pointer shrink-0 md:w-full ${
                   isActive
                     ? "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/25"
-                    : "text-slate-300 hover:text-white hover:bg-white/10"
+                    : "text-slate-300 hover:text-white hover:bg-white/10 bg-white/5 md:bg-transparent"
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-4 h-4 shrink-0" />
                 <span>{tab.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* Quick Portal Switch */}
-        <div className="p-4 border-t border-white/10 space-y-2">
+        {/* Quick Portal Switch (desktop only) */}
+        <div className="hidden md:block p-4 border-t border-white/10 space-y-2 mt-auto">
           <Link
             href="/pos"
             className="w-full py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-bold flex items-center justify-center gap-2 transition-colors"
@@ -548,7 +568,7 @@ export default function AdminDashboardPage() {
       </aside>
 
       {/* Main Content Pane */}
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto space-y-6">
+      <main className="flex-1 p-3.5 sm:p-6 md:p-8 overflow-y-auto space-y-6">
         {/* TAB 1: FINANCIAL ANALYTICS */}
         {activeTab === "analytics" && (
           <div className="space-y-6">
@@ -773,7 +793,7 @@ export default function AdminDashboardPage() {
             {/* Menu Table */}
             <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[650px]">
                   <thead className="bg-[#FDFBF7] border-b border-slate-200/80 text-[#64748B] font-bold uppercase tracking-wider text-[11px]">
                     <tr>
                       <th className="p-4">Foto & Nama Menu</th>
@@ -1017,7 +1037,7 @@ export default function AdminDashboardPage() {
               <h3 className="font-serif font-bold text-base text-[#18181B]">Riwayat Sesi Shift Kasir</h3>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[700px]">
                   <thead className="bg-[#FDFBF7] border-b border-slate-200/80 text-[#64748B] font-bold uppercase tracking-wider text-[11px]">
                     <tr>
                       <th className="p-3.5">Kasir</th>
@@ -1142,7 +1162,7 @@ export default function AdminDashboardPage() {
             {/* Users Table */}
             <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[700px]">
                   <thead className="bg-[#FDFBF7] border-b border-slate-200/80 text-[#64748B] font-bold uppercase tracking-wider text-[11px]">
                     <tr>
                       <th className="p-4">Nama & Username</th>

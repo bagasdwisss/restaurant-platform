@@ -116,44 +116,45 @@ function LoginContent() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex flex-col justify-between selection:bg-[#EA580C] selection:text-white font-sans">
       {/* Header */}
-      <header className="border-b border-[#E2E8F0] px-6 lg:px-12 py-4 bg-white/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-[1280px] mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-display font-black text-xl shadow-cta group-hover:scale-105 transition-transform">
+      <header className="border-b border-[#E2E8F0] px-3 sm:px-6 lg:px-12 py-3.5 sm:py-4 bg-white/90 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-2">
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-display font-black text-lg sm:text-xl shadow-cta group-hover:scale-105 transition-transform shrink-0">
               S
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-display text-xl font-bold tracking-tight text-[#18181B]">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-display text-lg sm:text-xl font-bold tracking-tight text-[#18181B]">
                   SAVOR<span className="text-[#EA580C]">IA</span>
                 </span>
-                <span className="text-[10px] bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 px-2 py-0.5 rounded-full font-mono uppercase font-semibold">
-                  Unique Key Access
+                <span className="hidden xs:inline-block text-[10px] bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 px-2 py-0.5 rounded-full font-mono uppercase font-semibold">
+                  Unique Key
                 </span>
               </div>
-              <p className="text-[11px] text-[#64748B] font-normal uppercase tracking-wider">
-                Modern Restaurant Security Gateway
+              <p className="text-[10px] sm:text-[11px] text-[#64748B] font-normal uppercase tracking-wider truncate">
+                Modern Security Gateway
               </p>
             </div>
           </Link>
 
           <Link
             href="/"
-            className="text-xs text-[#64748B] hover:text-[#EA580C] border border-[#E2E8F0] bg-white px-4 py-2 rounded-full transition-all shadow-sm font-semibold"
+            className="text-xs text-[#64748B] hover:text-[#EA580C] border border-[#E2E8F0] bg-white px-3 sm:px-4 py-2 rounded-full transition-all shadow-sm font-semibold shrink-0"
           >
-            ← Kembali ke Beranda
+            <span className="hidden sm:inline">← Kembali ke Beranda</span>
+            <span className="sm:hidden">← Beranda</span>
           </Link>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="max-w-3xl mx-auto px-4 py-12 w-full flex-1 flex flex-col justify-center">
-        <div className="text-center max-w-lg mx-auto mb-8 space-y-2">
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
+      <main className="max-w-3xl mx-auto px-3.5 sm:px-4 py-8 sm:py-12 w-full flex-1 flex flex-col justify-center">
+        <div className="text-center max-w-lg mx-auto mb-6 sm:mb-8 space-y-2">
+          <div className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
             <KeyRound className="w-3.5 h-3.5" />
             <span>Role-Based Key Access Control</span>
           </div>
-          <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-[#18181B]">
+          <h2 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-[#18181B]">
             Portal Otorisasi Restoran
           </h2>
           <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
@@ -162,7 +163,7 @@ function LoginContent() {
         </div>
 
         {/* Tab Selection: Unique Key vs Kredensial */}
-        <div className="flex items-center justify-center gap-2 mb-6">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 mb-6">
           <button
             type="button"
             onClick={() => {
@@ -170,7 +171,7 @@ function LoginContent() {
               setErrorMsg("");
               setSuccessMsg("");
             }}
-            className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-5 sm:px-6 py-2.5 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               authMode === "key"
                 ? "bg-[#EA580C] text-white shadow-cta"
                 : "bg-white text-[#64748B] hover:text-[#18181B] border border-[#E2E8F0]"
@@ -187,7 +188,7 @@ function LoginContent() {
               setErrorMsg("");
               setSuccessMsg("");
             }}
-            className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`px-5 sm:px-6 py-2.5 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               authMode === "credential"
                 ? "bg-[#EA580C] text-white shadow-cta"
                 : "bg-white text-[#64748B] hover:text-[#18181B] border border-[#E2E8F0]"
@@ -199,10 +200,10 @@ function LoginContent() {
         </div>
 
         {/* Card Form */}
-        <div className="bg-white border border-[#E2E8F0] rounded-card p-6 sm:p-10 shadow-float space-y-6">
+        <div className="bg-white border border-[#E2E8F0] rounded-card p-4 sm:p-10 shadow-float space-y-6">
           {/* Status Banners */}
           {errorMsg && (
-            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-3">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5 sm:gap-3">
               <ShieldAlert className="w-5 h-5 shrink-0 text-rose-600 mt-0.5" />
               <div>
                 <span className="font-bold block text-rose-900">Verifikasi Gagal:</span>
@@ -212,7 +213,7 @@ function LoginContent() {
           )}
 
           {successMsg && (
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-3">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2.5 sm:gap-3">
               <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600 mt-0.5" />
               <div>
                 <span className="font-bold block text-emerald-900">Otorisasi Berhasil!</span>
@@ -238,7 +239,7 @@ function LoginContent() {
                     value={uniqueKeyInput}
                     onChange={(e) => setUniqueKeyInput(e.target.value)}
                     placeholder="Contoh: ROYALE-ADMIN-SECRET-KEY"
-                    className="w-full pl-11 pr-4 py-3.5 bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl text-xs sm:text-sm text-[#18181B] placeholder:text-[#64748B]/50 focus:outline-none focus:border-[#EA580C] transition-colors font-mono tracking-wider font-semibold"
+                    className="w-full pl-11 pr-4 py-3 sm:py-3.5 bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl text-xs sm:text-sm text-[#18181B] placeholder:text-[#64748B]/50 focus:outline-none focus:border-[#EA580C] transition-colors font-mono tracking-wider font-semibold"
                   />
                 </div>
                 <p className="text-[11px] text-[#64748B] font-normal leading-relaxed">
@@ -247,85 +248,85 @@ function LoginContent() {
               </div>
 
               {/* Unique Key Presets for Quick Testing */}
-              <div className="p-4 rounded-2xl bg-[#FDFBF7] border border-[#E2E8F0] space-y-3">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-[#FDFBF7] border border-[#E2E8F0] space-y-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-[#18181B]">Daftar Unique Key Resmi:</span>
-                  <span className="text-[10px] text-[#64748B]">Klik untuk menyalin / mengisi langsung</span>
+                  <span className="text-[10px] text-[#64748B] hidden xs:inline">Klik untuk menyalin / mengisi</span>
                 </div>
 
                 <div className="space-y-2">
                   {/* Admin Key */}
                   <div
                     onClick={() => handleSelectKeyPreset("ROYALE-ADMIN-SECRET-KEY")}
-                    className="p-3 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#14281D] cursor-pointer flex items-center justify-between group transition-all shadow-sm"
+                    className="p-3 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#14281D] cursor-pointer flex items-center justify-between gap-2 group transition-all shadow-sm"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#14281D]/15 text-[#14281D] font-bold uppercase">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#14281D]/15 text-[#14281D] font-bold uppercase shrink-0">
                         ADMIN
                       </span>
-                      <div>
-                        <span className="font-mono text-xs text-[#18181B] group-hover:text-[#14281D] font-bold block">
+                      <div className="min-w-0 flex-1">
+                        <span className="font-mono text-xs text-[#18181B] group-hover:text-[#14281D] font-bold block truncate">
                           ROYALE-ADMIN-SECRET-KEY
                         </span>
-                        <span className="text-[10px] text-[#64748B] font-light">
-                          General Manager & Executive Chef (Akses Admin)
+                        <span className="text-[10px] text-[#64748B] font-light truncate block">
+                          General Manager & Executive Chef
                         </span>
                       </div>
                     </div>
                     {copiedKey === "ROYALE-ADMIN-SECRET-KEY" ? (
-                      <Check className="w-4 h-4 text-emerald-600" />
+                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                     ) : (
-                      <Copy className="w-4 h-4 text-stone-400 group-hover:text-[#14281D]" />
+                      <Copy className="w-4 h-4 text-stone-400 group-hover:text-[#14281D] shrink-0" />
                     )}
                   </div>
 
                   {/* Kasir Key */}
                   <div
                     onClick={() => handleSelectKeyPreset("ROYALE-CASHIER-ACCESS-KEY")}
-                    className="p-3 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#EA580C] cursor-pointer flex items-center justify-between group transition-all shadow-sm"
+                    className="p-3 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#EA580C] cursor-pointer flex items-center justify-between gap-2 group transition-all shadow-sm"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#EA580C]/15 text-[#EA580C] font-bold uppercase">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#EA580C]/15 text-[#EA580C] font-bold uppercase shrink-0">
                         KASIR
                       </span>
-                      <div>
-                        <span className="font-mono text-xs text-[#18181B] group-hover:text-[#EA580C] font-bold block">
+                      <div className="min-w-0 flex-1">
+                        <span className="font-mono text-xs text-[#18181B] group-hover:text-[#EA580C] font-bold block truncate">
                           ROYALE-CASHIER-ACCESS-KEY
                         </span>
-                        <span className="text-[10px] text-[#64748B] font-light">
-                          Head Maître D&apos; & Cashier (Terminal POS)
+                        <span className="text-[10px] text-[#64748B] font-light truncate block">
+                          Head Maître D&apos; & Cashier
                         </span>
                       </div>
                     </div>
                     {copiedKey === "ROYALE-CASHIER-ACCESS-KEY" ? (
-                      <Check className="w-4 h-4 text-emerald-600" />
+                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                     ) : (
-                      <Copy className="w-4 h-4 text-stone-400 group-hover:text-[#EA580C]" />
+                      <Copy className="w-4 h-4 text-stone-400 group-hover:text-[#EA580C] shrink-0" />
                     )}
                   </div>
 
                   {/* User VIP Key */}
                   <div
                     onClick={() => handleSelectKeyPreset("ROYALE-VIP-CUSTOMER-KEY")}
-                    className="p-3 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#F59E0B] cursor-pointer flex items-center justify-between group transition-all shadow-sm"
+                    className="p-3 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#F59E0B] cursor-pointer flex items-center justify-between gap-2 group transition-all shadow-sm"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#F59E0B]/20 text-[#F59E0B] font-bold uppercase">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#F59E0B]/20 text-[#F59E0B] font-bold uppercase shrink-0">
                         USER
                       </span>
-                      <div>
-                        <span className="font-mono text-xs text-[#18181B] group-hover:text-[#F59E0B] font-bold block">
+                      <div className="min-w-0 flex-1">
+                        <span className="font-mono text-xs text-[#18181B] group-hover:text-[#F59E0B] font-bold block truncate">
                           ROYALE-VIP-CUSTOMER-KEY
                         </span>
-                        <span className="text-[10px] text-[#64748B] font-light">
-                          Lord Aditya Pratama (VIP Customer Guest Portal)
+                        <span className="text-[10px] text-[#64748B] font-light truncate block">
+                          Lord Aditya Pratama (VIP Customer)
                         </span>
                       </div>
                     </div>
                     {copiedKey === "ROYALE-VIP-CUSTOMER-KEY" ? (
-                      <Check className="w-4 h-4 text-emerald-600" />
+                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                     ) : (
-                      <Copy className="w-4 h-4 text-stone-400 group-hover:text-[#F59E0B]" />
+                      <Copy className="w-4 h-4 text-stone-400 group-hover:text-[#F59E0B] shrink-0" />
                     )}
                   </div>
                 </div>

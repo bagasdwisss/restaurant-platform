@@ -734,7 +734,7 @@ export default function DribbbleModernLandingPage() {
       )}
 
       {/* Modern Floating / Sticky Navbar (Section 3.1) */}
-      <header className="sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#E2E8F0]/70 px-6 lg:px-12 py-4 transition-all">
+      <header className="sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#E2E8F0]/70 px-3.5 sm:px-6 lg:px-12 py-3.5 sm:py-4 transition-all">
         <div className="max-w-[1280px] mx-auto flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -885,8 +885,8 @@ export default function DribbbleModernLandingPage() {
       </header>
 
       {/* Hero Section with Floating Elements (Section 3.2 & 4 Blueprint) */}
-      <section className="relative overflow-hidden pt-8 pb-16 lg:pt-16 lg:pb-24 border-b border-[#E2E8F0]">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <section className="relative overflow-hidden pt-6 pb-12 sm:pt-10 sm:pb-20 lg:pt-16 lg:pb-24 border-b border-[#E2E8F0]">
+        <div className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column (55% width): Editorial & Appetizing Copy */}
           <div className="lg:col-span-7 space-y-6 text-left">
             {/* Pill Tagline */}
@@ -896,7 +896,7 @@ export default function DribbbleModernLandingPage() {
             </div>
 
             {/* H1 Display Title */}
-            <h1 className="font-display text-4xl sm:text-6xl lg:text-[64px] font-bold tracking-tight text-[#18181B] leading-[1.08]">
+            <h1 className="font-display text-3xl xs:text-4xl sm:text-6xl lg:text-[64px] font-bold tracking-tight text-[#18181B] leading-[1.12] sm:leading-[1.08]">
               Savor the Art of <br />
               <span className="text-[#EA580C] italic font-normal">Authentic & Fresh</span> <br />
               Gastronomy.
@@ -908,10 +908,10 @@ export default function DribbbleModernLandingPage() {
             </p>
 
             {/* Dual CTA Group */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-3 sm:gap-4 pt-2 w-full xs:w-auto">
               <a
                 href="#popular"
-                className="px-8 py-4 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-sm shadow-cta hover:scale-105 transition-all flex items-center gap-2"
+                className="w-full xs:w-auto justify-center px-8 py-4 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-sm shadow-cta hover:scale-105 transition-all flex items-center gap-2"
               >
                 <span>Explore Menu</span>
                 <ArrowRight className="w-4 h-4" />
@@ -919,7 +919,7 @@ export default function DribbbleModernLandingPage() {
 
               <button
                 onClick={() => setShowVideoModal(true)}
-                className="px-6 py-4 rounded-full bg-white hover:bg-[#F3EFE6] text-[#18181B] font-bold text-sm border border-[#E2E8F0] shadow-sm transition-all flex items-center gap-3 cursor-pointer group"
+                className="w-full xs:w-auto justify-center px-6 py-4 rounded-full bg-white hover:bg-[#F3EFE6] text-[#18181B] font-bold text-sm border border-[#E2E8F0] shadow-sm transition-all flex items-center gap-3 cursor-pointer group"
               >
                 <div className="w-8 h-8 rounded-full bg-[#EA580C] text-white flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Play className="w-3.5 h-3.5 fill-white ml-0.5" />
@@ -929,7 +929,7 @@ export default function DribbbleModernLandingPage() {
             </div>
 
             {/* Trust Metric Bar (Stacked Avatars + Rating) */}
-            <div className="pt-6 border-t border-[#E2E8F0] flex items-center gap-4">
+            <div className="pt-6 border-t border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="flex -space-x-3 overflow-hidden">
                 <div className="w-10 h-10 rounded-full border-2 border-white bg-amber-400 overflow-hidden relative">
                   <Image
@@ -974,12 +974,12 @@ export default function DribbbleModernLandingPage() {
           </div>
 
           {/* Right Column (45% width): Floating Dish Plate with Floating Cards */}
-          <div className="lg:col-span-5 relative flex items-center justify-center">
+          <div className="lg:col-span-5 relative flex items-center justify-center my-6 lg:my-0">
             {/* Soft Ambient Glow */}
-            <div className="absolute w-[420px] h-[420px] bg-gradient-to-tr from-[#EA580C]/20 via-[#F59E0B]/15 to-transparent rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute w-[260px] h-[260px] sm:w-[420px] sm:h-[420px] bg-gradient-to-tr from-[#EA580C]/20 via-[#F59E0B]/15 to-transparent rounded-full blur-3xl pointer-events-none" />
 
             {/* Main Floating Plate Container */}
-            <div className="relative w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] rounded-full p-4 bg-white/60 backdrop-blur-sm border border-[#E2E8F0] shadow-float">
+            <div className="relative w-[260px] h-[260px] xs:w-[300px] xs:h-[300px] sm:w-[420px] sm:h-[420px] rounded-full p-2.5 sm:p-4 bg-white/60 backdrop-blur-sm border border-[#E2E8F0] shadow-float">
               <div className="w-full h-full rounded-full overflow-hidden relative shadow-2xl">
                 <Image
                   src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80"
@@ -991,23 +991,23 @@ export default function DribbbleModernLandingPage() {
               </div>
 
               {/* Floating Card 1 (Top-Left): 20 Mins Delivery */}
-              <div className="absolute -top-4 -left-4 sm:-top-6 sm:-left-6 bg-white/95 backdrop-blur-md border border-[#E2E8F0] rounded-2xl p-3.5 shadow-float flex items-center gap-3 animate-float">
-                <div className="w-10 h-10 rounded-xl bg-[#EA580C]/15 text-[#EA580C] flex items-center justify-center font-bold">
-                  <Flame className="w-5 h-5" />
+              <div className="absolute -top-3 left-0 sm:-top-6 sm:-left-6 bg-white/95 backdrop-blur-md border border-[#E2E8F0] rounded-2xl p-2.5 sm:p-3.5 shadow-float flex items-center gap-2 sm:gap-3 animate-float max-w-[170px] sm:max-w-none">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#EA580C]/15 text-[#EA580C] flex items-center justify-center font-bold shrink-0">
+                  <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-[#EA580C] font-mono block">
+                  <span className="text-[9px] sm:text-[10px] uppercase font-bold text-[#EA580C] font-mono block">
                     Freshly Cooked
                   </span>
-                  <span className="text-xs font-bold text-[#18181B]">
-                    20 Mins Serving Speed
+                  <span className="text-[11px] sm:text-xs font-bold text-[#18181B] leading-tight block">
+                    20 Mins Speed
                   </span>
                 </div>
               </div>
 
               {/* Floating Card 2 (Bottom-Right): Mini Review Card */}
-              <div className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 bg-white/95 backdrop-blur-md border border-[#E2E8F0] rounded-2xl p-3.5 shadow-float flex items-center gap-3 animate-float-delayed max-w-[210px]">
-                <div className="w-9 h-9 rounded-full overflow-hidden relative shrink-0 border border-white">
+              <div className="absolute -bottom-3 right-0 sm:-bottom-6 sm:-right-6 bg-white/95 backdrop-blur-md border border-[#E2E8F0] rounded-2xl p-2.5 sm:p-3.5 shadow-float flex items-center gap-2 sm:gap-3 animate-float-delayed max-w-[180px] sm:max-w-[210px]">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden relative shrink-0 border border-white">
                   <Image
                     src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
                     alt="Reviewer"
@@ -1016,14 +1016,14 @@ export default function DribbbleModernLandingPage() {
                   />
                 </div>
                 <div className="leading-tight">
-                  <div className="flex text-[#F59E0B] text-[10px]">
+                  <div className="flex text-[#F59E0B] text-[9px] sm:text-[10px]">
                     ★★★★★
                   </div>
-                  <span className="text-xs font-bold text-[#18181B] block mt-0.5">
+                  <span className="text-[11px] sm:text-xs font-bold text-[#18181B] block mt-0.5 truncate">
                     Sarah Jenkins
                   </span>
-                  <p className="text-[10px] text-[#64748B] line-clamp-1 italic">
-                    &quot;Best Wagyu steak in town!&quot;
+                  <p className="text-[9px] sm:text-[10px] text-[#64748B] line-clamp-1 italic">
+                    &quot;Best Wagyu steak!&quot;
                   </p>
                 </div>
               </div>
@@ -1033,8 +1033,8 @@ export default function DribbbleModernLandingPage() {
       </section>
 
       {/* Why Choose Us - Value Proposition (Section 4 Blueprint) */}
-      <section className="py-16 sm:py-20 bg-white border-b border-[#E2E8F0]">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-12 space-y-10">
+      <section className="py-12 sm:py-20 bg-white border-b border-[#E2E8F0]">
+        <div className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12 space-y-8 sm:space-y-10">
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-xs font-bold uppercase tracking-widest text-[#EA580C] font-mono">
               WHY CHOOSE US
@@ -1047,8 +1047,8 @@ export default function DribbbleModernLandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-8 rounded-2xl bg-[#FDFBF7] border border-[#E2E8F0] hover:border-[#EA580C]/40 hover:shadow-card transition-all space-y-4 group">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="p-5 sm:p-8 rounded-2xl bg-[#FDFBF7] border border-[#E2E8F0] hover:border-[#EA580C]/40 hover:shadow-card transition-all space-y-3.5 sm:space-y-4 group">
               <div className="w-14 h-14 rounded-2xl bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center font-bold text-2xl group-hover:scale-110 transition-transform">
                 🥗
               </div>
@@ -1060,7 +1060,7 @@ export default function DribbbleModernLandingPage() {
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-[#FDFBF7] border border-[#E2E8F0] hover:border-[#EA580C]/40 hover:shadow-card transition-all space-y-4 group">
+            <div className="p-5 sm:p-8 rounded-2xl bg-[#FDFBF7] border border-[#E2E8F0] hover:border-[#EA580C]/40 hover:shadow-card transition-all space-y-3.5 sm:space-y-4 group">
               <div className="w-14 h-14 rounded-2xl bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center font-bold text-2xl group-hover:scale-110 transition-transform">
                 👨‍🍳
               </div>
@@ -1072,7 +1072,7 @@ export default function DribbbleModernLandingPage() {
               </p>
             </div>
 
-            <div className="p-8 rounded-2xl bg-[#FDFBF7] border border-[#E2E8F0] hover:border-[#EA580C]/40 hover:shadow-card transition-all space-y-4 group">
+            <div className="p-5 sm:p-8 rounded-2xl bg-[#FDFBF7] border border-[#E2E8F0] hover:border-[#EA580C]/40 hover:shadow-card transition-all space-y-3.5 sm:space-y-4 group">
               <div className="w-14 h-14 rounded-2xl bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center font-bold text-2xl group-hover:scale-110 transition-transform">
                 ⚡
               </div>
@@ -1088,8 +1088,8 @@ export default function DribbbleModernLandingPage() {
       </section>
 
       {/* Our Signature Popular Dishes (Section 3.3 & 4 Blueprint) */}
-      <section id="popular" className="py-20 sm:py-28 bg-[#FDFBF7] border-b border-[#E2E8F0]">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-12 space-y-12">
+      <section id="popular" className="py-14 sm:py-24 lg:py-28 bg-[#FDFBF7] border-b border-[#E2E8F0]">
+        <div className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12 space-y-8 sm:space-y-12">
           {/* Section Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-2">
@@ -1120,7 +1120,7 @@ export default function DribbbleModernLandingPage() {
               return (
                 <div
                   key={dish.id}
-                  className="bg-white rounded-card border border-[#E2E8F0] p-5 shadow-card hover:shadow-card-hover hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between group relative"
+                  className="bg-white rounded-card border border-[#E2E8F0] p-4 sm:p-5 shadow-card hover:shadow-card-hover hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between group relative"
                 >
                   {/* Top Edge: Circular Plate Overlapping Image */}
                   <div className="relative w-full h-48 rounded-2xl overflow-hidden bg-stone-100 mb-4">
@@ -1207,8 +1207,8 @@ export default function DribbbleModernLandingPage() {
       </section>
 
       {/* About Our Story (Section 4 Blueprint) */}
-      <section id="about" className="py-20 sm:py-28 bg-white border-b border-[#E2E8F0]">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <section id="about" className="py-14 sm:py-24 lg:py-28 bg-white border-b border-[#E2E8F0]">
+        <div className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column: Photo Composition & Floating Experience Badge */}
           <div className="lg:col-span-6 relative">
             <div className="relative h-[380px] sm:h-[460px] rounded-3xl overflow-hidden shadow-2xl border border-[#E2E8F0]">
@@ -1222,15 +1222,15 @@ export default function DribbbleModernLandingPage() {
             </div>
 
             {/* Overlapping Experience Badge */}
-            <div className="absolute -bottom-6 -right-4 sm:-bottom-8 sm:right-6 bg-[#14281D] text-white p-5 rounded-2xl shadow-2xl border border-emerald-500/30 flex items-center gap-4 max-w-xs">
-              <div className="w-12 h-12 rounded-xl bg-[#EA580C] text-white flex items-center justify-center font-bold text-2xl shrink-0">
+            <div className="absolute -bottom-6 right-2 sm:-bottom-8 sm:right-6 bg-[#14281D] text-white p-3.5 sm:p-5 rounded-2xl shadow-2xl border border-emerald-500/30 flex items-center gap-3 sm:gap-4 max-w-[260px] sm:max-w-xs">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#EA580C] text-white flex items-center justify-center font-bold text-xl sm:text-2xl shrink-0">
                 10+
               </div>
               <div className="leading-tight">
-                <span className="font-display text-base font-bold text-white block">
+                <span className="font-display text-sm sm:text-base font-bold text-white block">
                   Years of Culinary Mastery
                 </span>
-                <span className="text-[11px] text-stone-300 font-light">
+                <span className="text-[10px] sm:text-[11px] text-stone-300 font-light">
                   Menyajikan kelezatan berkelas sejak 2015.
                 </span>
               </div>
@@ -1283,8 +1283,8 @@ export default function DribbbleModernLandingPage() {
       </section>
 
       {/* Explore Our Regular Menu with Category Filter Pills (Section 3.4 & 4 Blueprint) */}
-      <section id="menu" className="py-20 sm:py-28 bg-[#FDFBF7] border-b border-[#E2E8F0]">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-12 space-y-12">
+      <section id="menu" className="py-14 sm:py-24 lg:py-28 bg-[#FDFBF7] border-b border-[#E2E8F0]">
+        <div className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12 space-y-8 sm:space-y-12">
           {/* Header */}
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <span className="text-xs font-bold uppercase tracking-widest text-[#EA580C] font-mono">
@@ -1299,12 +1299,12 @@ export default function DribbbleModernLandingPage() {
           </div>
 
           {/* Category Filter Pills (Horizontal Scroll - Section 3.4) */}
-          <div className="flex items-center justify-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex items-center sm:justify-center justify-start gap-2 overflow-x-auto pb-3 scrollbar-none px-2 sm:px-0">
             {MENU_FILTER_TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-5 py-2.5 rounded-pill text-xs font-bold whitespace-nowrap transition-all cursor-pointer shadow-sm ${
+                className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-pill text-xs font-bold whitespace-nowrap transition-all cursor-pointer shadow-sm ${
                   activeTab === tab.id
                     ? "bg-[#EA580C] text-white shadow-cta"
                     : "bg-white text-[#64748B] hover:text-[#18181B] border border-[#E2E8F0] hover:bg-[#F3EFE6]"
@@ -1316,20 +1316,20 @@ export default function DribbbleModernLandingPage() {
           </div>
 
           {/* Menu Catalog Grid with Perfectly Aligned Cards and Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredDishes.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl border border-[#E2E8F0] p-4 flex gap-4 items-stretch hover:shadow-card hover:border-[#EA580C]/30 transition-all group h-full"
+                className="bg-white rounded-2xl border border-[#E2E8F0] p-3.5 sm:p-4 flex flex-col xs:flex-row gap-3.5 sm:gap-4 items-stretch hover:shadow-card hover:border-[#EA580C]/30 transition-all group h-full"
               >
                 {/* Image Container with high-res object cover */}
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden relative shrink-0 bg-stone-100 self-center border border-[#E2E8F0]/60">
+                <div className="w-full xs:w-24 sm:w-28 h-36 xs:h-24 sm:h-28 rounded-xl overflow-hidden relative shrink-0 bg-stone-100 self-center border border-[#E2E8F0]/60">
                   <Image
                     src={item.image}
                     alt={item.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 640px) 96px, 112px"
+                    sizes="(max-width: 640px) 100vw, 112px"
                   />
                 </div>
 
@@ -1388,9 +1388,9 @@ export default function DribbbleModernLandingPage() {
       </section>
 
       {/* Inline Table Reservation Widget (Section 3.5 & 4 Blueprint) */}
-      <section className="py-16 sm:py-24 bg-[#FDFBF7]">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-12">
-          <div className="bg-[#14281D] text-white rounded-section p-8 sm:p-14 shadow-2xl relative overflow-hidden">
+      <section className="py-12 sm:py-20 bg-[#FDFBF7]">
+        <div className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12">
+          <div className="bg-[#14281D] text-white rounded-2xl sm:rounded-section p-5 sm:p-10 lg:p-14 shadow-2xl relative overflow-hidden">
             {/* Background Accent Circle */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-[#EA580C]/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -1479,8 +1479,8 @@ export default function DribbbleModernLandingPage() {
       </section>
 
       {/* Customer Reviews / Testimonials (Section 3.1 & 4 Blueprint) */}
-      <section id="reviews" className="py-20 sm:py-28 bg-white border-b border-[#E2E8F0]">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-12 space-y-12">
+      <section id="reviews" className="py-14 sm:py-24 lg:py-28 bg-white border-b border-[#E2E8F0]">
+        <div className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12 space-y-8 sm:space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-xs font-bold uppercase tracking-widest text-[#EA580C] font-mono">
               TESTIMONIALS
@@ -1494,7 +1494,7 @@ export default function DribbbleModernLandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-8 rounded-card bg-[#FDFBF7] border border-[#E2E8F0] space-y-4 shadow-sm">
+            <div className="p-5 sm:p-8 rounded-card bg-[#FDFBF7] border border-[#E2E8F0] space-y-4 shadow-sm">
               <div className="flex text-[#F59E0B] text-sm">★★★★★</div>
               <p className="text-xs sm:text-sm text-[#18181B] italic leading-relaxed">
                 &quot;Miyazaki Wagyu Tenderloin A5 nya benar-benar lumer di lidah. Pelayanan sangat cepat, ramah, dan suasana restorannya begitu hangat nan elegan.&quot;
@@ -1515,7 +1515,7 @@ export default function DribbbleModernLandingPage() {
               </div>
             </div>
 
-            <div className="p-8 rounded-card bg-[#FDFBF7] border border-[#E2E8F0] space-y-4 shadow-sm">
+            <div className="p-5 sm:p-8 rounded-card bg-[#FDFBF7] border border-[#E2E8F0] space-y-4 shadow-sm">
               <div className="flex text-[#F59E0B] text-sm">★★★★★</div>
               <p className="text-xs sm:text-sm text-[#18181B] italic leading-relaxed">
                 &quot;Pemesanan meja lewat website sangat mulus dalam 1 klik. Struk digital dengan QR pass nya memudahkan proses check-in saat kami tiba.&quot;
@@ -1536,7 +1536,7 @@ export default function DribbbleModernLandingPage() {
               </div>
             </div>
 
-            <div className="p-8 rounded-card bg-[#FDFBF7] border border-[#E2E8F0] space-y-4 shadow-sm">
+            <div className="p-5 sm:p-8 rounded-card bg-[#FDFBF7] border border-[#E2E8F0] space-y-4 shadow-sm">
               <div className="flex text-[#F59E0B] text-sm">★★★★★</div>
               <p className="text-xs sm:text-sm text-[#18181B] italic leading-relaxed">
                 &quot;Truffle Pesto Linguine dan Tasmanian Salmon adalah mahakarya terbaik! Bahan organiknya terasa begitu segar. Sangat direkomendasikan.&quot;
@@ -1609,7 +1609,7 @@ export default function DribbbleModernLandingPage() {
       )}
 
       {/* Modern Deep Obsidian Footer (Section 4 Blueprint) */}
-      <footer className="bg-[#14281D] text-white px-6 lg:px-12 py-16 text-xs border-t border-[#1a3527]">
+      <footer className="bg-[#14281D] text-white px-3.5 sm:px-6 lg:px-12 py-12 sm:py-16 text-xs border-t border-[#1a3527]">
         <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Col 1: Logo & Mission */}
           <div className="space-y-4">
@@ -1685,9 +1685,9 @@ export default function DribbbleModernLandingPage() {
           </div>
         </div>
 
-        <div className="max-w-[1280px] mx-auto mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-[11px] text-stone-400 gap-3">
+        <div className="max-w-[1280px] mx-auto mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-[11px] text-stone-400 gap-3 text-center sm:text-left">
           <span>© 2026 Savoria Modern Restaurant Ltd • All Rights Reserved</span>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap justify-center sm:justify-end gap-3 sm:gap-4">
             <span className="hover:text-white">Privacy Policy</span>
             <span className="hover:text-white">Terms of Dining</span>
             <span className="hover:text-white">Halal & Dietary Transparency</span>

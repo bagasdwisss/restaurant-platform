@@ -296,28 +296,28 @@ export default function SavoriaReservationPage() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] selection:bg-[#EA580C] selection:text-white flex flex-col justify-between font-sans antialiased">
       {/* MODERN RESTAURANT HEADER */}
-      <header className="border-b border-[#E2E8F0] bg-white/90 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
-        <div className="max-w-[1280px] mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-display font-black text-xl shadow-cta group-hover:scale-105 transition-transform">
+      <header className="border-b border-[#E2E8F0] bg-white/90 backdrop-blur-md sticky top-0 z-50 px-3 sm:px-6 py-3.5 sm:py-4">
+        <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-2">
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-display font-black text-lg sm:text-xl shadow-cta group-hover:scale-105 transition-transform shrink-0">
               S
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-display tracking-tight text-xl font-bold text-[#18181B]">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-display tracking-tight text-lg sm:text-xl font-bold text-[#18181B]">
                   SAVOR<span className="text-[#EA580C]">IA</span>
                 </span>
-                <span className="text-[10px] bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                  Grand Reservation
+                <span className="hidden xs:inline-block text-[10px] bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">
+                  Reservation
                 </span>
               </div>
-              <p className="text-[11px] text-[#64748B] font-light">
-                5-Step Seamless Fine Dining Experience
+              <p className="text-[10px] sm:text-[11px] text-[#64748B] font-light truncate">
+                5-Step Seamless Dining Experience
               </p>
             </div>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {user ? (
               <div className="flex items-center gap-2">
                 <div className="hidden sm:block text-right">
@@ -328,7 +328,7 @@ export default function SavoriaReservationPage() {
                 </div>
                 <Link
                   href="/user"
-                  className="px-4 py-2 rounded-full bg-white border border-[#E2E8F0] text-[#18181B] hover:border-[#EA580C] text-xs font-semibold transition-all shadow-sm"
+                  className="px-3 sm:px-4 py-2 rounded-full bg-white border border-[#E2E8F0] text-[#18181B] hover:border-[#EA580C] text-xs font-semibold transition-all shadow-sm"
                 >
                   Pesanan Saya
                 </Link>
@@ -336,9 +336,9 @@ export default function SavoriaReservationPage() {
             ) : (
               <Link
                 href="/login?redirect=/reservation"
-                className="px-4 py-2 rounded-full bg-white border border-[#E2E8F0] text-[#18181B] hover:text-[#EA580C] text-xs font-bold transition-all shadow-sm"
+                className="px-3 sm:px-4 py-2 rounded-full bg-white border border-[#E2E8F0] text-[#18181B] hover:text-[#EA580C] text-xs font-bold transition-all shadow-sm"
               >
-                Masuk / Unique Key
+                <span className="hidden xs:inline">Masuk / </span>Unique Key
               </Link>
             )}
           </div>
@@ -346,8 +346,8 @@ export default function SavoriaReservationPage() {
       </header>
 
       {/* 5-STEP JOURNEY STEPPER BAR */}
-      <div className="border-b border-[#E2E8F0] bg-white px-6 py-4 shadow-sm">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <div className="border-b border-[#E2E8F0] bg-white px-3 sm:px-6 py-3 sm:py-4 shadow-sm overflow-x-auto scrollbar-none">
+        <div className="max-w-4xl mx-auto flex items-center justify-between min-w-[280px]">
           {[
             { step: 1, label: "Jadwal & Tamu", icon: Calendar },
             { step: 2, label: "Pilih Menu", icon: UtensilsCrossed },
@@ -364,7 +364,7 @@ export default function SavoriaReservationPage() {
                   type="button"
                   disabled={currentStep < item.step}
                   onClick={() => currentStep > item.step && setCurrentStep(item.step)}
-                  className={`flex items-center gap-2 transition-all ${
+                  className={`flex items-center gap-1.5 sm:gap-2 transition-all ${
                     isCurrent
                       ? "text-[#EA580C] scale-105 font-bold"
                       : isDone
@@ -373,7 +373,7 @@ export default function SavoriaReservationPage() {
                   }`}
                 >
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all ${
+                    className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[11px] sm:text-xs transition-all shrink-0 ${
                       isCurrent
                         ? "bg-[#EA580C] text-white font-bold shadow-cta"
                         : isDone
@@ -381,13 +381,13 @@ export default function SavoriaReservationPage() {
                         : "bg-[#F3EFE6] text-stone-400"
                     }`}
                   >
-                    {isDone ? <CheckCircle2 className="w-4 h-4" /> : item.step}
+                    {isDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : item.step}
                   </div>
                   <span className="hidden md:inline text-xs tracking-wide">{item.label}</span>
                 </button>
                 {idx < 4 && (
                   <div
-                    className={`flex-1 h-0.5 mx-2 rounded-full transition-all ${
+                    className={`flex-1 h-0.5 mx-1 sm:mx-2 rounded-full transition-all ${
                       currentStep > idx + 1 ? "bg-[#14281D]" : "bg-[#E2E8F0]"
                     }`}
                   />
@@ -399,18 +399,18 @@ export default function SavoriaReservationPage() {
       </div>
 
       {/* MAIN CONTENT CONTAINER */}
-      <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 py-8 w-full flex-1">
+      <main className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12 py-6 sm:py-8 w-full flex-1">
         {/* ============================================================== */}
         {/* STEP 1: PILIH TANGGAL, SESI WAKTU & JUMLAH TAMU */}
         {/* ============================================================== */}
         {currentStep === 1 && (
-          <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-300">
+          <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in zoom-in-95 duration-300">
             <div className="text-center space-y-2">
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Tahap 1: Konfigurasi Kehadiran & Sesi Jamuan</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-display font-bold tracking-tight text-[#18181B]">
+              <h2 className="text-2xl sm:text-4xl font-display font-bold tracking-tight text-[#18181B]">
                 Rencanakan Kehadiran Istimewa Anda
               </h2>
               <p className="text-xs sm:text-sm text-[#64748B] max-w-xl mx-auto">
@@ -418,7 +418,7 @@ export default function SavoriaReservationPage() {
               </p>
             </div>
 
-            <div className="bg-white border border-[#E2E8F0] rounded-card p-6 sm:p-8 space-y-6 shadow-float">
+            <div className="bg-white border border-[#E2E8F0] rounded-card p-4 sm:p-8 space-y-6 shadow-float">
               {/* Data Tamu Pemesan */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6 border-b border-[#E2E8F0]">
                 <div>
@@ -473,8 +473,8 @@ export default function SavoriaReservationPage() {
                     <Users className="w-4 h-4 text-[#EA580C]" />
                     <span>Jumlah Tamu (Party Size)</span>
                   </label>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl p-1">
+                  <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2.5 xs:gap-3">
+                    <div className="flex items-center bg-[#FDFBF7] border border-[#E2E8F0] rounded-xl p-1 shrink-0">
                       <button
                         type="button"
                         onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
@@ -506,7 +506,7 @@ export default function SavoriaReservationPage() {
                   <Clock className="w-4 h-4 text-[#EA580C]" />
                   <span>Pilih Sesi Jamuan Makan (Dining Session)</span>
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
                   {timeSlots.map((slot) => {
                     const isSelected = selectedTimeSlot === slot.label;
                     return (
@@ -553,7 +553,7 @@ export default function SavoriaReservationPage() {
                     }
                     setCurrentStep(2);
                   }}
-                  className="px-8 py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center gap-2 shadow-cta transition-all cursor-pointer"
+                  className="w-full sm:w-auto px-8 py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta transition-all cursor-pointer"
                 >
                   <span>Lanjut ke Pemilihan Menu</span>
                   <ChevronRight className="w-4 h-4" />
@@ -583,10 +583,10 @@ export default function SavoriaReservationPage() {
               </div>
 
               {/* Category Filter */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
                 <button
                   onClick={() => setSelectedCategory("all")}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-sm ${
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-sm shrink-0 ${
                     selectedCategory === "all"
                       ? "bg-[#EA580C] text-white shadow-cta"
                       : "bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#18181B]"
@@ -598,7 +598,7 @@ export default function SavoriaReservationPage() {
                   <button
                     key={c.id}
                     onClick={() => setSelectedCategory(String(c.id))}
-                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-sm ${
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-sm shrink-0 ${
                       selectedCategory === String(c.id)
                         ? "bg-[#EA580C] text-white shadow-cta"
                         : "bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#18181B]"
@@ -611,7 +611,7 @@ export default function SavoriaReservationPage() {
             </div>
 
             {/* Menu Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {displayedMenus.map((m) => {
                 const inCart = cart.find((i) => i.menuId === m.id);
                 return (
@@ -637,7 +637,7 @@ export default function SavoriaReservationPage() {
                       </div>
                     </div>
 
-                    <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
+                    <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
                       <div>
                         <h4 className="font-display font-bold text-base text-[#18181B] group-hover:text-[#EA580C] transition-colors">
                           {m.name}
@@ -647,13 +647,13 @@ export default function SavoriaReservationPage() {
                         </p>
                       </div>
 
-                      <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between">
+                      <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between gap-2">
                         <span className="font-display font-bold text-base text-[#18181B]">
                           {formatIDR(m.price)}
                         </span>
 
                         {inCart ? (
-                          <div className="flex items-center gap-2 bg-[#FDFBF7] border border-[#E2E8F0] rounded-full p-1">
+                          <div className="flex items-center gap-1.5 sm:gap-2 bg-[#FDFBF7] border border-[#E2E8F0] rounded-full p-1">
                             <button
                               type="button"
                               onClick={() => updateCartQty(m.id, -1)}
@@ -676,7 +676,7 @@ export default function SavoriaReservationPage() {
                           <button
                             type="button"
                             onClick={() => addToCart(m)}
-                            className="px-4 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold flex items-center gap-1.5 shadow-cta transition-all cursor-pointer"
+                            className="px-3.5 sm:px-4 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold flex items-center gap-1.5 shadow-cta transition-all cursor-pointer shrink-0"
                           >
                             <Plus className="w-3.5 h-3.5" />
                             <span>Pilih Menu</span>
@@ -690,21 +690,21 @@ export default function SavoriaReservationPage() {
             </div>
 
             {/* Sticky Floating Bottom Bar for Cart Summary */}
-            <div className="sticky bottom-6 z-30 max-w-2xl mx-auto bg-[#14281D] text-white p-4 rounded-full shadow-2xl border border-emerald-500/30 flex items-center justify-between">
-              <div className="pl-3">
-                <span className="text-[11px] text-stone-300 block font-mono">
+            <div className="sticky bottom-4 sm:bottom-6 z-30 max-w-2xl mx-auto bg-[#14281D] text-white p-3 sm:p-4 rounded-2xl sm:rounded-full shadow-2xl border border-emerald-500/30 flex items-center justify-between gap-2 mx-1 sm:mx-auto">
+              <div className="pl-2 sm:pl-3 min-w-0">
+                <span className="text-[10px] sm:text-[11px] text-stone-300 block font-mono truncate">
                   {cart.length} Jenis Menu Dipilih
                 </span>
-                <span className="font-display text-lg font-bold text-[#F59E0B]">
+                <span className="font-display text-base sm:text-lg font-bold text-[#F59E0B]">
                   {formatIDR(subtotal)}
                 </span>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => setCurrentStep(1)}
-                  className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer"
+                  className="px-3 sm:px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold cursor-pointer"
                 >
                   ← Kembali
                 </button>
@@ -712,7 +712,7 @@ export default function SavoriaReservationPage() {
                   type="button"
                   disabled={cart.length === 0}
                   onClick={() => setCurrentStep(3)}
-                  className="px-6 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs flex items-center gap-1.5 shadow-cta disabled:opacity-40 cursor-pointer"
+                  className="px-4 sm:px-6 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs flex items-center gap-1.5 shadow-cta disabled:opacity-40 cursor-pointer"
                 >
                   <span>Pilih Meja</span>
                   <ChevronRight className="w-4 h-4" />
@@ -812,11 +812,11 @@ export default function SavoriaReservationPage() {
             </div>
 
             {/* Navigation buttons */}
-            <div className="pt-6 border-t border-[#E2E8F0] flex items-center justify-between">
+            <div className="pt-6 border-t border-[#E2E8F0] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setCurrentStep(2)}
-                className="px-6 py-3 rounded-full border border-[#E2E8F0] bg-white text-[#18181B] text-xs font-bold flex items-center gap-1.5 hover:bg-[#F3EFE6] cursor-pointer shadow-sm"
+                className="px-6 py-3 rounded-full border border-[#E2E8F0] bg-white text-[#18181B] text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-[#F3EFE6] cursor-pointer shadow-sm"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Kembali ke Menu</span>
@@ -826,7 +826,7 @@ export default function SavoriaReservationPage() {
                 type="button"
                 disabled={!selectedTable}
                 onClick={() => setCurrentStep(4)}
-                className="px-8 py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center gap-2 shadow-cta disabled:opacity-50 cursor-pointer"
+                className="px-8 py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta disabled:opacity-50 cursor-pointer"
               >
                 <span>Lanjut ke Pembayaran</span>
                 <ChevronRight className="w-4 h-4" />
@@ -845,7 +845,7 @@ export default function SavoriaReservationPage() {
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Tahap 4: Pembayaran & Konfirmasi Resmi</span>
               </div>
-              <h2 className="text-3xl font-display font-bold text-[#18181B]">
+              <h2 className="text-2xl sm:text-3xl font-display font-bold text-[#18181B]">
                 Konfirmasi Jamuan & Selesaikan Pembayaran
               </h2>
               <p className="text-xs text-[#64748B]">
@@ -853,9 +853,9 @@ export default function SavoriaReservationPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6 items-start">
               {/* Order & Booking Summary */}
-              <div className="md:col-span-7 bg-white border border-[#E2E8F0] rounded-card p-6 sm:p-7 space-y-4 shadow-float">
+              <div className="md:col-span-7 bg-white border border-[#E2E8F0] rounded-card p-4 sm:p-7 space-y-4 shadow-float">
                 <div className="border-b border-[#E2E8F0] pb-3">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#EA580C] font-mono">
                     Ringkasan Pemesanan Meja
@@ -863,19 +863,19 @@ export default function SavoriaReservationPage() {
                   <h3 className="text-lg font-display font-bold text-[#18181B] mt-0.5">
                     {selectedTable?.tableNumber}
                   </h3>
-                  <p className="text-xs text-[#64748B] flex items-center gap-2 mt-1">
+                  <p className="text-xs text-[#64748B] flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
                     <span>{selectedDate}</span> • <span>{selectedTimeSlot}</span> • <span>{guestCount} Tamu</span>
                   </p>
                 </div>
 
                 <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
                   {cart.map((item) => (
-                    <div key={item.menuId} className="flex items-center justify-between text-xs py-1.5 border-b border-[#E2E8F0]/60">
-                      <div>
-                        <span className="font-bold text-[#18181B]">{item.name}</span>
-                        <span className="text-[11px] text-[#64748B] ml-2">x{item.quantity}</span>
+                    <div key={item.menuId} className="flex items-center justify-between text-xs py-1.5 border-b border-[#E2E8F0]/60 gap-2">
+                      <div className="min-w-0">
+                        <span className="font-bold text-[#18181B] truncate block">{item.name}</span>
+                        <span className="text-[11px] text-[#64748B]">x{item.quantity}</span>
                       </div>
-                      <span className="font-mono font-bold text-[#18181B]">
+                      <span className="font-mono font-bold text-[#18181B] shrink-0">
                         {formatIDR(item.price * item.quantity)}
                       </span>
                     </div>
@@ -904,7 +904,7 @@ export default function SavoriaReservationPage() {
               </div>
 
               {/* Payment Methods */}
-              <div className="md:col-span-5 bg-white border border-[#E2E8F0] rounded-card p-6 sm:p-7 space-y-5 shadow-float">
+              <div className="md:col-span-5 bg-white border border-[#E2E8F0] rounded-card p-4 sm:p-7 space-y-5 shadow-float">
                 <div>
                   <h4 className="font-display font-bold text-base text-[#18181B]">
                     Metode Pembayaran
@@ -1023,10 +1023,10 @@ export default function SavoriaReservationPage() {
         {currentStep === 5 && completedOrder && (
           <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-500">
             <div className="text-center space-y-2">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-md">
-                <CheckCircle2 className="w-8 h-8" />
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-md">
+                <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8" />
               </div>
-              <h2 className="text-3xl font-display font-bold text-[#18181B]">
+              <h2 className="text-2xl sm:text-3xl font-display font-bold text-[#18181B]">
                 Pembayaran Berhasil & Terkonfirmasi
               </h2>
               <p className="text-xs text-[#64748B]">
@@ -1037,14 +1037,14 @@ export default function SavoriaReservationPage() {
             {/* LUXURY OFFICIAL RECEIPT CARD */}
             <div
               id="printable-receipt"
-              className="bg-white text-[#18181B] rounded-card p-6 sm:p-8 space-y-6 shadow-float border border-[#E2E8F0] relative overflow-hidden"
+              className="bg-white text-[#18181B] rounded-card p-4 sm:p-8 space-y-6 shadow-float border border-[#E2E8F0] relative overflow-hidden"
             >
               {/* Receipt Brand Banner */}
               <div className="text-center space-y-1.5 border-b-2 border-dashed border-[#E2E8F0] pb-4">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#EA580C] font-mono">
                   ★ Savoria Haute Restaurant ★
                 </span>
-                <h3 className="font-display font-black text-2xl tracking-tight text-[#18181B]">
+                <h3 className="font-display font-black text-xl sm:text-2xl tracking-tight text-[#18181B]">
                   SAVORIA RESTAURANT
                 </h3>
                 <p className="text-xs text-[#64748B] italic">
@@ -1056,7 +1056,7 @@ export default function SavoriaReservationPage() {
               </div>
 
               {/* Booking & Schedule Identification */}
-              <div className="grid grid-cols-2 gap-3 text-xs font-mono bg-[#FDFBF7] p-4 rounded-xl border border-[#E2E8F0]">
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-3 text-xs font-mono bg-[#FDFBF7] p-3.5 sm:p-4 rounded-xl border border-[#E2E8F0]">
                 <div>
                   <span className="text-[#64748B] block text-[10px]">No. Bukti Reservasi:</span>
                   <span className="font-bold text-[#18181B]">{completedOrder.orderNumber}</span>
