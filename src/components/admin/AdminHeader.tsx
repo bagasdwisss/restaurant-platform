@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { UserSession } from "@/lib/auth";
-import { ShieldCheck, RefreshCw, LogOut, Menu as MenuIcon } from "lucide-react";
+import { ShieldCheck, RefreshCw, LogOut, Menu as MenuIcon, FileSpreadsheet } from "lucide-react";
 
 interface AdminHeaderProps {
   user: UserSession | null;
@@ -11,6 +11,8 @@ interface AdminHeaderProps {
   onRefresh: () => void;
   isRefreshing?: boolean;
   onToggleMobileSidebar?: () => void;
+  onExportExcel?: () => void;
+  isExportingExcel?: boolean;
 }
 
 export function AdminHeader({
@@ -19,6 +21,8 @@ export function AdminHeader({
   onRefresh,
   isRefreshing,
   onToggleMobileSidebar,
+  onExportExcel,
+  isExportingExcel = false,
 }: AdminHeaderProps) {
   return (
     <header className="bg-white border-b border-[#E2E8F0] px-3.5 sm:px-8 py-3 sm:py-4 sticky top-0 z-40 backdrop-blur-md bg-white/95">
@@ -48,6 +52,27 @@ export function AdminHeader({
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {onExportExcel && (
+            <button
+              onClick={onExportExcel}
+              disabled={isExportingExcel}
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-60"
+              title="Unduh Laporan Excel Lengkap (Semua Data Operasional & Finansial)"
+            >
+              {isExportingExcel ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span className="hidden sm:inline">Menyiapkan Excel...</span>
+                </>
+              ) : (
+                <>
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Ekspor Excel</span>
+                </>
+              )}
+            </button>
+          )}
+
           <button
             onClick={onRefresh}
             disabled={isRefreshing}

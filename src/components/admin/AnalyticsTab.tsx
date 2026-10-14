@@ -16,6 +16,7 @@ interface AnalyticsTabProps {
   isLoading?: boolean;
   onRefresh: () => void;
   onExportExcel: () => void;
+  isExportingExcel?: boolean;
 }
 
 export function AnalyticsTab({
@@ -23,6 +24,7 @@ export function AnalyticsTab({
   isLoading = false,
   onRefresh,
   onExportExcel,
+  isExportingExcel = false,
 }: AnalyticsTabProps) {
   const showSkeleton = isLoading || !salesData;
 
@@ -49,11 +51,20 @@ export function AnalyticsTab({
           </button>
           <button
             onClick={onExportExcel}
-            disabled={showSkeleton}
+            disabled={showSkeleton || isExportingExcel}
             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer transition-all"
           >
-            <FileSpreadsheet className="w-4 h-4" />
-            <span>Ekspor Excel (.xlsx)</span>
+            {isExportingExcel ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Menyiapkan Excel...</span>
+              </>
+            ) : (
+              <>
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Ekspor Excel (.xlsx)</span>
+              </>
+            )}
           </button>
         </div>
       </div>

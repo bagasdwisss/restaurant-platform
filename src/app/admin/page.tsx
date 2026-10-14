@@ -96,6 +96,7 @@ export default function AdminDashboardPage() {
   const [loadingShifts, setLoadingShifts] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingVouchers, setLoadingVouchers] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
 
   // 1. Fetch Sales Summary
   const fetchSalesSummary = useCallback(async () => {
@@ -512,50 +513,32 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // DYNAMIC EXCEL EXPORT (Heavy library loaded strictly on demand)
+  // DYNAMIC COMPREHENSIVE EXCEL EXPORT (All 8 Worksheets with Full Operasional Data)
   const handleExportExcel = async () => {
-    if (!salesData) {
-      toast.warning("Data analitik penjualan belum siap diekspor.", "Data Belum Tersedia");
-      return;
-    }
+    setIsExportingExcel(true);
+    toast.info("Sedang menyiapkan data operasional & finansial lengkap...", "Menyiapkan Ekspor");
 
     try {
-      const XLSX = await import("xlsx");
-      const summaryRows = [
-        { Indikator: "Total Omzet Penjualan (Gross)", Nilai: salesData.summary.totalRevenue },
-        { Indikator: "Estimasi Laba Kotor (Gross Profit)", Nilai: salesData.summary.grossProfit },
-        { Indikator: "Estimasi Food Cost (COGS)", Nilai: salesData.summary.estimatedCOGS },
-        { Indikator: "Total Transaksi Selesai", Nilai: salesData.summary.totalOrdersCount },
-        { Indikator: "Rata-Rata Nilai Transaksi", Nilai: salesData.summary.avgOrderValue },
-      ];
+      const res = await fetch("/api/v1/admin/reports/full-export");
+      const json = await res.json();
+      if (!json.success || !json.data) {
+        throw new Error(json.message || "Gagal memuat data ekspor lengkap dari server.");
+      }
 
-      const paymentRows = [
-        { Metode: "Tunai (Cash)", Total: salesData.paymentBreakdown.cash },
-        { Metode: "QRIS Dinamis", Total: salesData.paymentBreakdown.qris },
-        { Metode: "Kartu Debit/Kredit", Total: salesData.paymentBreakdown.debit },
-      ];
-
-      const topMenuRows = salesData.topSellingItems.map((item: any, i: number) => ({
-        Peringkat: i + 1,
-        "Nama Hidangan": item.name,
-        "Total Terjual (Porsi)": item.quantity,
-        "Kontribusi Omzet": item.revenue,
-      }));
-
-      const wb = XLSX.utils.book_new();
-      const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
-      const wsPayments = XLSX.utils.json_to_sheet(paymentRows);
-      const wsTopMenu = XLSX.utils.json_to_sheet(topMenuRows);
-
-      XLSX.utils.book_append_sheet(wb, wsSummary, "Ringkasan Finansial");
-      XLSX.utils.book_append_sheet(wb, wsPayments, "Metode Pembayaran");
-      XLSX.utils.book_append_sheet(wb, wsTopMenu, "10 Menu Terlaris");
-
-      const dateStr = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(wb, `Laporan-Restoran-Savoria-${dateStr}.xlsx`);
-      toast.success("Laporan Excel berhasil di-generate dan diunduh.", "Ekspor Berhasil");
+      const { generateComprehensiveExcel } = await import("@/lib/excel-export");
+      const filename = await generateComprehensiveExcel(
+        json.data,
+        user?.name ? `${user.name} (${user.role.toUpperCase()})` : "Administrator SAVORIA"
+      );
+      toast.success(
+        `Laporan Excel komprehensif berhasil diunduh (${filename}) lengkap dengan 9 lembar kerja operasional.`,
+        "Ekspor Excel Sukses"
+      );
     } catch (err: any) {
-      toast.error(err.message || "Gagal mengunduh Excel.", "Ekspor Gagal");
+      console.error("Export error:", err);
+      toast.error(err.message || "Gagal mengunduh berkas Excel.", "Kendala Ekspor");
+    } finally {
+      setIsExportingExcel(false);
     }
   };
 
@@ -640,6 +623,8 @@ export default function AdminDashboardPage() {
           isRefreshing={isRefreshing}
           onRefresh={refreshAllData}
           onToggleMobileSidebar={() => setMobileSidebarOpen((prev) => !prev)}
+          onExportExcel={handleExportExcel}
+          isExportingExcel={isExportingExcel}
         />
 
         <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
@@ -649,6 +634,7 @@ export default function AdminDashboardPage() {
               isLoading={loadingAnalytics}
               onRefresh={fetchSalesSummary}
               onExportExcel={handleExportExcel}
+              isExportingExcel={isExportingExcel}
             />
           )}
 
