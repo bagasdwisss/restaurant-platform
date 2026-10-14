@@ -28,7 +28,10 @@ export function middleware(request: NextRequest) {
       throw new Error("Invalid token format");
     }
 
-    const payloadBase64 = parts[0].replace(/-/g, "+").replace(/_/g, "/");
+    let payloadBase64 = parts[0].replace(/-/g, "+").replace(/_/g, "/");
+    while (payloadBase64.length % 4 !== 0) {
+      payloadBase64 += "=";
+    }
     // Edge-safe base64 decoding
     const decodedStr = atob(payloadBase64);
     const session = JSON.parse(decodedStr);

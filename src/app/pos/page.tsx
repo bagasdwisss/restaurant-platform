@@ -33,6 +33,7 @@ import Link from "next/link";
 import { formatIDR, formatDate } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
+import { VisualFloorPlan } from "@/components/tables/VisualFloorPlan";
 
 export default function PosCashierPage() {
   const { user, logout, quickLogin, loading: authLoading } = useAuth();
@@ -1136,127 +1137,32 @@ export default function PosCashierPage() {
           <div className="flex-1 p-3.5 sm:p-6 overflow-y-auto space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="font-serif text-lg sm:text-xl font-bold text-[#18181B]">Denah Visual Meja Restoran</h2>
+                <h2 className="font-serif text-lg sm:text-xl font-bold text-[#18181B]">
+                  Denah Visual Meja Restoran (Terkoneksi Real-Time)
+                </h2>
                 <p className="text-xs text-[#64748B]">
-                  Pantau status keterisian meja secara langsung & pindah meja dengan 1 klik.
+                  Pantau posisi meja, konfigurasi kursi, dan status keterisian tersinkronisasi langsung dengan sistem reservasi tamu.
                 </p>
-              </div>
-
-              {/* Legend */}
-              <div className="flex items-center gap-3 text-xs font-semibold">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  <span className="text-[#64748B]">Kosong</span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                  <span className="text-[#64748B]">Menunggu Bayar</span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                  <span className="text-[#64748B]">Aktif</span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-                  <span className="text-[#64748B]">Reserved</span>
-                </span>
               </div>
             </div>
 
-            {/* Tables Grid grouped by Area */}
-            {["Indoor", "Outdoor", "Lantai 2"].map((areaName) => {
-              const areaTables = tables.filter((t) => t.area === areaName);
-              if (areaTables.length === 0) return null;
-
-              return (
-                <div key={areaName} className="space-y-3">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#64748B] font-mono">
-                    Area: {areaName}
-                  </h3>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3.5">
-                    {areaTables.map((tbl) => {
-                      const hasActiveOrder = tbl.orders && tbl.orders.length > 0;
-                      const order = hasActiveOrder ? tbl.orders[0] : null;
-
-                      let statusBorder = "border-emerald-300";
-                      let badge = "Kosong";
-
-                      if (tbl.status === "reserved") {
-                        statusBorder = "border-purple-300";
-                        badge = "Reserved";
-                      } else if (order) {
-                        if (order.status === "pending") {
-                          statusBorder = "border-amber-300";
-                          badge = "Menunggu";
-                        } else {
-                          statusBorder = "border-rose-300";
-                          badge = order.status.toUpperCase();
-                        }
-                      }
-
-                      return (
-                        <div
-                          key={tbl.id}
-                          className={`p-4 rounded-3xl border-2 bg-white shadow-sm flex flex-col justify-between transition-all ${statusBorder}`}
-                        >
-                          <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                              <h4 className="font-serif font-bold text-base text-[#18181B]">{tbl.tableNumber}</h4>
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 font-mono text-[#64748B]">
-                                {badge}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-[#64748B]">
-                              Kapasitas {tbl.capacity} Orang
-                            </p>
-                          </div>
-
-                          {order ? (
-                            <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1.5">
-                              <p className="text-xs font-bold text-[#18181B] line-clamp-1">{order.customerName}</p>
-                              <p className="text-xs font-serif font-bold text-[#EA580C]">
-                                {formatIDR(order.totalAmount)}
-                              </p>
-                              <div className="flex gap-1.5 pt-1">
-                                <button
-                                  onClick={() => openPaymentForOrder(order)}
-                                  className="flex-1 py-1.5 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-[10px] font-bold cursor-pointer"
-                                >
-                                  Bayar
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setMoveFromTable(tbl);
-                                    setShowMoveTableModal(true);
-                                  }}
-                                  title="Pindah Meja"
-                                  className="p-1.5 bg-slate-100 hover:bg-slate-200 text-[#64748B] rounded-full text-[10px] font-bold cursor-pointer"
-                                >
-                                  <ArrowRightLeft className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="mt-3 pt-2.5 border-t border-slate-100">
-                              <button
-                                onClick={() => {
-                                  setSelectedTableId(tbl.id);
-                                  setActiveTab("pos");
-                                }}
-                                className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-[11px] font-bold cursor-pointer shadow-xs"
-                              >
-                                + Buka Bill
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+            <VisualFloorPlan
+              tables={tables}
+              mode="pos"
+              onOpenBill={(tbl) => {
+                setSelectedTableId(tbl.id);
+                setActiveTab("pos");
+                toast.success(`Meja ${tbl.tableNumber} dibuka untuk transaksi baru.`, "Buka Bill POS");
+              }}
+              onPayOrder={(order) => {
+                openPaymentForOrder(order);
+              }}
+              onMoveTable={(tbl) => {
+                setMoveFromTable(tbl);
+                setShowMoveTableModal(true);
+              }}
+              onRefresh={fetchAllData}
+            />
           </div>
         )}
       </div>

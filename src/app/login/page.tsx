@@ -55,29 +55,25 @@ function LoginContent() {
   }, [errorParam, toast]);
 
   const navigateBasedOnRole = (role: string) => {
-    // Only follow redirectUrl if user role is authorized for it!
-    if (redirectUrl) {
-      if (redirectUrl.startsWith("/admin") && role === "admin") {
-        router.push(redirectUrl);
-        return;
-      }
-      if (redirectUrl.startsWith("/pos") && (role === "kasir" || role === "admin")) {
-        router.push(redirectUrl);
-        return;
-      }
-      if (redirectUrl.startsWith("/reservation") || redirectUrl.startsWith("/user")) {
-        router.push(redirectUrl);
-        return;
-      }
+    // If admin: strictly navigate to /admin (or admin sub-page if specified)
+    if (role === "admin") {
+      const target = redirectUrl && redirectUrl.startsWith("/admin") ? redirectUrl : "/admin";
+      window.location.href = target;
+      return;
     }
 
-    // Role-based destination
-    if (role === "admin") {
-      router.push("/admin");
-    } else if (role === "kasir") {
-      router.push("/pos");
+    // If kasir: strictly navigate to /pos (or pos sub-page if specified)
+    if (role === "kasir") {
+      const target = redirectUrl && redirectUrl.startsWith("/pos") ? redirectUrl : "/pos";
+      window.location.href = target;
+      return;
+    }
+
+    // Customer (user role)
+    if (redirectUrl && (redirectUrl.startsWith("/reservation") || redirectUrl.startsWith("/user"))) {
+      window.location.href = redirectUrl;
     } else {
-      router.push("/user");
+      window.location.href = "/user";
     }
   };
 

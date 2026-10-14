@@ -8,6 +8,7 @@ import QRCode from "qrcode";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
 import { formatIDR, formatDate } from "@/lib/utils";
+import { VisualFloorPlan } from "@/components/tables/VisualFloorPlan";
 import {
   Calendar,
   Clock,
@@ -350,7 +351,7 @@ export default function SavoriaReservationPage() {
                 href="/login?redirect=/reservation"
                 className="px-3 sm:px-4 py-2 rounded-full bg-white border border-[#E2E8F0] text-[#18181B] hover:text-[#EA580C] text-xs font-bold transition-all shadow-sm"
               >
-                <span className="hidden xs:inline">Masuk / </span>Unique Key
+                <span className="hidden xs:inline">Masuk ke </span>Akun
               </Link>
             )}
           </div>
@@ -780,93 +781,48 @@ export default function SavoriaReservationPage() {
         )}
 
         {/* ============================================================== */}
-        {/* STEP 3: MEMILIH MEJA */}
+        {/* STEP 3: MEMILIH MEJA DENGAN DENAH VISUAL KURSI & SUASANA */}
         {/* ============================================================== */}
         {currentStep === 3 && (
           <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
             <div className="text-center space-y-2">
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/20 text-[#EA580C] text-xs font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Tahap 3: Pemilihan Meja & Suasana Jamuan</span>
+                <span>Tahap 3: Denah Meja & Suasana Jamuan</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-display font-bold text-[#18181B]">
                 Pilih Meja Eksklusif Favorit Anda
               </h2>
               <p className="text-xs sm:text-sm text-[#64748B] max-w-xl mx-auto">
-                Pilih suasana santap di Grand Salon berpendingin udara, Veranda romantis di tepi taman, atau Suite VIP privat.
+                Pilih meja berdasarkan denah visual kursi dan kapasitas tamu, sesuaikan dengan suasana pilihan Anda di Grand Salle, Jardin Patio, atau Mezzanine VIP.
               </p>
             </div>
 
-            {/* Table Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {tables.map((tbl) => {
-                const isSelected = selectedTable?.id === tbl.id;
-                const isAvailable = tbl.status === "available";
-                const isSuitable = tbl.capacity >= guestCount;
-
-                return (
-                  <div
-                    key={tbl.id}
-                    onClick={() => {
-                      if (isAvailable) setSelectedTable(tbl);
-                    }}
-                    className={`rounded-card p-6 border transition-all flex flex-col justify-between ${
-                      isSelected
-                        ? "bg-[#EA580C]/10 border-[#EA580C] shadow-card-hover scale-[1.02]"
-                        : isAvailable
-                        ? "bg-white border-[#E2E8F0] hover:border-[#EA580C]/40 shadow-card cursor-pointer"
-                        : "bg-[#F3EFE6] border-[#E2E8F0] opacity-50 cursor-not-allowed"
-                    }`}
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] px-3 py-1 rounded-full bg-[#FDFBF7] border border-[#E2E8F0] text-[#18181B] font-mono font-semibold">
-                          {tbl.area}
-                        </span>
-                        <span
-                          className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
-                            isAvailable
-                              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                              : "bg-rose-50 text-rose-800 border border-rose-200"
-                          }`}
-                        >
-                          {isAvailable ? "Tersedia" : "Sudah Dipesan"}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h4 className="font-display font-bold text-base text-[#18181B]">
-                          {tbl.tableNumber}
-                        </h4>
-                        <p className="text-xs text-[#64748B] mt-1 flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5 text-[#EA580C]" />
-                          <span>Kapasitas hingga {tbl.capacity} Tamu</span>
-                        </p>
-                      </div>
-
-                      {!isSuitable && isAvailable && (
-                        <p className="text-[10px] text-[#EA580C] italic">
-                          *Kapasitas lebih kecil dari jumlah tamu ({guestCount} pax).
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="pt-4 border-t border-[#E2E8F0] mt-4 flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#64748B]">
-                        {isSelected ? "✓ Meja Terpilih" : "Klik untuk Memilih"}
-                      </span>
-                      <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                          isSelected ? "bg-[#EA580C] text-white shadow-cta" : "bg-[#F3EFE6] text-[#64748B]"
-                        }`}
-                      >
-                        {isSelected ? "★" : "→"}
-                      </div>
-                    </div>
-                  </div>
+            {/* Interactive Visual Floor Plan */}
+            <VisualFloorPlan
+              tables={tables}
+              mode="reservation"
+              selectedTable={selectedTable}
+              guestCount={guestCount}
+              onSelectTable={(tbl) => {
+                setSelectedTable(tbl);
+                toast.success(
+                  `Meja ${tbl.tableNumber} (${tbl.capacity} Kursi - ${tbl.area}) berhasil dipilih!`,
+                  "Meja Terpilih"
                 );
-              })}
-            </div>
+              }}
+              onRefresh={() => {
+                fetch("/api/v1/pos/tables")
+                  .then((res) => res.json())
+                  .then((data) => {
+                    if (data.success) {
+                      setTables(data.data);
+                      toast.info("Denah ketersediaan meja berhasil diperbarui.", "Status Meja Terkini");
+                    }
+                  })
+                  .catch(() => {});
+              }}
+            />
 
             {/* Navigation buttons */}
             <div className="pt-6 border-t border-[#E2E8F0] flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -882,7 +838,13 @@ export default function SavoriaReservationPage() {
               <button
                 type="button"
                 disabled={!selectedTable}
-                onClick={() => setCurrentStep(4)}
+                onClick={() => {
+                  if (!selectedTable) {
+                    toast.warning("Silakan pilih salah satu meja yang tersedia terlebih dahulu.", "Meja Belum Dipilih");
+                    return;
+                  }
+                  setCurrentStep(4);
+                }}
                 className="px-8 py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta disabled:opacity-50 cursor-pointer"
               >
                 <span>Lanjut ke Pembayaran</span>
