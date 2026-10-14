@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
@@ -30,6 +31,7 @@ import {
   Award,
   Smartphone,
   Info,
+  Lock,
 } from "lucide-react";
 
 interface MenuItem {
@@ -61,6 +63,7 @@ interface CartItem {
 }
 
 export default function SavoriaReservationPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -221,6 +224,12 @@ export default function SavoriaReservationPage() {
 
   // Process Complete Reservation & Payment
   const handleExecutePayment = async () => {
+    if (!user) {
+      toast.error("Sesi login Anda belum aktif. Harap masuk terlebih dahulu untuk menyelesaikan reservasi.", "Otorisasi Diperlukan");
+      router.push("/login?redirect=/reservation");
+      return;
+    }
+
     if (!selectedTable) {
       toast.warning("Harap tentukan nomor meja jamuan Anda terlebih dahulu.", "Meja Belum Dipilih");
       setCurrentStep(3);
@@ -422,6 +431,46 @@ export default function SavoriaReservationPage() {
             </div>
 
             <div className="bg-white border border-[#E2E8F0] rounded-card p-4 sm:p-8 space-y-6 shadow-float">
+              {/* VIP Authentication Guard Status */}
+              {!user ? (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center shrink-0 shadow-cta">
+                      <Lock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-[#18181B] flex items-center gap-1.5">
+                        <span>Wajib Masuk (Login) untuk Membooking Meja</span>
+                        <span className="text-[10px] bg-[#EA580C] text-white px-2 py-0.5 rounded-full font-mono uppercase font-bold">VIP</span>
+                      </h4>
+                      <p className="text-xs text-[#64748B] mt-0.5">
+                        Demi kepastian reservasi dan keamanan data jamuan, pemesan wajib masuk ke akun terlebih dahulu.
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/login?redirect=/reservation"
+                    className="px-5 py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold transition-all shadow-cta whitespace-nowrap self-stretch sm:self-auto text-center cursor-pointer"
+                  >
+                    Masuk / Buat Akun Dulu →
+                  </Link>
+                </div>
+              ) : (
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-center justify-between gap-3 shadow-xs">
+                  <div className="flex items-center gap-2.5">
+                    <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <div className="text-xs">
+                      <span className="font-bold text-emerald-900">Akun Terverifikasi:</span>{" "}
+                      <span className="font-semibold">{user.name}</span>{" "}
+                      <span className="text-[#64748B]">({user.email})</span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-600 text-white font-bold uppercase">
+                    VIP Patron
+                  </span>
+                </div>
+              )}
+
               {/* Data Tamu Pemesan */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6 border-b border-[#E2E8F0]">
                 <div>
@@ -550,7 +599,12 @@ export default function SavoriaReservationPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (!customerName) {
+                    if (!user) {
+                      toast.warning("Silakan masuk (login) ke akun Anda terlebih dahulu untuk membooking meja.", "Wajib Login");
+                      router.push("/login?redirect=/reservation");
+                      return;
+                    }
+                    if (!customerName.trim()) {
                       toast.warning("Harap masukkan nama pemesan terlebih dahulu.", "Nama Pemesan Diperlukan");
                       return;
                     }

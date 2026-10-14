@@ -23,7 +23,6 @@ interface AuthContextType {
     phone?: string;
   }) => Promise<{ success: boolean; message: string; user?: UserSession }>;
   quickLogin: (role: "admin" | "kasir" | "user") => Promise<{ success: boolean; message: string; user?: UserSession }>;
-  loginWithKey: (uniqueKey: string) => Promise<{ success: boolean; message: string; user?: UserSession; role?: string }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -143,27 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginWithKey = async (uniqueKey: string) => {
-    try {
-      const res = await fetch("/api/v1/auth/key-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ uniqueKey }),
-      });
-      const data = await res.json();
-      if (data.success && data.user) {
-        setUser(data.user);
-        localStorage.setItem("restosync_user", JSON.stringify(data.user));
-        return { success: true, message: data.message, user: data.user, role: data.role };
-      } else {
-        return { success: false, message: data.message || "Akses Unique Key ditolak." };
-      }
-    } catch {
-      return { success: false, message: "Terjadi kesalahan koneksi saat verifikasi Unique Key." };
-    }
-  };
-
   const logout = async () => {
     try {
       await fetch("/api/v1/auth/logout", { method: "POST", credentials: "include" });
@@ -181,7 +159,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         quickLogin,
-        loginWithKey,
         logout,
         refresh,
       }}

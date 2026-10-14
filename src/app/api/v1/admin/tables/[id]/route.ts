@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
+import { requireAuth } from "@/lib/rbac";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(request, ["admin"]);
+    if (!auth.authorized) return auth.response!;
+
     const { id } = await params;
     const tableId = parseInt(id);
     const body = await request.json();
@@ -29,7 +33,7 @@ export async function PUT(
 
     await prisma.auditLog.create({
       data: {
-        user: "Admin",
+        user: auth.user?.name || "Admin",
         action: "TABLE_UPDATED",
         details: `Meja #${tableId} (${updated.tableNumber}) diperbarui.${regenerateQr ? " QR Token baru digenerate." : ""}`,
       },
@@ -54,6 +58,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireAuth(request, ["admin"]);
+    if (!auth.authorized) return auth.response!;
+
     const { id } = await params;
     const tableId = parseInt(id);
 

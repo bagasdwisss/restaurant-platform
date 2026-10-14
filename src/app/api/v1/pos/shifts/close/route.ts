@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/rbac";
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request, ["kasir", "admin"]);
+    if (!auth.authorized) return auth.response!;
+
     const body = await request.json();
     const { endCashActual } = body;
 

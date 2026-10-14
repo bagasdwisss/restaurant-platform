@@ -489,26 +489,19 @@ export default function PosCashierPage() {
           </div>
 
           <div className="space-y-3 pt-2">
-            <button
-              onClick={() => quickLogin("kasir")}
-              className="w-full py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#EA580C]/25 transition-all cursor-pointer"
-            >
-              <Store className="w-4 h-4" />
-              <span>Login Instan sebagai Kasir (Demo)</span>
-            </button>
-
             <Link
               href="/login?redirect=/pos"
-              className="w-full py-2.5 bg-white hover:bg-slate-50 text-[#18181B] font-bold rounded-full text-xs flex items-center justify-center gap-2 border border-slate-200/80 transition-all block text-center shadow-sm"
+              className="w-full py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta transition-all block text-center"
             >
-              Halaman Login Kredensial
+              <Store className="w-4 h-4" />
+              <span>Masuk dengan Akun Kasir / Admin</span>
             </Link>
 
             <Link
-              href="/user"
+              href="/"
               className="w-full py-2.5 text-[#64748B] hover:text-[#18181B] font-semibold text-xs flex items-center justify-center gap-1 transition-all block text-center"
             >
-              ← Kembali ke Portal Tamu
+              ← Kembali ke Beranda Restoran
             </Link>
           </div>
         </div>

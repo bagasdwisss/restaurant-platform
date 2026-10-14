@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateOrderNumber } from "@/lib/utils";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,6 +22,21 @@ export async function POST(request: NextRequest) {
       paymentMethod = "qris",
       amountPaid,
     } = body;
+
+    // Check if order is a reservation: require authenticated session
+    const isReservation = Boolean(reservationDate || orderType === "reservation");
+    const sessionUser = await getCurrentUser(request);
+
+    if (isReservation && !sessionUser) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "UNAUTHORIZED_RESERVATION",
+          message: "Akses Ditolak: Anda wajib masuk (login) ke akun Anda terlebih dahulu sebelum dapat membooking meja reservasi.",
+        },
+        { status: 401 }
+      );
+    }
 
     if ((!qrToken && !tableId) || !items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -103,9 +119,9 @@ export async function POST(request: NextRequest) {
 
     const paidNum = parseFloat(amountPaid) || totalAmount;
 
-    // Safely validate userId against the User table to prevent Foreign Key violation
-    let validUserId: number | null = null;
-    if (userId) {
+    // Safely validate userId from session or request
+    let validUserId: number | null = sessionUser ? sessionUser.id : null;
+    if (!validUserId && userId) {
       const parsedUserId = Number(userId);
       if (!isNaN(parsedUserId) && parsedUserId > 0) {
         const existingUser = await prisma.user.findUnique({

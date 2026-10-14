@@ -31,6 +31,7 @@ import {
   Crown,
   X,
   ArrowRight,
+  Lock,
 } from "lucide-react";
 
 export default function UserPortalPage() {
@@ -127,6 +128,44 @@ export default function UserPortalPage() {
         <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-2xl shadow-sm border border-slate-200/80">
           <RefreshCw className="w-5 h-5 animate-spin text-[#EA580C]" />
           <span className="text-sm font-medium">Memuat lounge tamu SAVORIA...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-xl">
+          <div className="w-16 h-16 rounded-full bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center mx-auto">
+            <Lock className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 className="font-serif text-2xl font-bold text-[#18181B]">Portal Tamu VIP SAVORIA</h2>
+            <p className="text-xs text-[#64748B] mt-2 leading-relaxed">
+              Silakan masuk ke akun pelanggan Anda untuk melihat riwayat reservasi meja, live status antrean masak dapur, dan struk digital QR.
+            </p>
+          </div>
+          <div className="space-y-3 pt-2">
+            <Link
+              href="/login?redirect=/user"
+              className="w-full py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold rounded-full text-xs flex items-center justify-center gap-2 shadow-cta block transition-all"
+            >
+              Masuk ke Akun Anda
+            </Link>
+            <Link
+              href="/register"
+              className="w-full py-2.5 bg-white hover:bg-slate-50 text-[#18181B] font-bold rounded-full text-xs flex items-center justify-center gap-2 border border-slate-200/80 transition-all block text-center shadow-xs"
+            >
+              Daftar Akun Baru (VIP Patron)
+            </Link>
+            <Link
+              href="/"
+              className="w-full py-2 text-[#64748B] hover:text-[#18181B] text-xs font-semibold block text-center"
+            >
+              ← Kembali ke Beranda
+            </Link>
+          </div>
         </div>
       </div>
     );

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/rbac";
 
 export async function GET() {
   try {
@@ -29,6 +30,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request, ["admin"]);
+    if (!auth.authorized) return auth.response!;
+
     const body = await request.json();
     const { name, unit, stockQuantity = 0, minStock = 10 } = body;
 
@@ -72,6 +76,9 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const auth = await requireAuth(request, ["admin"]);
+    if (!auth.authorized) return auth.response!;
+
     const body = await request.json();
     const { id, stockQuantity, minStock, addStock } = body;
 

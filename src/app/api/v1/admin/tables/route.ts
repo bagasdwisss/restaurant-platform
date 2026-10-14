@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
+import { requireAuth } from "@/lib/rbac";
 
 export async function GET() {
   try {
@@ -28,6 +29,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request, ["admin"]);
+    if (!auth.authorized) return auth.response!;
+
     const body = await request.json();
     const { tableNumber, capacity = 4, area = "Indoor" } = body;
 

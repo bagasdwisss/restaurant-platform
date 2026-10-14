@@ -1,8 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/rbac";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAuth(request, ["admin"]);
+    if (!auth.authorized) return auth.response!;
+
     const shifts = await prisma.cashierShift.findMany({
       orderBy: { openedAt: "desc" },
       include: {
