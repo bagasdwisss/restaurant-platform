@@ -103,6 +103,21 @@ export async function POST(request: NextRequest) {
 
     const paidNum = parseFloat(amountPaid) || totalAmount;
 
+    // Safely validate userId against the User table to prevent Foreign Key violation
+    let validUserId: number | null = null;
+    if (userId) {
+      const parsedUserId = Number(userId);
+      if (!isNaN(parsedUserId) && parsedUserId > 0) {
+        const existingUser = await prisma.user.findUnique({
+          where: { id: parsedUserId },
+          select: { id: true },
+        });
+        if (existingUser) {
+          validUserId = existingUser.id;
+        }
+      }
+    }
+
     // Database transaction
     const newOrder = await prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
@@ -110,7 +125,7 @@ export async function POST(request: NextRequest) {
           orderNumber,
           tableId: table.id,
           shiftId: activeShift ? activeShift.id : null,
-          userId: userId ? Number(userId) : null,
+          userId: validUserId,
           customerName: customerName || `Tamu ${table.tableNumber}`,
           customerPhone: customerPhone || null,
           reservationDate: reservationDate || new Date().toISOString().slice(0, 10),

@@ -1,0 +1,10 @@
+export { Navbar } from "./Navbar";
+export { HeroSection } from "./HeroSection";
+export { WhyChooseUsSection } from "./WhyChooseUsSection";
+export { PopularDishesSection } from "./PopularDishesSection";
+export { AboutSection } from "./AboutSection";
+export { MenuCatalogSection } from "./MenuCatalogSection";
+export { ReservationSection } from "./ReservationSection";
+export { ReviewsSection } from "./ReviewsSection";
+export { VideoStoryModal } from "./VideoStoryModal";
+export { Footer } from "./Footer";
