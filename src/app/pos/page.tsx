@@ -4,16 +4,59 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
 
+import dynamic from "next/dynamic";
+import { TabSkeleton } from "@/components/admin/TabSkeleton";
+
 // POS Modular Components
 import { PosHeader } from "@/components/pos/PosHeader";
 import { PosCatalogTab } from "@/components/pos/PosCatalogTab";
-import { PosOrdersTab } from "@/components/pos/PosOrdersTab";
-import { PosTablesTab } from "@/components/pos/PosTablesTab";
-import { PosPaymentModal } from "@/components/pos/PosPaymentModal";
-import { OpenShiftModal, CloseShiftModal } from "@/components/pos/PosShiftModals";
-import { PosVoidModal } from "@/components/pos/PosVoidModal";
-import { PosMoveTableModal } from "@/components/pos/PosMoveTableModal";
-import { PosThermalReceipt } from "@/components/pos/PosThermalReceipt";
+
+// Dynamic Code-Splitting Lazy Loading for POS Secondary Tabs & Modals
+const PosOrdersTab = dynamic(
+  () => import("@/components/pos/PosOrdersTab").then((m) => m.PosOrdersTab),
+  {
+    loading: () => <TabSkeleton title="Memuat Antrean Pesanan Kasir..." count={3} />,
+    ssr: false,
+  }
+);
+
+const PosTablesTab = dynamic(
+  () => import("@/components/pos/PosTablesTab").then((m) => m.PosTablesTab),
+  {
+    loading: () => <TabSkeleton title="Memuat Denah & Status Meja Restoran..." count={4} />,
+    ssr: false,
+  }
+);
+
+const PosPaymentModal = dynamic(
+  () => import("@/components/pos/PosPaymentModal").then((m) => m.PosPaymentModal),
+  { ssr: false }
+);
+
+const OpenShiftModal = dynamic(
+  () => import("@/components/pos/PosShiftModals").then((m) => m.OpenShiftModal),
+  { ssr: false }
+);
+
+const CloseShiftModal = dynamic(
+  () => import("@/components/pos/PosShiftModals").then((m) => m.CloseShiftModal),
+  { ssr: false }
+);
+
+const PosVoidModal = dynamic(
+  () => import("@/components/pos/PosVoidModal").then((m) => m.PosVoidModal),
+  { ssr: false }
+);
+
+const PosMoveTableModal = dynamic(
+  () => import("@/components/pos/PosMoveTableModal").then((m) => m.PosMoveTableModal),
+  { ssr: false }
+);
+
+const PosThermalReceipt = dynamic(
+  () => import("@/components/pos/PosThermalReceipt").then((m) => m.PosThermalReceipt),
+  { ssr: false }
+);
 
 export default function PosCashierPage() {
   const { user, logout } = useAuth();

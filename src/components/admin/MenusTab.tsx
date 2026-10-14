@@ -170,6 +170,7 @@ export function MenusTab({
                               fill
                               className="object-cover"
                               sizes="48px"
+                              loading="lazy"
                             />
                           ) : (
                             <Coffee className="w-6 h-6 m-auto text-slate-400" />

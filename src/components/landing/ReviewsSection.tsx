@@ -32,6 +32,8 @@ export function ReviewsSection() {
                   alt="Customer"
                   fill
                   className="object-cover"
+                  sizes="40px"
+                  loading="lazy"
                 />
               </div>
               <div>
@@ -53,6 +55,8 @@ export function ReviewsSection() {
                   alt="Customer"
                   fill
                   className="object-cover"
+                  sizes="40px"
+                  loading="lazy"
                 />
               </div>
               <div>
@@ -74,6 +78,8 @@ export function ReviewsSection() {
                   alt="Customer"
                   fill
                   className="object-cover"
+                  sizes="40px"
+                  loading="lazy"
                 />
               </div>
               <div>

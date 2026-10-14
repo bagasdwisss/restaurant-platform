@@ -9,15 +9,86 @@ import { useToast } from "@/lib/toast-context";
 import { isTableCapacityEligible } from "@/components/tables/FloorTableFurniture";
 import { PaymentMethodId } from "@/components/ui/PaymentLogos";
 
+import dynamic from "next/dynamic";
+
 // Sub-components
 import { MenuItem, TableItem, CartItem, TimeSlotOption } from "@/components/reservation/types";
 import { ReservationStepsNav } from "@/components/reservation/ReservationStepsNav";
 import { ReservationScheduleStep } from "@/components/reservation/ReservationScheduleStep";
 import { ReservationMenuStep } from "@/components/reservation/ReservationMenuStep";
-import { ReservationFloorPlanStep } from "@/components/reservation/ReservationFloorPlanStep";
-import { ReservationPaymentStep } from "@/components/reservation/ReservationPaymentStep";
-import { ReservationReceiptStep } from "@/components/reservation/ReservationReceiptStep";
-import { MenuCustomizationModal } from "@/components/reservation/MenuCustomizationModal";
+
+// Dynamic Code-Splitting Lazy Loading for Heavy Steps & Modals
+const ReservationFloorPlanStep = dynamic(
+  () =>
+    import("@/components/reservation/ReservationFloorPlanStep").then(
+      (m) => m.ReservationFloorPlanStep
+    ),
+  {
+    loading: () => (
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6 animate-pulse">
+        <div className="space-y-2">
+          <div className="h-6 w-56 bg-slate-200 rounded-lg" />
+          <div className="h-3.5 w-80 bg-slate-100 rounded-full" />
+        </div>
+        <div className="h-[460px] w-full bg-slate-100 rounded-2xl flex items-center justify-center">
+          <div className="text-slate-400 text-xs font-serif font-bold">
+            Memuat Arsitektur Denah Meja SAVORIA...
+          </div>
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const ReservationPaymentStep = dynamic(
+  () =>
+    import("@/components/reservation/ReservationPaymentStep").then(
+      (m) => m.ReservationPaymentStep
+    ),
+  {
+    loading: () => (
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6 animate-pulse">
+        <div className="space-y-2">
+          <div className="h-6 w-48 bg-slate-200 rounded-lg" />
+          <div className="h-3.5 w-72 bg-slate-100 rounded-full" />
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-16 w-full bg-slate-100 rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const ReservationReceiptStep = dynamic(
+  () =>
+    import("@/components/reservation/ReservationReceiptStep").then(
+      (m) => m.ReservationReceiptStep
+    ),
+  {
+    loading: () => (
+      <div className="max-w-md mx-auto bg-white p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-4 animate-pulse">
+        <div className="w-16 h-16 rounded-full bg-slate-200 mx-auto" />
+        <div className="h-6 w-48 bg-slate-200 rounded-lg mx-auto" />
+        <div className="h-3 w-64 bg-slate-100 rounded-full mx-auto" />
+        <div className="h-48 w-full bg-slate-100 rounded-2xl mt-4" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const MenuCustomizationModal = dynamic(
+  () =>
+    import("@/components/reservation/MenuCustomizationModal").then(
+      (m) => m.MenuCustomizationModal
+    ),
+  { ssr: false }
+);
 
 const TIME_SLOTS: TimeSlotOption[] = [
   { label: "12:00 PM - Luncheon Soirée", desc: "Sesi siang segar & elegan" },

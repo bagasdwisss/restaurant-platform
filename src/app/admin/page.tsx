@@ -76,7 +76,7 @@ export default function AdminDashboardPage() {
 
   // Visible lazy loading states for each tab
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(true);
   const [loadingMenus, setLoadingMenus] = useState(false);
   const [loadingTables, setLoadingTables] = useState(false);
   const [loadingIngredients, setLoadingIngredients] = useState(false);
@@ -541,15 +541,12 @@ export default function AdminDashboardPage() {
 
         <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
           {activeTab === "analytics" && (
-            loadingAnalytics && !salesData ? (
-              <TabSkeleton title="Memuat Ringkasan Analitik Penjualan..." count={4} />
-            ) : (
-              <AnalyticsTab
-                salesData={salesData}
-                onRefresh={fetchSalesSummary}
-                onExportExcel={handleExportExcel}
-              />
-            )
+            <AnalyticsTab
+              salesData={salesData}
+              isLoading={loadingAnalytics}
+              onRefresh={fetchSalesSummary}
+              onExportExcel={handleExportExcel}
+            />
           )}
 
           {activeTab === "menus" && (

@@ -9,6 +9,7 @@ import {
   ALL_CATALOG_DISHES,
   MENU_FILTER_TABS,
 } from "@/data/landing-menu";
+import dynamic from "next/dynamic";
 import {
   Navbar,
   HeroSection,
@@ -18,9 +19,13 @@ import {
   MenuCatalogSection,
   ReservationSection,
   ReviewsSection,
-  VideoStoryModal,
   Footer,
 } from "@/components/landing";
+
+const VideoStoryModal = dynamic(
+  () => import("@/components/landing").then((m) => m.VideoStoryModal),
+  { ssr: false }
+);
 
 export default function DribbbleModernLandingPage() {
   const router = useRouter();
