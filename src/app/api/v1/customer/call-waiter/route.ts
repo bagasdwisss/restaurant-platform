@@ -99,3 +99,36 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const tableId = searchParams.get("tableId");
+    const tableNumber = searchParams.get("tableNumber");
+
+    if (!tableId && !tableNumber) {
+      return NextResponse.json({ success: true, data: null });
+    }
+
+    const whereClause: any = {};
+    if (tableId) whereClause.tableId = Number(tableId);
+    if (tableNumber) whereClause.tableNumber = String(tableNumber);
+
+    const latestCall = await prisma.waiterCall.findFirst({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: latestCall,
+    });
+  } catch (error: any) {
+    console.error("Error fetching waiter call status:", error);
+    return NextResponse.json(
+      { success: false, message: error.message || "Gagal memuat status panggilan." },
+      { status: 500 }
+    );
+  }
+}
+

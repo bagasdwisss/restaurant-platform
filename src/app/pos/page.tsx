@@ -58,6 +58,12 @@ const PosThermalReceipt = dynamic(
   { ssr: false }
 );
 
+const WaiterCallsModal = dynamic(
+  () => import("@/components/pos/WaiterCallsModal").then((m) => m.WaiterCallsModal),
+  { ssr: false }
+);
+
+
 export default function PosCashierPage() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
@@ -130,6 +136,11 @@ export default function PosCashierPage() {
   // Print Receipt / Kitchen Ticket state
   const [printData, setPrintData] = useState<{ type: "customer" | "kitchen"; order: any } | null>(null);
 
+  // Waiter Calls Modal state
+  const [showWaiterCallsModal, setShowWaiterCallsModal] = useState(false);
+  const [updatingCallId, setUpdatingCallId] = useState<number | null>(null);
+  const [isRefreshingCalls, setIsRefreshingCalls] = useState(false);
+
   // Operation Loading States
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
   const [isRefreshingOrders, setIsRefreshingOrders] = useState(false);
@@ -138,6 +149,7 @@ export default function PosCashierPage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isProcessingVoid, setIsProcessingVoid] = useState(false);
   const [isMovingTable, setIsMovingTable] = useState(false);
+
 
   // 1. Fetch current shift
   const fetchShift = useCallback(async () => {
@@ -216,7 +228,56 @@ export default function PosCashierPage() {
     }
   };
 
+  // WAITER CALLS HANDLER
+  const handleUpdateWaiterCallStatus = async (callId: number, status: "in_progress" | "completed") => {
+    setUpdatingCallId(callId);
+    try {
+      const res = await fetch("/api/v1/pos/waiter-calls", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: callId,
+          status,
+          cashierName: currentShift?.cashierName || user?.name || "Kasir",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message, status === "in_progress" ? "Menuju Meja" : "Pelayanan Selesai");
+        if (status === "completed") {
+          setWaiterCalls((prev) => prev.filter((c) => c.id !== callId));
+        } else {
+          setWaiterCalls((prev) =>
+            prev.map((c) => (c.id === callId ? { ...c, status: "in_progress" } : c))
+          );
+        }
+      } else {
+        toast.error(data.message || "Gagal memperbarui status panggilan.", "Gagal");
+      }
+    } catch {
+      toast.error("Gagal menghubungkan ke server.", "Gangguan Koneksi");
+    } finally {
+      setUpdatingCallId(null);
+    }
+  };
+
+  const handleRefreshWaiterCalls = async () => {
+    setIsRefreshingCalls(true);
+    try {
+      const res = await fetch("/api/v1/pos/waiter-calls");
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        setWaiterCalls(data.data);
+      }
+    } catch {
+      // non-fatal
+    } finally {
+      setIsRefreshingCalls(false);
+    }
+  };
+
   // SHIFT HANDLERS
+
   const handleOpenShiftSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsOpeningShift(true);
@@ -518,6 +579,7 @@ export default function PosCashierPage() {
           setCloseShiftVariance(0);
           setShowCloseShiftModal(true);
         }}
+        onOpenWaiterCalls={() => setShowWaiterCallsModal(true)}
         onLogout={logout}
       />
 
@@ -641,6 +703,17 @@ export default function PosCashierPage() {
         isMovingTable={isMovingTable}
         onExecuteMoveTable={handleExecuteMoveTable}
         onClose={() => setShowMoveTableModal(false)}
+      />
+
+      {/* WAITER CALLS MODAL */}
+      <WaiterCallsModal
+        isOpen={showWaiterCallsModal}
+        onClose={() => setShowWaiterCallsModal(false)}
+        calls={waiterCalls}
+        onUpdateStatus={handleUpdateWaiterCallStatus}
+        updatingCallId={updatingCallId}
+        onRefresh={handleRefreshWaiterCalls}
+        isRefreshing={isRefreshingCalls}
       />
 
       {/* THERMAL PRINT RENDERER */}

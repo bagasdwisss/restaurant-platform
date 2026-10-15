@@ -80,6 +80,21 @@ export function ReservationPaymentStep({
   const [voucherDiscount, setVoucherDiscount] = useState(0);
   const [isCheckingVoucher, setIsCheckingVoucher] = useState(false);
   const [voucherError, setVoucherError] = useState("");
+  const [availableVouchers, setAvailableVouchers] = useState<any[]>([]);
+  const [loadingVouchers, setLoadingVouchers] = useState(false);
+
+  React.useEffect(() => {
+    setLoadingVouchers(true);
+    fetch("/api/v1/customer/vouchers")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) {
+          setAvailableVouchers(data.data);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingVouchers(false));
+  }, []);
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const netSubtotal = Math.max(0, subtotal - voucherDiscount);
@@ -87,8 +102,8 @@ export function ReservationPaymentStep({
   const serviceCharge = Math.round(netSubtotal * 0.05); // Service 5%
   const totalAmount = netSubtotal + taxAmount + serviceCharge;
 
-  const handleApplyVoucher = async () => {
-    if (!voucherCodeInput.trim()) return;
+  const handleApplyVoucherCode = async (codeToApply: string) => {
+    if (!codeToApply.trim()) return;
     setIsCheckingVoucher(true);
     setVoucherError("");
 
@@ -97,7 +112,7 @@ export function ReservationPaymentStep({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          code: voucherCodeInput.trim(),
+          code: codeToApply.trim(),
           subtotal,
         }),
       });
@@ -109,6 +124,7 @@ export function ReservationPaymentStep({
       } else {
         setAppliedVoucher(data.data.voucher || data.data);
         setVoucherDiscount(data.data.discountAmount || 0);
+        setVoucherCodeInput(codeToApply.toUpperCase());
         setVoucherError("");
       }
     } catch (err: any) {
@@ -116,6 +132,10 @@ export function ReservationPaymentStep({
     } finally {
       setIsCheckingVoucher(false);
     }
+  };
+
+  const handleApplyVoucher = async () => {
+    await handleApplyVoucherCode(voucherCodeInput);
   };
 
   const handleRemoveVoucher = () => {
@@ -631,6 +651,74 @@ export function ReservationPaymentStep({
                   >
                     Hapus
                   </button>
+                </div>
+              )}
+
+              {/* Available Vouchers List for Easy 1-Click Selection */}
+              {availableVouchers.length > 0 && (
+                <div className="space-y-1.5 pt-1 border-t border-amber-200/60 mt-2">
+                  <p className="text-[11px] font-bold text-amber-900 flex items-center justify-between">
+                    <span>Voucher Tersedia ({availableVouchers.length}):</span>
+                    <span className="text-[10px] font-normal text-amber-700">Klik untuk gunakan langsung</span>
+                  </p>
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto pr-0.5">
+                    {availableVouchers.map((v) => {
+                      const isThisApplied = appliedVoucher?.code === v.code;
+                      const quotaLeft = Math.max(0, v.maxUsage - v.usedCount);
+                      const discountText =
+                        v.discountType === "percentage"
+                          ? `Diskon ${v.discountValue}%${v.maxDiscount ? ` (Maks ${formatIDR(v.maxDiscount)})` : ""}`
+                          : `Potongan ${formatIDR(v.discountValue)}`;
+
+                      return (
+                        <div
+                          key={v.id || v.code}
+                          className={`p-2 rounded-xl border transition-all text-xs flex items-center justify-between gap-2 ${
+                            isThisApplied
+                              ? "bg-emerald-50 border-emerald-300 ring-1 ring-emerald-400"
+                              : "bg-white border-amber-100/90 hover:border-amber-300 shadow-2xs"
+                          }`}
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono font-extrabold text-[11px] text-slate-800 bg-amber-100/80 px-1.5 py-0.5 rounded border border-amber-200">
+                                {v.code}
+                              </span>
+                              <span className="font-bold text-[11px] text-slate-900 truncate">
+                                {v.name}
+                              </span>
+                            </div>
+                            <div className="text-[10px] text-slate-600 mt-0.5 flex flex-wrap items-center gap-x-2">
+                              <span className="font-semibold text-emerald-700">{discountText}</span>
+                              {v.minSpend > 0 && (
+                                <span>Min. {formatIDR(v.minSpend)}</span>
+                              )}
+                              <span className="text-amber-800 font-medium">Sisa {quotaLeft} kuota</span>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isThisApplied) {
+                                handleRemoveVoucher();
+                              } else {
+                                handleApplyVoucherCode(v.code);
+                              }
+                            }}
+                            disabled={isCheckingVoucher}
+                            className={`px-2.5 py-1 text-[11px] font-bold rounded-lg shrink-0 cursor-pointer transition-colors ${
+                              isThisApplied
+                                ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                                : "bg-amber-600 text-white hover:bg-amber-700 shadow-xs"
+                            }`}
+                          >
+                            {isThisApplied ? "Dipakai ✓" : "Gunakan"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 

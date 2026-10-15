@@ -22,6 +22,7 @@ interface PosHeaderProps {
   waiterCallsCount: number;
   onOpenShiftModal: () => void;
   onCloseShiftModal: () => void;
+  onOpenWaiterCalls?: () => void;
   onLogout: () => void;
 }
 
@@ -34,8 +35,10 @@ export function PosHeader({
   waiterCallsCount,
   onOpenShiftModal,
   onCloseShiftModal,
+  onOpenWaiterCalls,
   onLogout,
 }: PosHeaderProps) {
+
   return (
     <header className="border-b border-[#E2E8F0] bg-white sticky top-0 z-40 px-3 sm:px-6 py-2.5 sm:py-3 shadow-xs">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -139,11 +142,26 @@ export function PosHeader({
 
         {/* Right: Waiter Call Alert & Staff Logout */}
         <div className="flex items-center gap-2 self-end md:self-auto">
-          {waiterCallsCount > 0 && (
-            <div className="flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-full text-[11px] font-bold animate-pulse">
-              <BellRing className="w-3.5 h-3.5 text-rose-600" />
+          {waiterCallsCount > 0 ? (
+            <button
+              type="button"
+              onClick={onOpenWaiterCalls}
+              className="flex items-center gap-1.5 bg-rose-500 hover:bg-rose-600 text-white border border-rose-600 px-3 py-1.5 rounded-full text-xs font-bold animate-pulse shadow-xs hover:shadow transition-all cursor-pointer"
+              title="Klik untuk membuka daftar panggilan tamu"
+            >
+              <BellRing className="w-3.5 h-3.5 text-white animate-bounce" />
               <span>{waiterCallsCount} Panggilan Tamu</span>
-            </div>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenWaiterCalls}
+              className="flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
+              title="Panggilan Tamu Meja (0 Aktif)"
+            >
+              <BellRing className="w-3.5 h-3.5 text-slate-400" />
+              <span className="hidden sm:inline">Panggilan Tamu</span>
+            </button>
           )}
 
           {user && (

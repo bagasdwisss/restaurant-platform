@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, use } from "react";
+import React, { useEffect, useState, useCallback, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
@@ -23,6 +23,7 @@ import {
   Coffee,
   ArrowRight,
   RefreshCw,
+  Footprints,
 } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { useCartStore, SelectedVariant } from "@/lib/cart-store";
@@ -91,7 +92,7 @@ export default function CustomerTablePage({
 
   // Waiter call state
   const [callingWaiter, setCallingWaiter] = useState(false);
-  const [waiterCalledSuccess, setWaiterCalledSuccess] = useState(false);
+  const [waiterCallStatus, setWaiterCallStatus] = useState<"idle" | "pending" | "in_progress" | "completed">("idle");
 
   // Store & Auth
   const cart = useCartStore();
@@ -104,6 +105,36 @@ export default function CustomerTablePage({
     }
   }, [user, cart]);
 
+  // Fetch latest waiter call status
+  const fetchWaiterCallStatus = useCallback(async (tableId: number) => {
+    try {
+      const res = await fetch(`/api/v1/customer/call-waiter?tableId=${tableId}`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        const call = data.data;
+        if (call.status === "pending") {
+          setWaiterCallStatus("pending");
+        } else if (call.status === "in_progress") {
+          setWaiterCallStatus("in_progress");
+        } else if (call.status === "completed") {
+          const completedDiff = Date.now() - new Date(call.createdAt).getTime();
+          // If marked completed within last 60s, show completed badge
+          if (completedDiff < 60000) {
+            setWaiterCallStatus("completed");
+          } else {
+            setWaiterCallStatus("idle");
+          }
+        } else {
+          setWaiterCallStatus("idle");
+        }
+      } else {
+        setWaiterCallStatus("idle");
+      }
+    } catch {
+      // non-fatal
+    }
+  }, []);
+
   // 1. Initial Load Table & Active Order
   const fetchTableData = async () => {
     try {
@@ -113,6 +144,9 @@ export default function CustomerTablePage({
         setTable(data.data.table);
         setActiveOrder(data.data.activeOrder);
         cart.setTableInfo(token, data.data.table.tableNumber);
+        if (data.data.table?.id) {
+          fetchWaiterCallStatus(data.data.table.id);
+        }
       } else {
         setError(data.message || "Meja tidak valid.");
       }
@@ -141,7 +175,7 @@ export default function CustomerTablePage({
     fetchMenus();
   }, [token]);
 
-  // Polling for live status updates if there is an active order
+  // Polling for live status updates (active order & waiter call status)
   useEffect(() => {
     const interval = setInterval(() => {
       if (typeof document !== "undefined" && document.hidden) return;
@@ -151,14 +185,17 @@ export default function CustomerTablePage({
           .then((data) => {
             if (data.success) {
               setActiveOrder(data.data.activeOrder);
+              if (data.data.table?.id) {
+                fetchWaiterCallStatus(data.data.table.id);
+              }
             }
           })
           .catch(() => {});
       }
-    }, 15000);
+    }, 7000); // 7s fast polling for waiter response & kitchen updates
 
     return () => clearInterval(interval);
-  }, [token]);
+  }, [token, fetchWaiterCallStatus]);
 
   // Handle Call Waiter
   const handleCallWaiter = async () => {
@@ -177,9 +214,8 @@ export default function CustomerTablePage({
       });
       const data = await res.json();
       if (data.success) {
-        setWaiterCalledSuccess(true);
+        setWaiterCallStatus("pending");
         toast.success("Pelayan telah menerima notifikasi dan segera menuju meja Anda.", "Pelayan Dipanggil");
-        setTimeout(() => setWaiterCalledSuccess(false), 5000);
       }
     } catch (err) {
       toast.error("Gagal memanggil pelayan melalui sistem. Silakan panggil staf terdekat secara langsung.", "Panggilan Gagal");
@@ -382,37 +418,59 @@ export default function CustomerTablePage({
             </div>
           </div>
 
-          {/* Call Waiter Button */}
-          <button
-            onClick={handleCallWaiter}
-            disabled={callingWaiter || waiterCalledSuccess}
-            className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-semibold transition-all shadow-sm cursor-pointer shrink-0 ${
-              waiterCalledSuccess
-                ? "bg-emerald-600 text-white"
-                : "bg-white hover:bg-amber-50 text-amber-900 border border-amber-200 active:scale-95 disabled:opacity-60"
-            }`}
-          >
-            {callingWaiter ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#EA580C]" />
-            ) : (
-              <BellRing className="w-3.5 h-3.5 text-[#EA580C]" />
-            )}
-            <span>
+          {/* Call Waiter Dynamic Button */}
+          {waiterCallStatus === "in_progress" ? (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-teal-600 text-white shadow-md animate-pulse ring-2 ring-teal-300 shrink-0">
+              <Footprints className="w-3.5 h-3.5 animate-bounce" />
+              <span>
+                <span className="hidden xs:inline">Pelayan Sedang Menuju Meja!</span>
+                <span className="xs:hidden">Pelayan Menuju Meja!</span>
+              </span>
+            </div>
+          ) : waiterCallStatus === "pending" ? (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-amber-500 text-white shadow-sm shrink-0">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              <span>
+                <span className="hidden xs:inline">Menunggu Pelayan...</span>
+                <span className="xs:hidden">Menunggu...</span>
+              </span>
+            </div>
+          ) : waiterCallStatus === "completed" ? (
+            <button
+              type="button"
+              onClick={() => setWaiterCallStatus("idle")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all cursor-pointer shrink-0"
+              title="Klik untuk menutup notifikasi"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>
+                <span className="hidden xs:inline">Pelayan Telah Hadir ✓</span>
+                <span className="xs:hidden">Hadir ✓</span>
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={handleCallWaiter}
+              disabled={callingWaiter}
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-semibold transition-all shadow-sm cursor-pointer shrink-0 bg-white hover:bg-amber-50 text-amber-900 border border-amber-200 active:scale-95 disabled:opacity-60"
+            >
               {callingWaiter ? (
-                <span>Memanggil...</span>
-              ) : waiterCalledSuccess ? (
-                <>
-                  <span className="hidden xs:inline">Pelayan Menuju Meja!</span>
-                  <span className="xs:hidden">Pelayan Datang!</span>
-                </>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#EA580C]" />
               ) : (
-                <>
-                  <span className="hidden xs:inline">Panggil Pelayan</span>
-                  <span className="xs:hidden">Pelayan</span>
-                </>
+                <BellRing className="w-3.5 h-3.5 text-[#EA580C]" />
               )}
-            </span>
-          </button>
+              <span>
+                {callingWaiter ? (
+                  <span>Memanggil...</span>
+                ) : (
+                  <>
+                    <span className="hidden xs:inline">Panggil Pelayan</span>
+                    <span className="xs:hidden">Pelayan</span>
+                  </>
+                )}
+              </span>
+            </button>
+          )}
         </div>
       </header>
 

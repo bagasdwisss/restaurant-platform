@@ -195,10 +195,10 @@ export function FloorTableFurniture({
         return;
       }
 
-      if (onConfirm) {
-        onConfirm(table);
-      } else if (onSelect) {
+      if (onSelect) {
         onSelect(table);
+      } else if (onConfirm) {
+        onConfirm(table);
       }
     } else if (mode === "pos") {
       if (isAvailable && onOpenBill) {

@@ -421,6 +421,7 @@ export default function SavoriaReservationPage() {
 
     try {
       const payload = {
+        tableId: selectedTable.id,
         qrToken: selectedTable.qrToken,
         customerName: customerName.trim() || (user ? user.name : "Tamu VIP Savoria"),
         customerPhone: customerPhone.trim(),
@@ -436,6 +437,8 @@ export default function SavoriaReservationPage() {
         voucherCode: voucherCode ? voucherCode.trim() : undefined,
         items: cart.map((i) => ({
           menuId: i.menuId,
+          name: i.name,
+          price: i.price,
           quantity: i.quantity,
           notes: i.notes,
           selectedVariants: i.selectedVariants,

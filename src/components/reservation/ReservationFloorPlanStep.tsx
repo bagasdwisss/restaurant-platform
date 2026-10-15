@@ -59,6 +59,16 @@ export function ReservationFloorPlanStep({
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Menu</span>
             </button>
+            {selectedTable && isSelectedEligible && (
+              <button
+                type="button"
+                onClick={() => onConfirmTableAndAdvance(selectedTable)}
+                className="px-5 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#EA580C]/25 cursor-pointer"
+              >
+                <span>Lanjut Pembayaran</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
       </div>

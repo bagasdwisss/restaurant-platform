@@ -1,14 +1,70 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Sparkles, ArrowRight, Play, Star, Flame } from "lucide-react";
+
+const ROTATING_REVIEWS = [
+  {
+    name: "Sarah Jenkins",
+    quote: "Best Wagyu steak!",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
+    rating: "★★★★★",
+  },
+  {
+    name: "Chef Gordon Ramsay",
+    quote: "World-class dining!",
+    avatar: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=120&q=80",
+    rating: "★★★★★",
+  },
+  {
+    name: "Leonardo DiCaprio",
+    quote: "Sublime organic feast.",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80",
+    rating: "★★★★★",
+  },
+  {
+    name: "Anne Hathaway",
+    quote: "Pure culinary bliss.",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80",
+    rating: "★★★★★",
+  },
+  {
+    name: "David Beckham",
+    quote: "Unmatched hospitality.",
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80",
+    rating: "★★★★★",
+  },
+  {
+    name: "Michelle Yeoh",
+    quote: "Art on every plate.",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=120&q=80",
+    rating: "★★★★★",
+  },
+];
 
 interface HeroSectionProps {
   onOpenStory: () => void;
 }
 
 export function HeroSection({ onOpenStory }: HeroSectionProps) {
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [fadeState, setFadeState] = useState(true);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setFadeState(false);
+      setTimeout(() => {
+        setCurrentReviewIndex((prev) => (prev + 1) % ROTATING_REVIEWS.length);
+        setFadeState(true);
+      }, 300);
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const activeReview = ROTATING_REVIEWS[currentReviewIndex];
+
   return (
     <section className="relative overflow-hidden pt-6 pb-12 sm:pt-10 sm:pb-20 lg:pt-16 lg:pb-24 border-b border-[#E2E8F0]">
       <div className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
@@ -130,25 +186,32 @@ export function HeroSection({ onOpenStory }: HeroSectionProps) {
               </div>
             </div>
 
-            {/* Floating Card 2 (Bottom-Right): Mini Review Card */}
-            <div className="absolute -bottom-3 right-0 sm:-bottom-6 sm:-right-6 bg-white/95 backdrop-blur-md border border-[#E2E8F0] rounded-2xl p-2.5 sm:p-3.5 shadow-float flex items-center gap-2 sm:gap-3 animate-float-delayed max-w-[180px] sm:max-w-[210px]">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden relative shrink-0 border border-white">
+            {/* Floating Card 2 (Bottom-Right): Dynamic Rotating Review Card */}
+            <div className="absolute -bottom-3 right-0 sm:-bottom-6 sm:-right-6 bg-white/95 backdrop-blur-md border border-[#E2E8F0] rounded-2xl p-2.5 sm:p-3.5 shadow-float flex items-center gap-2 sm:gap-3 animate-float-delayed max-w-[195px] sm:max-w-[230px] transition-all">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden relative shrink-0 border border-white shadow-2xs">
                 <Image
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
-                  alt="Reviewer"
+                  src={activeReview.avatar}
+                  alt={activeReview.name}
                   fill
-                  className="object-cover"
+                  className={`object-cover transition-opacity duration-300 ${
+                    fadeState ? "opacity-100" : "opacity-0"
+                  }`}
+                  sizes="36px"
                 />
               </div>
-              <div className="leading-tight">
+              <div
+                className={`leading-tight min-w-0 transition-all duration-300 ${
+                  fadeState ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+                }`}
+              >
                 <div className="flex text-[#F59E0B] text-[9px] sm:text-[10px]">
-                  ★★★★★
+                  {activeReview.rating}
                 </div>
                 <span className="text-[11px] sm:text-xs font-bold text-[#18181B] block mt-0.5 truncate">
-                  Sarah Jenkins
+                  {activeReview.name}
                 </span>
-                <p className="text-[9px] sm:text-[10px] text-[#64748B] line-clamp-1 italic">
-                  &quot;Best Wagyu steak!&quot;
+                <p className="text-[9px] sm:text-[10px] text-[#64748B] line-clamp-1 italic font-medium">
+                  &quot;{activeReview.quote}&quot;
                 </p>
               </div>
             </div>
