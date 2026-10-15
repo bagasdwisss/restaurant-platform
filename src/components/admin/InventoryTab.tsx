@@ -343,64 +343,66 @@ export function InventoryTab({
       </div>
 
       {/* MODAL: RESTOCK INGREDIENT */}
-      <Modal isOpen={Boolean(showRestockModal && selectedIngredient)} onClose={() => setShowRestockModal(false)}>
-        <div className="bg-white w-full max-w-sm rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div>
-              <h3 className="font-serif font-bold text-[#18181B] text-base">Restock Bahan Baku</h3>
-              <p className="text-xs text-[#64748B]">{selectedIngredient?.name}</p>
-            </div>
-            <button
-              onClick={() => setShowRestockModal(false)}
-              className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          <form onSubmit={handleRestockSubmit} className="space-y-4 text-xs">
-            <div className="bg-[#FDFBF7] p-3 rounded-2xl border border-slate-200/80 flex items-center justify-between">
-              <span className="text-[#64748B]">Stok Saat Ini:</span>
-              <span className="font-mono font-bold text-sm text-[#18181B]">
-                {selectedIngredient?.stockQuantity} {selectedIngredient?.unit}
-              </span>
-            </div>
-
-            <div>
-              <label className="block text-[#64748B] font-bold mb-1">
-                Jumlah Penambahan ({selectedIngredient?.unit})
-              </label>
-              <input
-                type="number"
-                step="any"
-                placeholder={`Contoh: 50 atau 100`}
-                value={restockAmount}
-                onChange={(e) => setRestockAmount(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden text-sm font-mono font-bold"
-                autoFocus
-              />
-            </div>
-
-            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+      {showRestockModal && selectedIngredient && (
+        <Modal isOpen={Boolean(showRestockModal && selectedIngredient)} onClose={() => setShowRestockModal(false)}>
+          <div className="bg-white w-full max-w-sm rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="font-serif font-bold text-[#18181B] text-base">Restock Bahan Baku</h3>
+                <p className="text-xs text-[#64748B]">{selectedIngredient?.name}</p>
+              </div>
               <button
-                type="button"
                 onClick={() => setShowRestockModal(false)}
-                className="px-4 py-2 rounded-full border border-slate-200 text-[#64748B] text-xs font-bold cursor-pointer"
+                className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
               >
-                Batal
-              </button>
-              <button
-                type="submit"
-                disabled={submitting || !restockAmount}
-                className="px-5 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold disabled:opacity-50 flex items-center gap-1.5 shadow-md shadow-[#EA580C]/25 cursor-pointer"
-              >
-                {submitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-                <span>Tambah Stok</span>
+                <X className="w-5 h-5" />
               </button>
             </div>
-          </form>
-        </div>
-      </Modal>
+
+            <form onSubmit={handleRestockSubmit} className="space-y-4 text-xs">
+              <div className="bg-[#FDFBF7] p-3 rounded-2xl border border-slate-200/80 flex items-center justify-between">
+                <span className="text-[#64748B]">Stok Saat Ini:</span>
+                <span className="font-mono font-bold text-sm text-[#18181B]">
+                  {selectedIngredient?.stockQuantity} {selectedIngredient?.unit}
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-[#64748B] font-bold mb-1">
+                  Jumlah Penambahan ({selectedIngredient?.unit})
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  placeholder={`Contoh: 50 atau 100`}
+                  value={restockAmount}
+                  onChange={(e) => setRestockAmount(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden text-sm font-mono font-bold"
+                  autoFocus
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowRestockModal(false)}
+                  className="px-4 py-2 rounded-full border border-slate-200 text-[#64748B] text-xs font-bold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting || !restockAmount}
+                  className="px-5 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold disabled:opacity-50 flex items-center gap-1.5 shadow-md shadow-[#EA580C]/25 cursor-pointer"
+                >
+                  {submitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                  <span>Tambah Stok</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
+      )}
 
       {/* MODAL: CREATE NEW INGREDIENT */}
       <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>

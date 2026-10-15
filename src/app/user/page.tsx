@@ -297,6 +297,7 @@ export default function UserPortalPage() {
   ];
 
   const handleRedeemReward = async (reward: (typeof CLUB_REWARDS)[0]) => {
+    if (!reward) return;
     if (!user) {
       toast.warning("Silakan masuk terlebih dahulu untuk menukarkan poin reward.", "Login Diperlukan");
       return;
@@ -623,24 +624,30 @@ export default function UserPortalPage() {
         )}
 
         {/* Modal 1: Boarding Pass QR */}
-        <UserBoardingPassModal
-          order={boardingPassOrder}
-          user={user}
-          onClose={() => setBoardingPassOrder(null)}
-        />
+        {boardingPassOrder && (
+          <UserBoardingPassModal
+            order={boardingPassOrder}
+            user={user}
+            onClose={() => setBoardingPassOrder(null)}
+          />
+        )}
 
         {/* Modal 2: Digital Receipt Struk */}
-        <UserReceiptModal
-          receipt={selectedReceipt}
-          user={user}
-          onClose={() => setSelectedReceipt(null)}
-        />
+        {selectedReceipt && (
+          <UserReceiptModal
+            receipt={selectedReceipt}
+            user={user}
+            onClose={() => setSelectedReceipt(null)}
+          />
+        )}
 
         {/* Modal 3: Celebratory Redeemed Voucher */}
-        <UserVoucherCelebrationModal
-          voucher={redeemedVoucher}
-          onClose={() => setRedeemedVoucher(null)}
-        />
+        {redeemedVoucher && (
+          <UserVoucherCelebrationModal
+            voucher={redeemedVoucher}
+            onClose={() => setRedeemedVoucher(null)}
+          />
+        )}
       </main>
 
       {/* Footer */}

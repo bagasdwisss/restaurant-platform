@@ -518,11 +518,12 @@ export function TablesTab({
       </Modal>
 
       {/* MODAL: EDIT TABLE */}
-      <Modal
-        isOpen={Boolean(showEditModal && editingTable)}
-        onClose={() => setShowEditModal(false)}
-      >
-        <div className="bg-white w-full max-w-sm rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
+      {showEditModal && editingTable && (
+        <Modal
+          isOpen={Boolean(showEditModal && editingTable)}
+          onClose={() => setShowEditModal(false)}
+        >
+          <div className="bg-white w-full max-w-sm rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 className="font-serif font-bold text-[#18181B] text-base">Edit Data Meja</h3>
@@ -606,6 +607,7 @@ export function TablesTab({
           </div>
         </div>
       </Modal>
+      )}
 
       {/* MODAL: LUXURY PRINTABLE QR STANDEE PREVIEW */}
       <Modal

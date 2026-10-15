@@ -273,10 +273,11 @@ export function SystemUpdatesSubTab({
       {/* Version Cards Timeline */}
       <div className="space-y-4">
         {filteredSystemUpdates.map((release) => {
+          if (!release) return null;
           const isLatest = release.status === "latest";
           return (
             <div
-              key={release.version}
+              key={release.version || Math.random()}
               className={`bg-white rounded-2xl border p-5 shadow-sm transition-all space-y-3 ${
                 isLatest
                   ? "border-emerald-300 ring-2 ring-emerald-100"

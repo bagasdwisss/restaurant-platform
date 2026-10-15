@@ -9,6 +9,8 @@ interface VideoStoryModalProps {
 }
 
 export function VideoStoryModal({ isOpen, onClose }: VideoStoryModalProps) {
+  if (!isOpen) return null;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="bg-black/80 backdrop-blur-md">
       <div className="bg-[#14281D] text-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 border border-white/20 relative shadow-2xl">

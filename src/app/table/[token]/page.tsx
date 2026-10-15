@@ -540,28 +540,32 @@ export default function CustomerTablePage({
       )}
 
       {/* Modal Customizer */}
-      <TableMenuCustomizerModal
-        selectedMenu={selectedMenu}
-        customModifiers={customModifiers}
-        itemNotes={itemNotes}
-        itemQty={itemQty}
-        onClose={() => setSelectedMenu(null)}
-        onToggleModifierOption={toggleModifierOption}
-        onChangeNotes={setItemNotes}
-        onChangeQty={setItemQty}
-        onAddToCart={handleAddToCart}
-        unitPrice={calculateModalUnitPrice()}
-      />
+      {selectedMenu && (
+        <TableMenuCustomizerModal
+          selectedMenu={selectedMenu}
+          customModifiers={customModifiers}
+          itemNotes={itemNotes}
+          itemQty={itemQty}
+          onClose={() => setSelectedMenu(null)}
+          onToggleModifierOption={toggleModifierOption}
+          onChangeNotes={setItemNotes}
+          onChangeQty={setItemQty}
+          onAddToCart={handleAddToCart}
+          unitPrice={calculateModalUnitPrice()}
+        />
+      )}
 
       {/* Cart Drawer */}
-      <TableCartDrawer
-        isOpen={isCartOpen}
-        table={table}
-        cart={cart}
-        isSubmitting={isSubmitting}
-        onClose={() => setIsCartOpen(false)}
-        onCheckout={handleCheckout}
-      />
+      {isCartOpen && table && (
+        <TableCartDrawer
+          isOpen={isCartOpen}
+          table={table}
+          cart={cart}
+          isSubmitting={isSubmitting}
+          onClose={() => setIsCartOpen(false)}
+          onCheckout={handleCheckout}
+        />
+      )}
     </div>
   );
 }

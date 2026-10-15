@@ -37,6 +37,8 @@ export function TableCartDrawer({
   onClose,
   onCheckout,
 }: TableCartDrawerProps) {
+  if (!isOpen || !table) return null;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="items-end sm:items-center p-0 sm:p-4">
       <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
@@ -45,7 +47,7 @@ export function TableCartDrawer({
           <div>
             <h3 className="font-serif font-bold text-[#18181B] text-base">Rincian Pesanan Meja</h3>
             <p className="text-xs text-[#64748B]">
-              {table.tableNumber} • {table.area}
+              {table?.tableNumber || "Meja"} • {table?.area || "Indoor"}
             </p>
           </div>
           <button

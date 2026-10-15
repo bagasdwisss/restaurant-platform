@@ -20,6 +20,8 @@ export function UserVoucherCelebrationModal({
   const { toast } = useToast();
   const [copiedRewardCode, setCopiedRewardCode] = useState(false);
 
+  if (!voucher) return null;
+
   const handleCopyCode = (code: string) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(code);
@@ -52,7 +54,7 @@ export function UserVoucherCelebrationModal({
             Selamat! Voucher Anda Aktif
           </h3>
           <p className="text-xs text-[#64748B]">
-            {voucher.title || "Voucher Hadiah Savoria Club"}
+            {voucher?.title || "Voucher Hadiah Savoria Club"}
           </p>
         </div>
 
@@ -63,11 +65,11 @@ export function UserVoucherCelebrationModal({
           </span>
           <div className="flex items-center justify-center gap-2">
             <span className="font-mono text-xl sm:text-2xl font-black text-[#EA580C] tracking-wider select-all">
-              {voucher.code}
+              {voucher?.code}
             </span>
             <button
               type="button"
-              onClick={() => handleCopyCode(voucher.code)}
+              onClick={() => handleCopyCode(voucher?.code || "")}
               className="p-2 rounded-xl bg-white hover:bg-amber-50 border border-slate-200 text-[#18181B] transition-all cursor-pointer shadow-xs"
               title="Salin Kode Voucher"
             >

@@ -25,6 +25,8 @@ export function MenuCustomizationModal({
   onConfirm,
   onClose,
 }: MenuCustomizationModalProps) {
+  if (!customizingMenu) return null;
+
   // Calculate extra cost
   const variantsList: { group: string; option: string; extraPrice: number }[] = [];
   customizingMenu.modifierGroups?.forEach((group) => {

@@ -642,79 +642,91 @@ export default function PosCashierPage() {
       )}
 
       {/* MODALS */}
-      <PosPaymentModal
-        orderToPay={orderToPay}
-        payMethod={payMethod}
-        onChangePayMethod={setPayMethod}
-        cashPaidInput={cashPaidInput}
-        onChangeCashPaid={setCashPaidInput}
-        isProcessingPayment={isProcessingPayment}
-        onExecutePayment={handleExecutePayment}
-        onClose={() => setShowPaymentModal(false)}
-      />
+      {showPaymentModal && orderToPay && (
+        <PosPaymentModal
+          orderToPay={orderToPay}
+          payMethod={payMethod}
+          onChangePayMethod={setPayMethod}
+          cashPaidInput={cashPaidInput}
+          onChangeCashPaid={setCashPaidInput}
+          isProcessingPayment={isProcessingPayment}
+          onExecutePayment={handleExecutePayment}
+          onClose={() => setShowPaymentModal(false)}
+        />
+      )}
 
-      <OpenShiftModal
-        show={showOpenShiftModal}
-        cashierNameInput={cashierNameInput}
-        onChangeCashierName={setCashierNameInput}
-        startCashInput={startCashInput}
-        onChangeStartCash={setStartCashInput}
-        isOpeningShift={isOpeningShift}
-        onSubmit={handleOpenShiftSubmit}
-        onClose={() => setShowOpenShiftModal(false)}
-      />
+      {showOpenShiftModal && (
+        <OpenShiftModal
+          show={showOpenShiftModal}
+          cashierNameInput={cashierNameInput}
+          onChangeCashierName={setCashierNameInput}
+          startCashInput={startCashInput}
+          onChangeStartCash={setStartCashInput}
+          isOpeningShift={isOpeningShift}
+          onSubmit={handleOpenShiftSubmit}
+          onClose={() => setShowOpenShiftModal(false)}
+        />
+      )}
 
-      <CloseShiftModal
-        show={showCloseShiftModal}
-        currentShift={currentShift}
-        endCashActualInput={endCashActualInput}
-        onChangeEndCashActual={(val) => {
-          setEndCashActualInput(val);
-          if (currentShift) {
-            const expected = currentShift.startCash + (currentShift.totalCashReceived || 0);
-            setCloseShiftVariance(Number(val) - expected);
-          }
-        }}
-        closeShiftVariance={closeShiftVariance}
-        isClosingShift={isClosingShift}
-        onSubmit={handleCloseShiftSubmit}
-        onClose={() => setShowCloseShiftModal(false)}
-      />
+      {showCloseShiftModal && currentShift && (
+        <CloseShiftModal
+          show={showCloseShiftModal}
+          currentShift={currentShift}
+          endCashActualInput={endCashActualInput}
+          onChangeEndCashActual={(val) => {
+            setEndCashActualInput(val);
+            if (currentShift) {
+              const expected = currentShift.startCash + (currentShift.totalCashReceived || 0);
+              setCloseShiftVariance(Number(val) - expected);
+            }
+          }}
+          closeShiftVariance={closeShiftVariance}
+          isClosingShift={isClosingShift}
+          onSubmit={handleCloseShiftSubmit}
+          onClose={() => setShowCloseShiftModal(false)}
+        />
+      )}
 
-      <PosVoidModal
-        show={showVoidModal}
-        supervisorPin={supervisorPin}
-        onChangePin={setSupervisorPin}
-        voidReason={voidReason}
-        onChangeReason={setVoidReason}
-        isProcessingVoid={isProcessingVoid}
-        onExecuteVoid={handleExecuteVoid}
-        onClose={() => setShowVoidModal(false)}
-      />
+      {showVoidModal && (
+        <PosVoidModal
+          show={showVoidModal}
+          supervisorPin={supervisorPin}
+          onChangePin={setSupervisorPin}
+          voidReason={voidReason}
+          onChangeReason={setVoidReason}
+          isProcessingVoid={isProcessingVoid}
+          onExecuteVoid={handleExecuteVoid}
+          onClose={() => setShowVoidModal(false)}
+        />
+      )}
 
-      <PosMoveTableModal
-        show={showMoveTableModal}
-        moveFromTable={moveFromTable}
-        moveToTableId={moveToTableId}
-        onChangeMoveToTableId={setMoveToTableId}
-        availableTables={tables.filter(
-          (t) => t.id !== moveFromTable?.id && t.status === "available"
-        )}
-        isMovingTable={isMovingTable}
-        onExecuteMoveTable={handleExecuteMoveTable}
-        onClose={() => setShowMoveTableModal(false)}
-      />
+      {showMoveTableModal && moveFromTable && (
+        <PosMoveTableModal
+          show={showMoveTableModal}
+          moveFromTable={moveFromTable}
+          moveToTableId={moveToTableId}
+          onChangeMoveToTableId={setMoveToTableId}
+          availableTables={tables.filter(
+            (t) => t.id !== moveFromTable?.id && t.status === "available"
+          )}
+          isMovingTable={isMovingTable}
+          onExecuteMoveTable={handleExecuteMoveTable}
+          onClose={() => setShowMoveTableModal(false)}
+        />
+      )}
 
       {/* WAITER CALLS MODAL */}
-      <WaiterCallsModal
-        isOpen={showWaiterCallsModal}
-        onClose={() => setShowWaiterCallsModal(false)}
-        calls={waiterCalls}
-        onUpdateStatus={handleUpdateWaiterCallStatus}
-        updatingCallId={updatingCallId}
-        onRefresh={handleRefreshWaiterCalls}
-        isRefreshing={isRefreshingCalls}
-      />
+      {showWaiterCallsModal && (
+        <WaiterCallsModal
+          isOpen={showWaiterCallsModal}
+          onClose={() => setShowWaiterCallsModal(false)}
+          calls={waiterCalls}
+          onUpdateStatus={handleUpdateWaiterCallStatus}
+          updatingCallId={updatingCallId}
+          onRefresh={handleRefreshWaiterCalls}
+          isRefreshing={isRefreshingCalls}
+        />
+      )}
 
       {/* THERMAL PRINT RENDERER */}
       <PosThermalReceipt printData={printData} currentShift={currentShift} />
