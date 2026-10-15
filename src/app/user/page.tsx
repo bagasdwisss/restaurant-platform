@@ -41,6 +41,7 @@ import {
   Check,
   Copy,
 } from "lucide-react";
+import { CookingCountdownTracker } from "@/components/customer/CookingCountdownTracker";
 
 export default function UserPortalPage() {
   const router = useRouter();
@@ -70,6 +71,12 @@ export default function UserPortalPage() {
   // Calling waiter state
   const [isCallingWaiter, setIsCallingWaiter] = useState(false);
   const [callingWaiterOrderId, setCallingWaiterOrderId] = useState<number | null>(null);
+
+  // Loyalty reward redemption state
+  const [isRedeemingReward, setIsRedeemingReward] = useState(false);
+  const [redeemedVoucher, setRedeemedVoucher] = useState<any>(null);
+  const [copiedRewardCode, setCopiedRewardCode] = useState(false);
+
 
   // Sync profile form when user loads
   useEffect(() => {
@@ -240,6 +247,52 @@ export default function UserPortalPage() {
     }
   };
 
+  const handleRedeemReward = async (reward: {
+    id: string;
+    title: string;
+    pointsCost: number;
+    discountValue: number;
+  }) => {
+    if (!user) {
+      toast.warning("Silakan masuk terlebih dahulu untuk menukarkan poin reward.", "Login Diperlukan");
+      return;
+    }
+
+    if (loyaltyPoints < reward.pointsCost) {
+      toast.error(
+        `Poin Savoria Anda (${loyaltyPoints} Pts) belum cukup untuk menukar ${reward.title} (${reward.pointsCost} Pts). Kumpulkan poin dari jamuan berikutnya!`,
+        "Poin Belum Mencukupi"
+      );
+      return;
+    }
+
+    setIsRedeemingReward(true);
+    try {
+      const res = await fetch("/api/v1/customer/vouchers/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          rewardId: reward.id,
+          pointsCost: reward.pointsCost,
+          title: reward.title,
+          discountValue: reward.discountValue,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRedeemedVoucher(data.data);
+        toast.success(data.message, "Penukaran Poin Berhasil!");
+      } else {
+        toast.error(data.message || "Gagal menukarkan poin.", "Gagal");
+      }
+    } catch {
+      toast.error("Terjadi gangguan koneksi saat menukarkan poin.", "Koneksi Gagal");
+    } finally {
+      setIsRedeemingReward(false);
+    }
+  };
+
   // Filter orders
   const activeOrdersList = useMemo(() => {
     return myOrders.filter((o) =>
@@ -265,42 +318,150 @@ export default function UserPortalPage() {
   }, [myOrders]);
 
   const loyaltyPoints = useMemo(() => {
-    return Math.floor(totalSpent / 10000);
+    return Math.floor(totalSpent / 1000) + 150; // 1 pt per Rp 1.000 spent + 150 welcome bonus pts
   }, [totalSpent]);
 
-  // VIP Membership Tier
+  // Savoria Club VIP Membership Tier
   const vipTier = useMemo(() => {
-    if (totalSpent >= 3000000 || totalVisits >= 10) {
+    if (loyaltyPoints >= 3500 || totalSpent >= 3500000) {
       return {
-        name: "Diamond Ambassador",
-        badgeColor: "bg-gradient-to-r from-cyan-900 to-blue-900 text-cyan-200 border-cyan-400/40",
+        level: "Platinum VIP",
+        name: "Platinum Ambassador",
+        badgeColor: "bg-gradient-to-r from-slate-900 via-indigo-950 to-stone-900 text-indigo-200 border-indigo-400/40",
         discount: "15% Privilese Santap",
         icon: Crown,
+        nextTierPoints: null,
       };
     }
-    if (totalSpent >= 1500000 || totalVisits >= 5) {
+    if (loyaltyPoints >= 1500 || totalSpent >= 1500000) {
       return {
-        name: "Platinum Connoisseur",
-        badgeColor: "bg-gradient-to-r from-slate-900 to-indigo-900 text-indigo-200 border-indigo-400/40",
+        level: "Gold Tier",
+        name: "Gold Connoisseur",
+        badgeColor: "bg-gradient-to-r from-amber-950 via-stone-900 to-black text-amber-200 border-amber-500/40",
         discount: "10% Privilese Santap",
         icon: Award,
+        nextTierPoints: 3500,
       };
     }
-    if (totalSpent > 0 || totalVisits >= 1) {
+    if (loyaltyPoints >= 500 || totalSpent >= 500000) {
       return {
-        name: "Gold Patron",
-        badgeColor: "bg-gradient-to-r from-amber-950 to-stone-900 text-amber-200 border-amber-500/40",
+        level: "Silver Tier",
+        name: "Silver Gourmet",
+        badgeColor: "bg-gradient-to-r from-slate-800 to-slate-900 text-slate-200 border-slate-500/40",
         discount: "5% Privilese Santap",
         icon: Star,
+        nextTierPoints: 1500,
       };
     }
     return {
-      name: "Silver Member",
-      badgeColor: "bg-slate-800 text-slate-200 border-slate-600",
+      level: "Bronze Tier",
+      name: "Bronze Patron",
+      badgeColor: "bg-gradient-to-r from-stone-800 to-stone-900 text-amber-200/90 border-stone-600",
       discount: "Privilese Akses Meja",
       icon: User,
+      nextTierPoints: 500,
     };
-  }, [totalSpent, totalVisits]);
+  }, [loyaltyPoints, totalSpent]);
+
+  // Next Tier Progression Info
+  const nextTierInfo = useMemo(() => {
+    if (loyaltyPoints >= 3500) {
+      return {
+        currentTierName: "Platinum VIP",
+        nextTierName: "Puncak Tingkat Teratas",
+        pointsNeeded: 0,
+        progressPct: 100,
+      };
+    }
+    if (loyaltyPoints >= 1500) {
+      const min = 1500;
+      const max = 3500;
+      const pct = Math.min(100, Math.round(((loyaltyPoints - min) / (max - min)) * 100));
+      return {
+        currentTierName: "Gold Tier",
+        nextTierName: "Platinum VIP",
+        pointsNeeded: 3500 - loyaltyPoints,
+        progressPct: Math.max(8, pct),
+      };
+    }
+    if (loyaltyPoints >= 500) {
+      const min = 500;
+      const max = 1500;
+      const pct = Math.min(100, Math.round(((loyaltyPoints - min) / (max - min)) * 100));
+      return {
+        currentTierName: "Silver Tier",
+        nextTierName: "Gold Tier",
+        pointsNeeded: 1500 - loyaltyPoints,
+        progressPct: Math.max(8, pct),
+      };
+    }
+    const min = 0;
+    const max = 500;
+    const pct = Math.min(100, Math.round(((loyaltyPoints - min) / (max - min)) * 100));
+    return {
+      currentTierName: "Bronze Tier",
+      nextTierName: "Silver Tier",
+      pointsNeeded: 500 - loyaltyPoints,
+      progressPct: Math.max(8, pct),
+    };
+  }, [loyaltyPoints]);
+
+  const handleCopyCode = (code: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(code);
+    }
+    setCopiedRewardCode(true);
+    toast.success(`Kode voucher ${code} berhasil disalin!`, "Disalin ke Clipboard");
+    setTimeout(() => setCopiedRewardCode(false), 3000);
+  };
+
+  const CLUB_REWARDS = [
+    {
+      id: "rew-mocktail-200",
+      title: "Royal Welcome Mocktail",
+      description: "Sajian minuman artisan penyegar khas menyambut kehadiran Anda di meja SAVORIA.",
+      pointsCost: 200,
+      discountValue: 20000,
+      category: "Minuman Khusus",
+      badge: "Paling Populer",
+    },
+    {
+      id: "rew-disc-25k",
+      title: "Voucher Santap Rp 25.000",
+      description: "Potongan langsung Rp 25.000 tanpa batas minimum pesanan untuk semua sajian menu.",
+      pointsCost: 250,
+      discountValue: 25000,
+      category: "Voucher Diskon",
+      badge: "Mudah Ditukar",
+    },
+    {
+      id: "rew-dessert-350",
+      title: "Free Truffle Petit Fours",
+      description: "Dessert penutup mewah kreasi koki pastry dengan cokelat couverture & sentuhan truffle.",
+      pointsCost: 350,
+      discountValue: 35000,
+      category: "Chef Signature",
+      badge: "Eksklusif Rasa",
+    },
+    {
+      id: "rew-disc-50k",
+      title: "Voucher Santap Rp 50.000",
+      description: "Potongan langsung Rp 50.000 untuk set menu dinner romantis atau jamuan keluarga.",
+      pointsCost: 500,
+      discountValue: 50000,
+      category: "Voucher Diskon",
+      badge: "Favorit Tamu",
+    },
+    {
+      id: "rew-disc-100k",
+      title: "Grand Royal Feast Rp 100.000",
+      description: "Potongan istimewa Rp 100.000 untuk perayaan jamuan akbar atau perhelatan privat VIP.",
+      pointsCost: 1000,
+      discountValue: 100000,
+      category: "Royal Dining",
+      badge: "Eksklusif VIP",
+    },
+  ];
 
   if (authLoading) {
     return (
@@ -679,6 +840,9 @@ export default function UserPortalPage() {
                       </div>
                     </div>
 
+                    {/* Live Dynamic Kitchen Cooking Countdown Tracker */}
+                    <CookingCountdownTracker order={order} />
+
                     {/* Stepper Status Real-Time */}
                     <div className="space-y-2">
                       <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block font-mono">
@@ -936,102 +1100,254 @@ export default function UserPortalPage() {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 4: KEUNTUNGAN & VOUCHER VIP MEMBER */}
+        {/* TAB 4: KEUNTUNGAN & VOUCHER VIP MEMBER (SAVORIA CLUB TIER & REWARDS) */}
         {/* ========================================================================= */}
         {activeTab === "privileges" && (
-          <div className="space-y-5 max-w-4xl">
-            <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-sm">
-              <h3 className="font-serif font-bold text-lg text-[#18181B] flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-500" />
-                <span>Privilese Khusus Member VIP SAVORIA</span>
-              </h3>
-              <p className="text-xs text-[#64748B] mt-1">
-                Sebagai anggota kehormatan SAVORIA, Anda berhak menikmati berbagai keuntungan eksklusif di setiap reservasi jamuan.
-              </p>
+          <div className="space-y-6 max-w-5xl">
+            {/* VIP Tier Progression Banner */}
+            <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-7 shadow-sm space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold font-mono bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 flex items-center gap-1.5">
+                      <TierIcon className="w-3.5 h-3.5" />
+                      <span>{vipTier.level}</span>
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">•</span>
+                    <span className="text-xs font-semibold text-slate-600">{vipTier.name}</span>
+                  </div>
+                  <h3 className="font-serif font-bold text-2xl text-[#18181B] tracking-tight">
+                    Savoria Club VIP Membership
+                  </h3>
+                  <p className="text-xs text-[#64748B]">
+                    Kumpulkan 1 Poin setiap pembelanjaan Rp 1.000. Tukarkan poin Anda dengan voucher diskon langsung dan complimentary hidangan karya chef.
+                  </p>
+                </div>
+
+                <div className="bg-[#FDFBF7] border border-amber-200/80 p-4 rounded-2xl sm:text-right shrink-0">
+                  <span className="text-[10px] text-slate-500 font-mono uppercase tracking-wider block font-semibold">
+                    Saldo Poin Aktif
+                  </span>
+                  <div className="flex items-baseline sm:justify-end gap-1.5 mt-0.5">
+                    <span className="font-serif text-3xl font-black text-[#EA580C]">
+                      {loyaltyPoints}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-slate-600">Pts</span>
+                  </div>
+                  <span className="text-[11px] text-emerald-700 font-semibold block mt-0.5">
+                    {vipTier.discount}
+                  </span>
+                </div>
+              </div>
+
+              {/* Tier Progress Bar */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-[#18181B] flex items-center gap-1.5">
+                    <Award className="w-4 h-4 text-amber-500" />
+                    <span>Progress Tingkat: {nextTierInfo.currentTierName}</span>
+                  </span>
+                  <span className="text-slate-500 font-mono text-[11px]">
+                    {nextTierInfo.pointsNeeded > 0
+                      ? `${nextTierInfo.pointsNeeded} Poin menuju ${nextTierInfo.nextTierName}`
+                      : "Tingkat VIP Tertinggi"}
+                  </span>
+                </div>
+                <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden relative">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-amber-500 via-[#EA580C] to-amber-600 transition-all duration-700"
+                    style={{ width: `${nextTierInfo.progressPct}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                  <span>Bronze (0 Pts)</span>
+                  <span>Silver (500 Pts)</span>
+                  <span>Gold (1.500 Pts)</span>
+                  <span>Platinum VIP (3.500 Pts)</span>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-amber-100 text-amber-900">
-                    DISCOUNT VOUCHER
-                  </span>
-                  <span className="font-mono text-xs font-bold text-[#EA580C]">10% OFF</span>
-                </div>
+            {/* Savoria Club Rewards Store (Tukar Poin) */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-serif font-bold text-base text-[#18181B]">
-                    Diskon Jamuan Malam VIP
+                  <h4 className="font-serif font-bold text-xl text-[#18181B] flex items-center gap-2">
+                    <Gift className="w-5 h-5 text-[#EA580C]" />
+                    <span>Tukar Poin Hadiah (Rewards Store)</span>
                   </h4>
                   <p className="text-xs text-[#64748B] mt-0.5">
-                    Potongan 10% untuk pemesanan set menu signature dinner di sesi mana pun.
+                    Pilih reward yang diinginkan dan gunakan kode voucher yang didapat saat reservasi atau di kasir.
                   </p>
                 </div>
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Kode: SAVORIA-VIP10</span>
-                  <span className="text-emerald-700 font-bold">Aktif & Berlaku</span>
-                </div>
+                <span className="hidden sm:inline-block text-xs font-mono font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+                  Poin Anda: <strong className="text-[#EA580C]">{loyaltyPoints} Pts</strong>
+                </span>
               </div>
 
-              <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-purple-100 text-purple-900">
-                    COMPLIMENTARY
-                  </span>
-                  <span className="font-mono text-xs font-bold text-purple-700">GRATIS</span>
-                </div>
-                <div>
-                  <h4 className="font-serif font-bold text-base text-[#18181B]">
-                    Signature Petit Fours on Birthday
-                  </h4>
-                  <p className="text-xs text-[#64748B] mt-0.5">
-                    Nikmati sajian dessert istimewa kreasi chef koki saat Anda merayakan hari ulang tahun di SAVORIA.
-                  </p>
-                </div>
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Otomatis Tersemat</span>
-                  <span className="text-emerald-700 font-bold">Aktif & Berlaku</span>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {CLUB_REWARDS.map((rew) => {
+                  const canRedeem = loyaltyPoints >= rew.pointsCost;
+
+                  return (
+                    <div
+                      key={rew.id}
+                      className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm flex flex-col justify-between space-y-4 hover:border-amber-300 transition-all relative overflow-hidden group"
+                    >
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200">
+                            {rew.category}
+                          </span>
+                          <span className="text-[10px] font-semibold text-[#EA580C] bg-[#EA580C]/10 px-2 py-0.5 rounded-full font-mono">
+                            {rew.badge}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h5 className="font-serif font-bold text-base text-[#18181B] group-hover:text-[#EA580C] transition-colors">
+                            {rew.title}
+                          </h5>
+                          <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
+                            {rew.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-slate-100 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-400 font-mono">Biaya Tukar:</span>
+                          <span className="font-serif text-lg font-black text-[#EA580C]">
+                            {rew.pointsCost} <span className="text-xs font-sans font-normal text-slate-500">Pts</span>
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRedeemReward(rew)}
+                          disabled={!canRedeem || isRedeemingReward}
+                          className={`w-full py-2.5 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs ${
+                            canRedeem
+                              ? "bg-[#EA580C] hover:bg-[#C2410C] text-white shadow-md shadow-[#EA580C]/20"
+                              : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+                          }`}
+                        >
+                          {isRedeemingReward ? (
+                            <>
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              <span>Memproses...</span>
+                            </>
+                          ) : canRedeem ? (
+                            <>
+                              <Gift className="w-3.5 h-3.5" />
+                              <span>Tukar {rew.pointsCost} Pts</span>
+                            </>
+                          ) : (
+                            <span>Poin Belum Cukup ({rew.pointsCost - loyaltyPoints} lagi)</span>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Permanent VIP Member Privileges */}
+            <div className="space-y-4 pt-4 border-t border-slate-200">
+              <div>
+                <h4 className="font-serif font-bold text-lg text-[#18181B] flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <span>Keuntungan Eksklusif Status Member VIP Anda</span>
+                </h4>
+                <p className="text-xs text-[#64748B] mt-0.5">
+                  Hak istimewa otomatis yang aktif di akun Anda pada setiap reservasi dan kunjungan ke SAVORIA.
+                </p>
               </div>
 
-              <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-blue-100 text-blue-900">
-                    SEATING GUARANTEE
-                  </span>
-                  <span className="font-mono text-xs font-bold text-blue-700">PRIORITY</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-amber-100 text-amber-900">
+                      DISCOUNT VOUCHER
+                    </span>
+                    <span className="font-mono text-xs font-bold text-[#EA580C]">10% OFF</span>
+                  </div>
+                  <div>
+                    <h5 className="font-serif font-bold text-base text-[#18181B]">
+                      Diskon Jamuan Malam VIP
+                    </h5>
+                    <p className="text-xs text-[#64748B] mt-0.5">
+                      Potongan 10% untuk pemesanan set menu signature dinner di sesi mana pun.
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+                    <span className="text-slate-400">Kode: SAVORIA-VIP10</span>
+                    <span className="text-emerald-700 font-bold">Aktif & Berlaku</span>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-serif font-bold text-base text-[#18181B]">
-                    Jaminan Meja Utama Grand Salle
-                  </h4>
-                  <p className="text-xs text-[#64748B] mt-0.5">
-                    Prioritas alokasi meja dengan pemandangan terbaik saat melakukan booking reservasi.
-                  </p>
-                </div>
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Status Akun VIP</span>
-                  <span className="text-emerald-700 font-bold">Aktif Permanen</span>
-                </div>
-              </div>
 
-              <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-100 text-emerald-900">
-                    SALON PRIVÉ
-                  </span>
-                  <span className="font-mono text-xs font-bold text-emerald-700">EXCLUSIVE</span>
+                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-purple-100 text-purple-900">
+                      COMPLIMENTARY
+                    </span>
+                    <span className="font-mono text-xs font-bold text-purple-700">GRATIS</span>
+                  </div>
+                  <div>
+                    <h5 className="font-serif font-bold text-base text-[#18181B]">
+                      Signature Petit Fours on Birthday
+                    </h5>
+                    <p className="text-xs text-[#64748B] mt-0.5">
+                      Nikmati sajian dessert istimewa kreasi chef koki saat Anda merayakan hari ulang tahun di SAVORIA.
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+                    <span className="text-slate-400">Otomatis Tersemat</span>
+                    <span className="text-emerald-700 font-bold">Aktif & Berlaku</span>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-serif font-bold text-base text-[#18181B]">
-                    Akses Mezzanine VIP Suite
-                  </h4>
-                  <p className="text-xs text-[#64748B] mt-0.5">
-                    Hak akses eksklusif untuk memesan meja lantai 2 Mezzanine privat untuk jamuan keluarga atau pertemuan bisnis.
-                  </p>
+
+                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-blue-100 text-blue-900">
+                      SEATING GUARANTEE
+                    </span>
+                    <span className="font-mono text-xs font-bold text-blue-700">PRIORITY</span>
+                  </div>
+                  <div>
+                    <h5 className="font-serif font-bold text-base text-[#18181B]">
+                      Jaminan Meja Utama Grand Salle
+                    </h5>
+                    <p className="text-xs text-[#64748B] mt-0.5">
+                      Prioritas alokasi meja dengan pemandangan terbaik saat melakukan booking reservasi.
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+                    <span className="text-slate-400">Status Akun VIP</span>
+                    <span className="text-emerald-700 font-bold">Aktif Permanen</span>
+                  </div>
                 </div>
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Patron Privilege</span>
-                  <span className="text-emerald-700 font-bold">Aktif Permanen</span>
+
+                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-100 text-emerald-900">
+                      SALON PRIVÉ
+                    </span>
+                    <span className="font-mono text-xs font-bold text-emerald-700">EXCLUSIVE</span>
+                  </div>
+                  <div>
+                    <h5 className="font-serif font-bold text-base text-[#18181B]">
+                      Akses Mezzanine VIP Suite
+                    </h5>
+                    <p className="text-xs text-[#64748B] mt-0.5">
+                      Hak akses eksklusif untuk memesan meja lantai 2 Mezzanine privat untuk jamuan keluarga atau pertemuan bisnis.
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
+                    <span className="text-slate-400">Patron Privilege</span>
+                    <span className="text-emerald-700 font-bold">Aktif Permanen</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1246,6 +1562,97 @@ export default function UserPortalPage() {
                   className="w-full py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs transition-colors cursor-pointer shadow-md shadow-[#EA580C]/25"
                 >
                   Tutup Struk
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* MODAL 3: VOUCHER REWARD DITUKAR (CELEBRATORY POPUP) */}
+        {/* ========================================================================= */}
+        {redeemedVoucher && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 max-w-md w-full space-y-5 text-center shadow-2xl relative animate-in fade-in zoom-in-95 my-auto">
+              <button
+                onClick={() => setRedeemedVoucher(null)}
+                className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="w-16 h-16 rounded-full bg-amber-50 text-[#EA580C] border border-amber-200 flex items-center justify-center mx-auto shadow-sm">
+                <Gift className="w-8 h-8 animate-bounce" />
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full inline-block border border-emerald-200">
+                  Penukaran Poin Berhasil
+                </span>
+                <h3 className="font-serif font-bold text-2xl text-[#18181B]">
+                  Selamat! Voucher Anda Aktif
+                </h3>
+                <p className="text-xs text-[#64748B]">
+                  {redeemedVoucher.title || "Voucher Hadiah Savoria Club"}
+                </p>
+              </div>
+
+              {/* Voucher Code Box */}
+              <div className="p-4 bg-[#FDFBF7] rounded-2xl border-2 border-dashed border-[#EA580C]/40 space-y-2">
+                <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 block font-semibold">
+                  Kode Voucher Eksklusif Anda:
+                </span>
+                <div className="flex items-center justify-center gap-2">
+                  <span className="font-mono text-xl sm:text-2xl font-black text-[#EA580C] tracking-wider select-all">
+                    {redeemedVoucher.code}
+                  </span>
+                  <button
+                    onClick={() => handleCopyCode(redeemedVoucher.code)}
+                    className="p-2 rounded-xl bg-white hover:bg-amber-50 border border-slate-200 text-[#18181B] transition-all cursor-pointer shadow-xs"
+                    title="Salin Kode Voucher"
+                  >
+                    {copiedRewardCode ? (
+                      <Check className="w-4 h-4 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-slate-600" />
+                    )}
+                  </button>
+                </div>
+                <div className="text-[11px] text-slate-500 font-medium">
+                  Nilai Potongan: <strong className="text-emerald-700">{formatIDR(redeemedVoucher.discountValue)}</strong>
+                </div>
+              </div>
+
+              <div className="text-xs text-left bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 space-y-1.5 text-slate-600">
+                <div className="flex items-center gap-1.5 text-emerald-700 font-bold">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>Siap digunakan langsung saat memesan meja atau bayar di kasir</span>
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  • Masa berlaku voucher: 30 hari kalender sejak penukaran
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  • Masukkan kode voucher di halaman checkout atau tunjukkan ke kasir
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <button
+                  onClick={() => handleCopyCode(redeemedVoucher.code)}
+                  className="w-full py-3 rounded-full bg-slate-100 hover:bg-slate-200 text-[#18181B] font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>{copiedRewardCode ? "Tersalin!" : "Salin Kode"}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setRedeemedVoucher(null);
+                    router.push("/reservation");
+                  }}
+                  className="w-full py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs cursor-pointer shadow-md shadow-[#EA580C]/25 transition-all flex items-center justify-center gap-1.5"
+                >
+                  <span>Pakai Sekarang</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

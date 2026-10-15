@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { deductInventoryForOrder } from "@/lib/inventory";
+
 
 export async function POST(
   request: NextRequest,
@@ -106,6 +108,11 @@ export async function POST(
 
       return { payment, order: updatedOrder };
     });
+
+    // Auto-deduct inventory using BOM recipes
+    deductInventoryForOrder(order.id, user?.name || "Kasir POS").catch((err) =>
+      console.error("Non-fatal BOM deduction error in POS:", err)
+    );
 
     return NextResponse.json({
       success: true,

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateOrderNumber, parseTimeToMinutes } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/auth";
+import { deductInventoryForOrder } from "@/lib/inventory";
+
 
 export async function POST(request: NextRequest) {
   try {
@@ -448,6 +450,11 @@ export async function POST(request: NextRequest) {
         },
       })
       .catch((err) => console.error("Non-fatal audit log error:", err));
+
+    // Auto-deduct BOM recipes and trigger low-stock alerts
+    deductInventoryForOrder(newOrder.id, customerName || `Tamu ${table.tableNumber}`).catch((err) =>
+      console.error("Non-fatal BOM deduction error:", err)
+    );
 
     return NextResponse.json({
       success: true,

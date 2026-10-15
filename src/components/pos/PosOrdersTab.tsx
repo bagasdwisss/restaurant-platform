@@ -20,6 +20,9 @@ import {
   Sparkles,
   Phone,
   Check,
+  Coffee,
+  Layers,
+  Cake,
 } from "lucide-react";
 import { formatIDR, formatDate } from "@/lib/utils";
 
@@ -29,7 +32,7 @@ interface PosOrdersTabProps {
   isRefreshing?: boolean;
   onUpdateOrderStatus: (orderId: number, status: string) => void;
   updatingOrderId?: number | null;
-  onTriggerPrint: (type: "customer" | "kitchen", order: any) => void;
+  onTriggerPrint: (type: any, order: any) => void;
   onOpenVoidModal: (orderId: number, itemId?: number) => void;
   onOpenPayModalForOrder: (order: any) => void;
 }
@@ -46,6 +49,8 @@ export function PosOrdersTab({
 }: PosOrdersTabProps) {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [openPrintMenuOrderId, setOpenPrintMenuOrderId] = useState<number | null>(null);
+
 
   // Counts by status
   const pendingCount = useMemo(
@@ -299,16 +304,91 @@ export function PosOrdersTab({
                       </div>
                     </div>
 
-                    {/* Quick Print & Void Icons */}
-                    <div className="flex gap-1 shrink-0">
-                      <button
-                        type="button"
-                        title="Cetak Tiket Dapur (Chef Kitchen Ticket)"
-                        onClick={() => onTriggerPrint("kitchen", order)}
-                        className="p-1.5 rounded-full hover:bg-slate-100 text-[#64748B] hover:text-[#18181B] cursor-pointer"
-                      >
-                        <ChefHat className="w-4 h-4" />
-                      </button>
+                    {/* Quick Print & Void Icons with Multi-Station Kitchen Routing */}
+                    <div className="flex items-center gap-1 shrink-0 relative">
+                      {/* Kitchen Station Print Dropdown */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          title="Cetak Tiket Stasiun Dapur (Multi-Printer Routing)"
+                          onClick={() =>
+                            setOpenPrintMenuOrderId(
+                              openPrintMenuOrderId === order.id ? null : order.id
+                            )
+                          }
+                          className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                            openPrintMenuOrderId === order.id
+                              ? "bg-[#EA580C] text-white"
+                              : "hover:bg-slate-100 text-[#64748B] hover:text-[#18181B]"
+                          }`}
+                        >
+                          <ChefHat className="w-4 h-4" />
+                        </button>
+
+                        {openPrintMenuOrderId === order.id && (
+                          <div className="absolute right-0 top-8 z-30 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 space-y-1 text-left animate-in fade-in duration-150">
+                            <div className="px-2.5 py-1 text-[10px] font-mono font-bold text-slate-400 uppercase border-b border-slate-100">
+                              Multi-Printer Kitchen Routing
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onTriggerPrint("kitchen_multi_split", order);
+                                setOpenPrintMenuOrderId(null);
+                              }}
+                              className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-amber-50 text-amber-900 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
+                            >
+                              <Layers className="w-3.5 h-3.5 text-[#EA580C]" />
+                              <span>⚡ Split Semua Stasiun (Auto)</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onTriggerPrint("kitchen_hot", order);
+                                setOpenPrintMenuOrderId(null);
+                              }}
+                              className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-2 cursor-pointer transition-colors"
+                            >
+                              <ChefHat className="w-3.5 h-3.5 text-rose-600" />
+                              <span>Tiket Hot Kitchen (Main Chef)</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onTriggerPrint("kitchen_barista", order);
+                                setOpenPrintMenuOrderId(null);
+                              }}
+                              className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-2 cursor-pointer transition-colors"
+                            >
+                              <Coffee className="w-3.5 h-3.5 text-amber-700" />
+                              <span>Tiket Barista & Minuman</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onTriggerPrint("kitchen_pastry", order);
+                                setOpenPrintMenuOrderId(null);
+                              }}
+                              className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-2 cursor-pointer transition-colors"
+                            >
+                              <Cake className="w-3.5 h-3.5 text-purple-600" />
+                              <span>Tiket Pastry & Dessert</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onTriggerPrint("kitchen", order);
+                                setOpenPrintMenuOrderId(null);
+                              }}
+                              className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-50 text-slate-500 text-[11px] flex items-center gap-2 cursor-pointer transition-colors border-t border-slate-100"
+                            >
+                              <UtensilsCrossed className="w-3.5 h-3.5" />
+                              <span>Tiket Master Dapur (Semua)</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
                       <button
                         type="button"
                         title="Cetak Struk Resmi Pelanggan"
@@ -317,6 +397,7 @@ export function PosOrdersTab({
                       >
                         <Printer className="w-4 h-4" />
                       </button>
+
                       <button
                         type="button"
                         title="Batalkan Pesanan (Void Supervisor)"

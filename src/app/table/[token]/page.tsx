@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { useCartStore, SelectedVariant } from "@/lib/cart-store";
+import { CookingCountdownTracker } from "@/components/customer/CookingCountdownTracker";
+
 
 interface Option {
   id: number;
@@ -498,7 +500,12 @@ export default function CustomerTablePage({
 
       {/* Main Content Area */}
       <main className="max-w-lg mx-auto px-4 pt-4 space-y-4">
-        {/* Active Order Stepper Tracker Banner */}
+        {/* Dynamic Cooking Countdown & Kitchen Progress */}
+        {activeOrder && (
+          <CookingCountdownTracker order={activeOrder} />
+        )}
+
+        {/* Active Order Details Banner */}
         {activeOrder && (
           <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">

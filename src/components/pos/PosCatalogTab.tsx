@@ -9,6 +9,7 @@ import {
   UtensilsCrossed,
   MapPin,
   ShoppingBag,
+  AlertTriangle,
 } from "lucide-react";
 import { DishImage } from "@/components/ui/DishImage";
 import { formatIDR } from "@/lib/utils";
@@ -54,6 +55,29 @@ export function PosCatalogTab({
   mobileView,
   onChangeMobileView,
 }: PosCatalogTabProps) {
+  const [stockAlerts, setStockAlerts] = React.useState<{
+    lowStockItems: any[];
+    outOfStockItems: any[];
+    affectedMenuIds: number[];
+  }>({ lowStockItems: [], outOfStockItems: [], affectedMenuIds: [] });
+  const [showAlertDetails, setShowAlertDetails] = React.useState(false);
+
+  React.useEffect(() => {
+    const fetchAlerts = () => {
+      fetch("/api/v1/pos/inventory-alerts")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.data) {
+            setStockAlerts(data.data);
+          }
+        })
+        .catch(() => {});
+    };
+    fetchAlerts();
+    const timer = setInterval(fetchAlerts, 20000);
+    return () => clearInterval(timer);
+  }, []);
+
   const filteredMenus = menus.filter((m) => {
     const matchesCat =
       selectedCategory === "all" || String(m.categoryId) === selectedCategory;
@@ -62,6 +86,7 @@ export function PosCatalogTab({
       (m.description && m.description.toLowerCase().includes(posSearch.toLowerCase()));
     return matchesCat && matchesSearch;
   });
+
 
   const posSubtotal = posCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const posTax = Math.round(posSubtotal * 0.1);
@@ -150,17 +175,87 @@ export function PosCatalogTab({
           </div>
         </div>
 
+        {/* Low Stock Warning Banner */}
+        {(stockAlerts.lowStockItems.length > 0 || stockAlerts.outOfStockItems.length > 0) && (
+          <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-3 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 animate-bounce" />
+                <span className="text-xs font-bold text-amber-900">
+                  Peringatan Stok Kritis (BOM System):{" "}
+                  {stockAlerts.outOfStockItems.length > 0 && (
+                    <span className="text-rose-700 font-extrabold">
+                      {stockAlerts.outOfStockItems.length} Bahan Habis!{" "}
+                    </span>
+                  )}
+                  {stockAlerts.lowStockItems.length} Bahan Menipis
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAlertDetails(!showAlertDetails)}
+                className="text-[11px] font-bold text-amber-800 hover:text-amber-950 underline cursor-pointer"
+              >
+                {showAlertDetails ? "Tutup Rincian" : "Lihat Rincian"}
+              </button>
+            </div>
+
+            {showAlertDetails && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-amber-200/70 text-[11px]">
+                {stockAlerts.outOfStockItems.map((item) => (
+                  <div
+                    key={item.ingredientId}
+                    className="p-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-800"
+                  >
+                    <div className="flex justify-between font-bold">
+                      <span>{item.ingredientName}</span>
+                      <span className="text-rose-700 font-extrabold">0 {item.unit} (HABIS)</span>
+                    </div>
+                    <p className="text-[10px] text-rose-600 mt-0.5 truncate">
+                      Menu: {item.affectedMenus.map((m: any) => m.name).join(", ") || "-"}
+                    </p>
+                  </div>
+                ))}
+                {stockAlerts.lowStockItems.map((item) => (
+                  <div
+                    key={item.ingredientId}
+                    className="p-2 rounded-xl bg-amber-100/70 border border-amber-200 text-amber-900"
+                  >
+                    <div className="flex justify-between font-bold">
+                      <span>{item.ingredientName}</span>
+                      <span>
+                        {item.currentStock} {item.unit} (Min: {item.minStock})
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-amber-700 mt-0.5 truncate">
+                      Menu: {item.affectedMenus.map((m: any) => m.name).join(", ") || "-"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Menu Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {filteredMenus.map((menu: any) => {
             const inCart = posCart.find((i) => i.menuId === menu.id);
+
+            const isMenuOutOfStock = stockAlerts.outOfStockItems.some((ing) =>
+              ing.affectedMenus.some((m: any) => m.id === menu.id)
+            );
+            const isMenuLowStock = stockAlerts.lowStockItems.some((ing) =>
+              ing.affectedMenus.some((m: any) => m.id === menu.id)
+            );
+            const isAvailable = menu.isAvailable && !isMenuOutOfStock;
 
             return (
               <button
                 key={menu.id}
                 type="button"
                 onClick={() => onAddToCart(menu)}
-                disabled={!menu.isAvailable}
+                disabled={!isAvailable}
                 className="bg-white border border-slate-200/80 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-all text-left flex flex-col justify-between group cursor-pointer relative"
               >
                 <div>
@@ -170,11 +265,16 @@ export function PosCatalogTab({
                       alt={menu.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    {!menu.isAvailable && (
+                    {!isAvailable && (
                       <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center">
                         <span className="text-white text-[10px] font-mono font-bold uppercase bg-rose-600 px-2 py-0.5 rounded-full">
-                          Habis
+                          {isMenuOutOfStock ? "Bahan Habis" : "Habis"}
                         </span>
+                      </div>
+                    )}
+                    {isMenuLowStock && isAvailable && (
+                      <div className="absolute top-2 left-2 bg-amber-500/90 text-white font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-xs">
+                        ⚠️ Stok Kritis
                       </div>
                     )}
                     {inCart && (
