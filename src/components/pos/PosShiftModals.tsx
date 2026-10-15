@@ -126,6 +126,8 @@ export function CloseShiftModal({
   onSubmit,
   onClose,
 }: CloseShiftModalProps) {
+  if (!show || !currentShift) return null;
+
   return (
     <Modal isOpen={Boolean(show && currentShift)} onClose={onClose}>
       <div className="bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4 animate-fadeIn">
@@ -148,24 +150,24 @@ export function CloseShiftModal({
           <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1.5 text-xs">
             <div className="flex justify-between">
               <span className="text-[#64748B]">Kasir:</span>
-              <span className="font-bold text-[#18181B]">{currentShift.cashierName}</span>
+              <span className="font-bold text-[#18181B]">{currentShift?.cashierName || "Kasir Utama"}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#64748B]">Kas Awal (Modal):</span>
-              <span className="font-mono text-[#18181B]">{formatIDR(currentShift.startCash)}</span>
+              <span className="font-mono text-[#18181B]">{formatIDR(currentShift?.startCash || 0)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#64748B]">Penjualan Tunai Bersih:</span>
               <span className="font-mono text-[#18181B]">
-                {formatIDR(currentShift.netCashSales ?? currentShift.totalCashReceived ?? 0)}
+                {formatIDR(currentShift?.netCashSales ?? currentShift?.totalCashReceived ?? 0)}
               </span>
             </div>
             <div className="flex justify-between font-bold pt-1 border-t border-slate-200">
               <span className="text-[#18181B]">Ekspektasi Kas Laci:</span>
               <span className="font-mono text-[#EA580C]">
                 {formatIDR(
-                  currentShift.expectedCash ??
-                    currentShift.startCash + (currentShift.netCashSales ?? 0)
+                  currentShift?.expectedCash ??
+                    ((currentShift?.startCash || 0) + (currentShift?.netCashSales ?? 0))
                 )}
               </span>
             </div>

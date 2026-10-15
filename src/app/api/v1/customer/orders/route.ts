@@ -385,9 +385,9 @@ export async function POST(request: NextRequest) {
         if (isDirect) {
           const paymentRef =
             safePaymentMethod === "qris"
-              ? `QRIS-ETOILE-${Date.now()}`
+              ? `QRIS-SAVORIA-${Date.now()}`
               : safePaymentMethod === "credit_card" || safePaymentMethod === "card"
-              ? `CARD-ROYALE-${Date.now()}`
+              ? `CARD-SAVORIA-${Date.now()}`
               : `TRX-${Date.now()}`;
 
           createdPayment = await tx.payment.create({

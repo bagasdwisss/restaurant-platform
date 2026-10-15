@@ -387,7 +387,7 @@ export function CashierLogsSubTab({
                       {order.shift && (
                         <>
                           <span className="text-slate-300">•</span>
-                          <span>Shift: {order.shift.cashierName}</span>
+                          <span>Shift: {order.shift?.cashierName || "Kasir"}</span>
                         </>
                       )}
                     </div>

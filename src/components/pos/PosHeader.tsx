@@ -65,7 +65,7 @@ export function PosHeader({
             <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full text-[11px]">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-semibold text-emerald-800">
-                Shift: {currentShift.cashierName}
+                Shift: {currentShift?.cashierName || "Kasir"}
               </span>
               <button
                 type="button"
