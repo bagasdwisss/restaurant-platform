@@ -63,6 +63,11 @@ const WaiterCallsModal = dynamic(
   { ssr: false }
 );
 
+const StaffAttendanceModal = dynamic(
+  () => import("@/components/pos/StaffAttendanceModal").then((m) => m.StaffAttendanceModal),
+  { ssr: false }
+);
+
 
 export default function PosCashierPage() {
   const { user, logout } = useAuth();
@@ -138,6 +143,7 @@ export default function PosCashierPage() {
 
   // Waiter Calls Modal state
   const [showWaiterCallsModal, setShowWaiterCallsModal] = useState(false);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [updatingCallId, setUpdatingCallId] = useState<number | null>(null);
   const [isRefreshingCalls, setIsRefreshingCalls] = useState(false);
 
@@ -579,6 +585,7 @@ export default function PosCashierPage() {
           setShowCloseShiftModal(true);
         }}
         onOpenWaiterCalls={() => setShowWaiterCallsModal(true)}
+        onOpenAttendance={() => setShowAttendanceModal(true)}
         onLogout={logout}
       />
 
@@ -724,6 +731,14 @@ export default function PosCashierPage() {
           updatingCallId={updatingCallId}
           onRefresh={handleRefreshWaiterCalls}
           isRefreshing={isRefreshingCalls}
+        />
+      )}
+
+      {/* STAFF BIOMETRIC & PIN ATTENDANCE MODAL */}
+      {showAttendanceModal && (
+        <StaffAttendanceModal
+          isOpen={showAttendanceModal}
+          onClose={() => setShowAttendanceModal(false)}
         />
       )}
 

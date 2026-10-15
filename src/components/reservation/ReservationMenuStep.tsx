@@ -12,6 +12,7 @@ import {
   X,
   Trash2,
   Receipt,
+  Flame,
 } from "lucide-react";
 import { MenuItem, CartItem } from "./types";
 import { DishImage } from "@/components/ui/DishImage";
@@ -26,6 +27,7 @@ interface ReservationMenuStepProps {
   cart: CartItem[];
   onAddToCart: (menu: MenuItem) => void;
   onUpdateCartQty: (menuId: number, delta: number) => void;
+  onOpenSteakStudio?: (menu: MenuItem) => void;
   onPrev: () => void;
   onNext: () => void;
 }
@@ -38,6 +40,7 @@ export function ReservationMenuStep({
   cart,
   onAddToCart,
   onUpdateCartQty,
+  onOpenSteakStudio,
   onPrev,
   onNext,
 }: ReservationMenuStepProps) {
@@ -162,10 +165,23 @@ export function ReservationMenuStep({
                 </div>
               </div>
 
-              <div className="p-4 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
+              <div className="p-4 pt-0 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 mt-2">
                 <span className="font-mono font-bold text-sm text-[#18181B]">
                   {formatIDR(menu.price)}
                 </span>
+
+                <div className="flex items-center gap-1.5">
+                  {/steak|wagyu|ribeye|tenderloin|tomahawk|beef|lamb|grill/i.test(menu.name + " " + (menu.description || "")) && onOpenSteakStudio && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenSteakStudio(menu)}
+                      className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 border border-amber-300 rounded-full text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                      title="Atur tingkat kematangan daging & racikan bumbu"
+                    >
+                      <Flame className="w-3 h-3 text-[#EA580C]" />
+                      <span>Doneness &amp; Rasa</span>
+                    </button>
+                  )}
 
                 {cartItem && !hasModifiers ? (
                   <div className="flex items-center gap-1.5 bg-slate-100 rounded-full p-1">
@@ -198,6 +214,7 @@ export function ReservationMenuStep({
                     <span>{hasModifiers ? "Kustom" : "Pilih"}</span>
                   </button>
                 )}
+                </div>
               </div>
             </div>
           );

@@ -8,9 +8,11 @@ import {
   DollarSign,
   CheckCircle2,
   AlertTriangle,
+  Zap,
 } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { Modal } from "@/components/ui/Modal";
+import { DynamicQrisModal } from "@/components/payment/DynamicQrisModal";
 
 interface PosPaymentModalProps {
   orderToPay: any;
@@ -33,6 +35,7 @@ export function PosPaymentModal({
   onExecutePayment,
   onClose,
 }: PosPaymentModalProps) {
+  const [showDynamicQrisModal, setShowDynamicQrisModal] = useState(false);
   if (!orderToPay) return null;
 
   const total = orderToPay.totalAmount || 0;
@@ -154,6 +157,27 @@ export function PosPaymentModal({
           </div>
         )}
 
+        {/* Dynamic QRIS Direct Webhook Info */}
+        {payMethod === "qris" && (
+          <div className="p-4 bg-emerald-50 border border-emerald-200/80 rounded-2xl text-center space-y-2.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold">
+              <Zap className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+              <span>WebHook Auto-Settlement &lt; 1 Detik</span>
+            </div>
+            <p className="text-xs text-slate-600">
+              Sistem akan memunculkan layar QRIS dinamis pelanggan dan mendeteksi pelunasan bank dalam hitungan detik.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowDynamicQrisModal(true)}
+              className="w-full py-2.5 px-4 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm cursor-pointer transition-all active:scale-95"
+            >
+              <QrCode className="w-4 h-4" />
+              <span>Buka Layar QRIS Dinamis Pelanggan</span>
+            </button>
+          </div>
+        )}
+
         {/* Footer Actions */}
         <div className="flex gap-2.5 pt-2">
           <button
@@ -165,7 +189,7 @@ export function PosPaymentModal({
           </button>
           <button
             type="button"
-            onClick={onExecutePayment}
+            onClick={payMethod === "qris" ? () => setShowDynamicQrisModal(true) : onExecutePayment}
             disabled={isCashInsufficient || isProcessingPayment}
             className="flex-1 py-3 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white rounded-full text-xs font-bold shadow-md shadow-[#EA580C]/25 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
           >
@@ -174,12 +198,29 @@ export function PosPaymentModal({
                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 <span>Memproses Pembayaran...</span>
               </>
+            ) : payMethod === "qris" ? (
+              <span>Lanjut ke QRIS Dinamis</span>
             ) : (
               <span>Selesaikan Transaksi</span>
             )}
           </button>
         </div>
       </div>
+
+      {showDynamicQrisModal && (
+        <DynamicQrisModal
+          isOpen={showDynamicQrisModal}
+          onClose={() => setShowDynamicQrisModal(false)}
+          amount={total}
+          orderId={orderToPay.id}
+          orderNumber={orderToPay.orderNumber}
+          customerName={orderToPay.customerName || `Meja ${orderToPay.table?.tableNumber || "POS"}`}
+          onPaymentSuccess={() => {
+            setShowDynamicQrisModal(false);
+            onExecutePayment();
+          }}
+        />
+      )}
     </Modal>
   );
 }
