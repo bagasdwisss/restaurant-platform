@@ -3,41 +3,19 @@
 import React, { useState } from "react";
 import {
   CreditCard,
-  QrCode,
   ShieldCheck,
-  ArrowRight,
   ArrowLeft,
   Calendar,
   Clock,
   Users,
   MapPin,
-  Lock,
-  ChevronDown,
-  ChevronUp,
-  Building2,
-  Wallet,
-  Sparkles,
   Ticket,
-  CheckCircle2,
-  XCircle,
 } from "lucide-react";
 import { TableItem, CartItem } from "./types";
-import {
-  PAYMENT_CHANNELS,
-  PaymentMethodId,
-  QrisLogo,
-  BcaLogo,
-  MandiriLogo,
-  BniLogo,
-  BriLogo,
-  GopayLogo,
-  OvoLogo,
-  DanaLogo,
-  ShopeePayLogo,
-  CardLogo,
-  CashLogo,
-} from "@/components/ui/PaymentLogos";
+import { PaymentMethodId } from "@/components/ui/PaymentLogos";
 import { formatIDR } from "@/lib/utils";
+import { ReservationPaymentChannels } from "./ReservationPaymentChannels";
+import { ReservationVoucherSelector } from "./ReservationVoucherSelector";
 
 interface ReservationPaymentStepProps {
   cart: CartItem[];
@@ -75,26 +53,8 @@ export function ReservationPaymentStep({
   onPrev,
 }: ReservationPaymentStepProps) {
   // Voucher state
-  const [voucherCodeInput, setVoucherCodeInput] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
   const [voucherDiscount, setVoucherDiscount] = useState(0);
-  const [isCheckingVoucher, setIsCheckingVoucher] = useState(false);
-  const [voucherError, setVoucherError] = useState("");
-  const [availableVouchers, setAvailableVouchers] = useState<any[]>([]);
-  const [loadingVouchers, setLoadingVouchers] = useState(false);
-
-  React.useEffect(() => {
-    setLoadingVouchers(true);
-    fetch("/api/v1/customer/vouchers")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && Array.isArray(data.data)) {
-          setAvailableVouchers(data.data);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoadingVouchers(false));
-  }, []);
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const netSubtotal = Math.max(0, subtotal - voucherDiscount);
@@ -102,63 +62,15 @@ export function ReservationPaymentStep({
   const serviceCharge = Math.round(netSubtotal * 0.05); // Service 5%
   const totalAmount = netSubtotal + taxAmount + serviceCharge;
 
-  const handleApplyVoucherCode = async (codeToApply: string) => {
-    if (!codeToApply.trim()) return;
-    setIsCheckingVoucher(true);
-    setVoucherError("");
-
-    try {
-      const res = await fetch("/api/v1/customer/vouchers/apply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: codeToApply.trim(),
-          subtotal,
-        }),
-      });
-      const data = await res.json();
-      if (!data.success) {
-        setVoucherError(data.message || "Gagal menerapkan voucher.");
-        setAppliedVoucher(null);
-        setVoucherDiscount(0);
-      } else {
-        setAppliedVoucher(data.data.voucher || data.data);
-        setVoucherDiscount(data.data.discountAmount || 0);
-        setVoucherCodeInput(codeToApply.toUpperCase());
-        setVoucherError("");
-      }
-    } catch (err: any) {
-      setVoucherError(err.message || "Gagal memverifikasi voucher.");
-    } finally {
-      setIsCheckingVoucher(false);
-    }
-  };
-
-  const handleApplyVoucher = async () => {
-    await handleApplyVoucherCode(voucherCodeInput);
+  const handleApplyVoucher = (voucher: any, discountAmount: number) => {
+    setAppliedVoucher(voucher);
+    setVoucherDiscount(discountAmount);
   };
 
   const handleRemoveVoucher = () => {
     setAppliedVoucher(null);
     setVoucherDiscount(0);
-    setVoucherCodeInput("");
-    setVoucherError("");
   };
-
-  // Track accordion expand state: 'va', 'ewallet', or null
-  const isVaSelected = ["bca_va", "mandiri_va", "bni_va", "bri_va"].includes(paymentMethod);
-  const isEwalletSelected = ["gopay", "ovo", "dana", "shopeepay"].includes(paymentMethod);
-
-  const [expandedSection, setExpandedSection] = useState<"va" | "ewallet" | null>(
-    isVaSelected ? "va" : isEwalletSelected ? "ewallet" : null
-  );
-
-  const toggleSection = (section: "va" | "ewallet") => {
-    setExpandedSection((curr) => (curr === section ? null : section));
-  };
-
-  const vaChannels = PAYMENT_CHANNELS.filter((ch) => ch.category === "va");
-  const ewalletChannels = PAYMENT_CHANNELS.filter((ch) => ch.category === "ewallet");
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-fadeIn pb-16">
@@ -191,363 +103,10 @@ export function ReservationPaymentStep({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Streamlined Payment Methods */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white border border-[#E2E8F0] rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-xs font-bold text-[#18181B] uppercase tracking-wider font-mono">
-                  Pilih Saluran Pembayaran
-                </h3>
-                <p className="text-[11px] text-[#64748B] mt-0.5">
-                  Klik kategori pembayaran untuk memilih opsi yang Anda inginkan.
-                </p>
-              </div>
-              <div className="flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full font-mono font-bold">
-                <Lock className="w-3 h-3" />
-                <span>256-Bit Secure</span>
-              </div>
-            </div>
-
-            {/* STREAMLINED ACCORDION PAYMENT CHANNELS */}
-            <div className="space-y-3">
-              {/* OPTION 1: QRIS INSTANT */}
-              <div
-                onClick={() => {
-                  onChangePaymentMethod("qris");
-                  setExpandedSection(null);
-                }}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                  paymentMethod === "qris"
-                    ? "bg-[#EA580C]/5 border-[#EA580C] shadow-xs ring-1.5 ring-[#EA580C]"
-                    : "bg-white border-slate-200/80 hover:border-slate-300"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-16 h-10 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center p-1 shrink-0 overflow-hidden">
-                      <QrisLogo />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs font-bold text-[#18181B]">
-                          QRIS Dinamis (Semua Bank & E-Wallet)
-                        </p>
-                        <span className="text-[9px] font-mono uppercase bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full font-bold">
-                          Rekomendasi
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-[#64748B] mt-0.5 truncate">
-                        Scan instan via BCA, Mandiri, BRI, BNI, GoPay, OVO, DANA, ShopeePay.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
-                      paymentMethod === "qris"
-                        ? "bg-[#EA580C] border-[#EA580C] text-white"
-                        : "border-slate-300 bg-white"
-                    }`}
-                  >
-                    {paymentMethod === "qris" && <span className="text-[10px] font-bold">✓</span>}
-                  </div>
-                </div>
-
-                {/* QRIS preview helper */}
-                {paymentMethod === "qris" && (
-                  <div className="mt-3.5 pt-3 border-t border-slate-200/60 flex items-center gap-3 bg-white/70 p-3 rounded-xl border border-slate-200/50">
-                    <QrCode className="w-10 h-10 text-[#18181B] shrink-0" />
-                    <p className="text-[11px] text-[#64748B] leading-relaxed">
-                      Kode QRIS otomatis aktif setelah Anda menekan tombol bayar. Berlaku bebas biaya admin.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* OPTION 2: VIRTUAL ACCOUNT / BANK (ACCORDION) */}
-              <div
-                className={`rounded-2xl border transition-all overflow-hidden ${
-                  isVaSelected
-                    ? "border-[#EA580C] bg-[#EA580C]/2 ring-1.5 ring-[#EA580C]"
-                    : "border-slate-200/80 bg-white hover:border-slate-300"
-                }`}
-              >
-                {/* Header Toggle */}
-                <div
-                  onClick={() => {
-                    toggleSection("va");
-                    if (!isVaSelected) onChangePaymentMethod("bca_va");
-                  }}
-                  className="p-4 flex items-center justify-between gap-3 cursor-pointer select-none"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-16 h-10 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center gap-1 p-1 shrink-0 overflow-hidden">
-                      <Building2 className="w-5 h-5 text-[#0060AF]" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs font-bold text-[#18181B]">
-                          Transfer Bank / Virtual Account (VA)
-                        </p>
-                        {isVaSelected && (
-                          <span className="text-[9px] font-mono uppercase bg-[#EA580C]/10 text-[#EA580C] px-1.5 py-0.2 rounded-full font-bold">
-                            Terpilih
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <BcaLogo className="scale-75 origin-left" />
-                        <MandiriLogo className="scale-75 origin-left" />
-                        <BniLogo className="scale-75 origin-left" />
-                        <BriLogo className="scale-75 origin-left" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                        isVaSelected
-                          ? "bg-[#EA580C] border-[#EA580C] text-white"
-                          : "border-slate-300 bg-white"
-                      }`}
-                    >
-                      {isVaSelected && <span className="text-[10px] font-bold">✓</span>}
-                    </div>
-                    {expandedSection === "va" ? (
-                      <ChevronUp className="w-4 h-4 text-[#64748B]" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-[#64748B]" />
-                    )}
-                  </div>
-                </div>
-
-                {/* Expanded Sub-options */}
-                {expandedSection === "va" && (
-                  <div className="p-3.5 bg-slate-50/80 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-2 animate-fadeIn">
-                    {vaChannels.map((channel) => {
-                      const isSelected = paymentMethod === channel.id;
-                      return (
-                        <button
-                          key={channel.id}
-                          type="button"
-                          onClick={() => onChangePaymentMethod(channel.id)}
-                          className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
-                            isSelected
-                              ? "bg-white border-[#EA580C] shadow-xs ring-1 ring-[#EA580C]"
-                              : "bg-white border-slate-200/80 hover:border-slate-300"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0 pr-1">
-                            <div className="w-14 h-8 rounded-lg bg-slate-50 border border-slate-200/60 flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
-                              {channel.logo}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-bold text-[#18181B] truncate">
-                                {channel.name.replace(" Virtual Account", " VA")}
-                              </p>
-                              <p className="text-[10px] text-[#64748B] truncate">
-                                Verifikasi 24 Jam
-                              </p>
-                            </div>
-                          </div>
-                          <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                              isSelected
-                                ? "bg-[#EA580C] border-[#EA580C] text-white"
-                                : "border-slate-300 bg-white"
-                            }`}
-                          >
-                            {isSelected && <span className="text-[8px] font-bold">✓</span>}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* OPTION 3: E-WALLET (ACCORDION) */}
-              <div
-                className={`rounded-2xl border transition-all overflow-hidden ${
-                  isEwalletSelected
-                    ? "border-[#EA580C] bg-[#EA580C]/2 ring-1.5 ring-[#EA580C]"
-                    : "border-slate-200/80 bg-white hover:border-slate-300"
-                }`}
-              >
-                {/* Header Toggle */}
-                <div
-                  onClick={() => {
-                    toggleSection("ewallet");
-                    if (!isEwalletSelected) onChangePaymentMethod("gopay");
-                  }}
-                  className="p-4 flex items-center justify-between gap-3 cursor-pointer select-none"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-16 h-10 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center p-1 shrink-0 overflow-hidden">
-                      <Wallet className="w-5 h-5 text-[#00AED6]" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs font-bold text-[#18181B]">
-                          Dompet Digital (E-Wallet)
-                        </p>
-                        {isEwalletSelected && (
-                          <span className="text-[9px] font-mono uppercase bg-[#EA580C]/10 text-[#EA580C] px-1.5 py-0.2 rounded-full font-bold">
-                            Terpilih
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <GopayLogo className="scale-75 origin-left" />
-                        <OvoLogo className="scale-75 origin-left" />
-                        <DanaLogo className="scale-75 origin-left" />
-                        <ShopeePayLogo className="scale-75 origin-left" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                        isEwalletSelected
-                          ? "bg-[#EA580C] border-[#EA580C] text-white"
-                          : "border-slate-300 bg-white"
-                      }`}
-                    >
-                      {isEwalletSelected && <span className="text-[10px] font-bold">✓</span>}
-                    </div>
-                    {expandedSection === "ewallet" ? (
-                      <ChevronUp className="w-4 h-4 text-[#64748B]" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-[#64748B]" />
-                    )}
-                  </div>
-                </div>
-
-                {/* Expanded Sub-options */}
-                {expandedSection === "ewallet" && (
-                  <div className="p-3.5 bg-slate-50/80 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-2 animate-fadeIn">
-                    {ewalletChannels.map((channel) => {
-                      const isSelected = paymentMethod === channel.id;
-                      return (
-                        <button
-                          key={channel.id}
-                          type="button"
-                          onClick={() => onChangePaymentMethod(channel.id)}
-                          className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
-                            isSelected
-                              ? "bg-white border-[#EA580C] shadow-xs ring-1 ring-[#EA580C]"
-                              : "bg-white border-slate-200/80 hover:border-slate-300"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0 pr-1">
-                            <div className="w-14 h-8 rounded-lg bg-slate-50 border border-slate-200/60 flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
-                              {channel.logo}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-bold text-[#18181B] truncate">
-                                {channel.name}
-                              </p>
-                              <p className="text-[10px] text-[#64748B] truncate">
-                                {channel.fee || "Bebas Biaya"}
-                              </p>
-                            </div>
-                          </div>
-                          <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                              isSelected
-                                ? "bg-[#EA580C] border-[#EA580C] text-white"
-                                : "border-slate-300 bg-white"
-                            }`}
-                          >
-                            {isSelected && <span className="text-[8px] font-bold">✓</span>}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* OPTION 4: KARTU KREDIT / DEBIT */}
-              <div
-                onClick={() => {
-                  onChangePaymentMethod("card");
-                  setExpandedSection(null);
-                }}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                  paymentMethod === "card"
-                    ? "bg-[#EA580C]/5 border-[#EA580C] shadow-xs ring-1.5 ring-[#EA580C]"
-                    : "bg-white border-slate-200/80 hover:border-slate-300"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-16 h-10 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center p-1 shrink-0 overflow-hidden">
-                      <CardLogo />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-[#18181B]">
-                        Kartu Kredit & Debit Internasional
-                      </p>
-                      <p className="text-[11px] text-[#64748B] mt-0.5 truncate">
-                        Mendukung Visa, Mastercard, dan JCB dengan 3D Secure OTP.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
-                      paymentMethod === "card"
-                        ? "bg-[#EA580C] border-[#EA580C] text-white"
-                        : "border-slate-300 bg-white"
-                    }`}
-                  >
-                    {paymentMethod === "card" && <span className="text-[10px] font-bold">✓</span>}
-                  </div>
-                </div>
-              </div>
-
-              {/* OPTION 5: BAYAR DI KASIR */}
-              <div
-                onClick={() => {
-                  onChangePaymentMethod("cash");
-                  setExpandedSection(null);
-                }}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                  paymentMethod === "cash"
-                    ? "bg-[#EA580C]/5 border-[#EA580C] shadow-xs ring-1.5 ring-[#EA580C]"
-                    : "bg-white border-slate-200/80 hover:border-slate-300"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-16 h-10 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center p-1 shrink-0 overflow-hidden">
-                      <CashLogo />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-[#18181B]">
-                        Bayar di Kasir Restoran (Concierge Cash)
-                      </p>
-                      <p className="text-[11px] text-[#64748B] mt-0.5 truncate">
-                        Selesaikan pembayaran saat tiba di meja resepsionis Savoria.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
-                      paymentMethod === "cash"
-                        ? "bg-[#EA580C] border-[#EA580C] text-white"
-                        : "border-slate-300 bg-white"
-                    }`}
-                  >
-                    {paymentMethod === "cash" && <span className="text-[10px] font-bold">✓</span>}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ReservationPaymentChannels
+            paymentMethod={paymentMethod}
+            onChangePaymentMethod={onChangePaymentMethod}
+          />
         </div>
 
         {/* Right Col: Bill Summary */}
@@ -601,134 +160,13 @@ export function ReservationPaymentStep({
             </div>
 
             {/* Voucher Promo Input */}
-            <div className="p-3 bg-amber-50/50 border border-amber-200/80 rounded-2xl space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <Ticket className="w-3.5 h-3.5 text-[#EA580C]" /> Punya Kode Voucher?
-                </span>
-                {appliedVoucher && (
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                    Terpasang
-                  </span>
-                )}
-              </div>
-
-              {!appliedVoucher ? (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Masukkan Kode Voucher (cth: PROMO10)"
-                    value={voucherCodeInput}
-                    onChange={(e) => {
-                      setVoucherCodeInput(e.target.value.toUpperCase());
-                      setVoucherError("");
-                    }}
-                    className="flex-1 text-xs px-3 py-2 bg-white border border-slate-200 rounded-xl uppercase font-mono font-bold focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleApplyVoucher}
-                    disabled={isCheckingVoucher || !voucherCodeInput.trim()}
-                    className="px-3.5 py-2 bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold rounded-xl disabled:opacity-50 transition-all shrink-0 cursor-pointer"
-                  >
-                    {isCheckingVoucher ? "Cek..." : "Terapkan"}
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
-                  <div>
-                    <span className="font-mono font-bold text-emerald-900 block">
-                      {appliedVoucher.code} ({appliedVoucher.name})
-                    </span>
-                    <span className="text-[11px] text-emerald-700 font-medium">
-                      Hemat {formatIDR(voucherDiscount)}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleRemoveVoucher}
-                    className="text-[11px] text-rose-600 hover:text-rose-800 font-bold px-2 py-1 rounded-lg hover:bg-rose-50 transition-colors"
-                  >
-                    Hapus
-                  </button>
-                </div>
-              )}
-
-              {/* Available Vouchers List for Easy 1-Click Selection */}
-              {availableVouchers.length > 0 && (
-                <div className="space-y-1.5 pt-1 border-t border-amber-200/60 mt-2">
-                  <p className="text-[11px] font-bold text-amber-900 flex items-center justify-between">
-                    <span>Voucher Tersedia ({availableVouchers.length}):</span>
-                    <span className="text-[10px] font-normal text-amber-700">Klik untuk gunakan langsung</span>
-                  </p>
-                  <div className="space-y-1.5 max-h-40 overflow-y-auto pr-0.5">
-                    {availableVouchers.map((v) => {
-                      const isThisApplied = appliedVoucher?.code === v.code;
-                      const quotaLeft = Math.max(0, v.maxUsage - v.usedCount);
-                      const discountText =
-                        v.discountType === "percentage"
-                          ? `Diskon ${v.discountValue}%${v.maxDiscount ? ` (Maks ${formatIDR(v.maxDiscount)})` : ""}`
-                          : `Potongan ${formatIDR(v.discountValue)}`;
-
-                      return (
-                        <div
-                          key={v.id || v.code}
-                          className={`p-2 rounded-xl border transition-all text-xs flex items-center justify-between gap-2 ${
-                            isThisApplied
-                              ? "bg-emerald-50 border-emerald-300 ring-1 ring-emerald-400"
-                              : "bg-white border-amber-100/90 hover:border-amber-300 shadow-2xs"
-                          }`}
-                        >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono font-extrabold text-[11px] text-slate-800 bg-amber-100/80 px-1.5 py-0.5 rounded border border-amber-200">
-                                {v.code}
-                              </span>
-                              <span className="font-bold text-[11px] text-slate-900 truncate">
-                                {v.name}
-                              </span>
-                            </div>
-                            <div className="text-[10px] text-slate-600 mt-0.5 flex flex-wrap items-center gap-x-2">
-                              <span className="font-semibold text-emerald-700">{discountText}</span>
-                              {v.minSpend > 0 && (
-                                <span>Min. {formatIDR(v.minSpend)}</span>
-                              )}
-                              <span className="text-amber-800 font-medium">Sisa {quotaLeft} kuota</span>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (isThisApplied) {
-                                handleRemoveVoucher();
-                              } else {
-                                handleApplyVoucherCode(v.code);
-                              }
-                            }}
-                            disabled={isCheckingVoucher}
-                            className={`px-2.5 py-1 text-[11px] font-bold rounded-lg shrink-0 cursor-pointer transition-colors ${
-                              isThisApplied
-                                ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                                : "bg-amber-600 text-white hover:bg-amber-700 shadow-xs"
-                            }`}
-                          >
-                            {isThisApplied ? "Dipakai ✓" : "Gunakan"}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {voucherError && (
-                <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-1.5 text-[11px] text-rose-700 font-medium leading-tight">
-                  <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-rose-500" />
-                  <span>{voucherError}</span>
-                </div>
-              )}
-            </div>
+            <ReservationVoucherSelector
+              subtotal={subtotal}
+              appliedVoucher={appliedVoucher}
+              voucherDiscount={voucherDiscount}
+              onApplyVoucher={handleApplyVoucher}
+              onRemoveVoucher={handleRemoveVoucher}
+            />
 
             {/* Financial breakdown */}
             <div className="space-y-1.5 text-xs text-[#64748B]">
@@ -820,7 +258,7 @@ export function ReservationPaymentStep({
         </div>
       </div>
 
-      {/* Mobile Sticky Floating Payment Dock (Ensures 1-Click Access from Anywhere on Mobile) */}
+      {/* Mobile Sticky Floating Payment Dock */}
       <div className="lg:hidden fixed bottom-3 left-3 right-3 z-40 pointer-events-none">
         <div className="bg-[#18181B]/95 backdrop-blur-md text-white rounded-2xl p-3 shadow-2xl flex items-center justify-between border border-white/10 gap-3 pointer-events-auto">
           <div className="min-w-0">

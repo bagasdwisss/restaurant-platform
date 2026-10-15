@@ -114,14 +114,18 @@ export async function GET(request: NextRequest) {
     if (tableId) whereClause.tableId = Number(tableId);
     if (tableNumber) whereClause.tableNumber = String(tableNumber);
 
-    const latestCall = await prisma.waiterCall.findFirst({
-      where: whereClause,
+    // Look for ACTIVE call (pending or in_progress)
+    const activeCall = await prisma.waiterCall.findFirst({
+      where: {
+        ...whereClause,
+        status: { in: ["pending", "in_progress"] },
+      },
       orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json({
       success: true,
-      data: latestCall,
+      data: activeCall || null,
     });
   } catch (error: any) {
     console.error("Error fetching waiter call status:", error);

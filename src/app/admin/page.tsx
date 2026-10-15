@@ -1,71 +1,12 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-import { ShieldAlert, RefreshCw, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
 import { AdminSidebar, AdminTab } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { TabSkeleton } from "@/components/admin/TabSkeleton";
-
-// Dynamic Code-Splitting Lazy Loading for all Admin Module Tabs
-const AnalyticsTab = dynamic(
-  () => import("@/components/admin/AnalyticsTab").then((m) => m.AnalyticsTab),
-  {
-    loading: () => <TabSkeleton title="Memuat Analitik Penjualan..." count={4} />,
-    ssr: false,
-  }
-);
-
-const MenusTab = dynamic(
-  () => import("@/components/admin/MenusTab").then((m) => m.MenusTab),
-  {
-    loading: () => <TabSkeleton title="Memuat Master Katalog Menu & Resep..." count={4} />,
-    ssr: false,
-  }
-);
-
-const TablesTab = dynamic(
-  () => import("@/components/admin/TablesTab").then((m) => m.TablesTab),
-  {
-    loading: () => <TabSkeleton title="Memuat Denah Meja Restoran..." count={4} />,
-    ssr: false,
-  }
-);
-
-const InventoryTab = dynamic(
-  () => import("@/components/admin/InventoryTab").then((m) => m.InventoryTab),
-  {
-    loading: () => <TabSkeleton title="Memuat Stok Bahan Baku & Inventaris..." count={4} />,
-    ssr: false,
-  }
-);
-
-const ShiftsTab = dynamic(
-  () => import("@/components/admin/ShiftsTab").then((m) => m.ShiftsTab),
-  {
-    loading: () => <TabSkeleton title="Memuat Riwayat Shift Kasir & Audit Log..." count={4} />,
-    ssr: false,
-  }
-);
-
-const UsersTab = dynamic(
-  () => import("@/components/admin/UsersTab").then((m) => m.UsersTab),
-  {
-    loading: () => <TabSkeleton title="Memuat Otorisasi Hak Akses Pengguna..." count={4} />,
-    ssr: false,
-  }
-);
-
-const VouchersTab = dynamic(
-  () => import("@/components/admin/VouchersTab").then((m) => m.VouchersTab),
-  {
-    loading: () => <TabSkeleton title="Memuat Katalog Voucher & Promo Diskon..." count={4} />,
-    ssr: false,
-  }
-);
+import { AdminLoadingScreen, AdminAccessDenied } from "@/components/admin/AdminAuthGuard";
+import { AdminTabRenderer } from "@/components/admin/AdminTabRenderer";
 
 export default function AdminDashboardPage() {
   const { user, logout, loading: authLoading } = useAuth();
@@ -168,7 +109,7 @@ export default function AdminDashboardPage() {
   const fetchIngredients = useCallback(async () => {
     setLoadingIngredients(true);
     try {
-      const res = await fetch("/api/v1/admin/ingredients");
+      const res = await fetch("/api/v1/admin/inventory");
       const data = await res.json();
       if (data.success) {
         setIngredients(data.data);
@@ -181,7 +122,7 @@ export default function AdminDashboardPage() {
     }
   }, []);
 
-  // 5. Fetch Shifts & Audit Logs (Lazy)
+  // 5. Fetch Shifts, Audit Logs & System Updates (Lazy)
   const fetchShiftsAndLogs = useCallback(async () => {
     setLoadingShifts(true);
     try {
@@ -194,7 +135,7 @@ export default function AdminDashboardPage() {
         setSystemUpdates(data.data.systemUpdates || []);
       }
     } catch {
-      console.error("Failed to load shifts");
+      console.error("Failed to load shifts and logs");
     } finally {
       setLoadingShifts(false);
     }
@@ -309,9 +250,9 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleUpdateMenu = async (form: any): Promise<boolean> => {
+  const handleUpdateMenu = async (menuId: number, form: any): Promise<boolean> => {
     try {
-      const res = await fetch(`/api/v1/admin/menus/${form.id}`, {
+      const res = await fetch(`/api/v1/admin/menus/${menuId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -331,7 +272,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleDeleteMenu = async (id: number, name: string) => {
+  const handleDeleteMenu = async (id: number, name: string): Promise<void> => {
     if (!confirm(`Hapus permanen hidangan "${name}"?`)) return;
     try {
       const res = await fetch(`/api/v1/admin/menus/${id}`, { method: "DELETE" });
@@ -347,30 +288,32 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleToggleMenuAvailability = async (id: number, current: boolean) => {
+  const handleToggleMenuAvailability = async (id: number, current: boolean): Promise<void> => {
     try {
       const res = await fetch(`/api/v1/admin/menus/${id}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isAvailable: !current }),
       });
       const data = await res.json();
       if (data.success) {
         toast.info(
-          !current ? "Status menu diubah menjadi [READY]." : "Status menu diubah menjadi [HABIS].",
-          "Status Ketersediaan"
+          `Status hidangan kini ${!current ? "Tersedia" : "Habis / Arsip"}.`,
+          "Ketersediaan Menu"
         );
         fetchMenus();
+      } else {
+        toast.error(data.message || "Gagal mengubah ketersediaan.", "Gagal");
       }
     } catch {
-      toast.error("Gagal mengubah status ketersediaan menu.", "Gagal Update");
+      toast.error("Gagal mengupdate ketersediaan.", "Gangguan Koneksi");
     }
   };
 
   // TABLE ACTIONS
   const handleCreateTable = async (form: any): Promise<boolean> => {
     if (!form.tableNumber || !form.capacity) {
-      toast.warning("Nomor meja dan kapasitas wajib diisi.", "Form Belum Lengkap");
+      toast.warning("Nomor meja dan kapasitas wajib ditentukan.", "Validasi Meja");
       return false;
     }
     try {
@@ -381,114 +324,109 @@ export default function AdminDashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(`Meja "${form.tableNumber}" berhasil ditambahkan!`, "Meja Ditambahkan");
+        toast.success(`Meja ${form.tableNumber} berhasil diinisialisasi.`, "Meja Didaftarkan");
         fetchTables();
         return true;
       } else {
-        toast.error(data.message || "Gagal membuat meja.", "Gagal Simpan");
+        toast.error(data.message || "Gagal membuat meja.", "Gagal Tambah");
         return false;
       }
     } catch {
-      toast.error("Terjadi kesalahan saat membuat meja.", "Gangguan Koneksi");
+      toast.error("Gagal terhubung ke database meja.", "Gangguan Jaringan");
       return false;
     }
   };
 
-  const handleRegenerateQr = async (tableId: number) => {
-    if (!confirm("Regenerate token akan menonaktifkan QR code fisik yang lama. Lanjutkan?")) return;
+  const handleUpdateTable = async (tableId: number, form: any): Promise<boolean> => {
     try {
       const res = await fetch(`/api/v1/admin/tables/${tableId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ regenerateQr: true }),
+        body: JSON.stringify(form),
       });
       const data = await res.json();
       if (data.success) {
-        toast.success("QR Token baru berhasil digenerate dan diperbarui!", "QR Token Diperbarui");
-        fetchTables();
-      } else {
-        toast.error(data.message || "Gagal memperbarui token.", "Gagal");
-      }
-    } catch {
-      toast.error("Gagal meregenerasi token QR meja.", "Gagal Update");
-    }
-  };
-
-  const handleUpdateTable = async (tableId: number, dataToUpdate: any): Promise<boolean> => {
-    try {
-      const res = await fetch(`/api/v1/admin/tables/${tableId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataToUpdate),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Data meja berhasil diperbarui!", "Update Berhasil");
+        toast.success(`Konfigurasi meja ${form.tableNumber || tableId} diperbarui.`, "Meja Diupdate");
         fetchTables();
         return true;
       } else {
-        toast.error(data.message || "Gagal memperbarui data meja.", "Gagal Update");
+        toast.error(data.message || "Gagal mengupdate meja.", "Gagal");
         return false;
       }
     } catch {
-      toast.error("Terjadi gangguan koneksi saat memperbarui meja.", "Gangguan Koneksi");
+      toast.error("Gagal memperbarui konfigurasi meja.", "Gangguan Koneksi");
       return false;
+    }
+  };
+
+  const handleRegenerateQr = async (id: number): Promise<void> => {
+    try {
+      const res = await fetch(`/api/v1/admin/tables/${id}/qr`, { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`QR Dinamis Meja berhasil di-generate ulang!`, "QR Baru Aktif");
+        fetchTables();
+      } else {
+        toast.error(data.message || "Gagal membuat token QR baru.", "Gagal Regenerate");
+      }
+    } catch {
+      toast.error("Gagal meregenerasi token QR.", "Gangguan Koneksi");
     }
   };
 
   // INVENTORY ACTIONS
+  const handleRestock = async (id: number, amount: number): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/v1/admin/inventory/${id}/restock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`Stok bahan baku berhasil ditambahkan (+${amount}).`, "Restock Berhasil");
+        fetchIngredients();
+        return true;
+      } else {
+        toast.error(data.message || "Gagal menambah stok.", "Gagal Restock");
+        return false;
+      }
+    } catch {
+      toast.error("Gagal memproses restock bahan.", "Gangguan Jaringan");
+      return false;
+    }
+  };
+
   const handleCreateIngredient = async (form: any): Promise<boolean> => {
     if (!form.name || !form.unit) {
-      toast.warning("Nama bahan dan satuan unit wajib diisi.", "Form Belum Lengkap");
+      toast.warning("Nama bahan dan unit satuan wajib diisi.", "Validasi Form");
       return false;
     }
     try {
-      const res = await fetch("/api/v1/admin/ingredients", {
+      const res = await fetch("/api/v1/admin/inventory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(`Bahan baku "${form.name}" berhasil ditambahkan!`, "Bahan Baku Disimpan");
+        toast.success(`Bahan baku "${form.name}" siap dipantau.`, "Bahan Terdaftar");
         fetchIngredients();
         return true;
       } else {
-        toast.error(data.message || "Gagal menyimpan bahan baku.", "Gagal Simpan");
+        toast.error(data.message || "Gagal membuat bahan baku.", "Gagal");
         return false;
       }
     } catch {
-      toast.error("Terjadi gangguan koneksi saat menambahkan bahan baku.", "Gangguan Koneksi");
+      toast.error("Gagal menambahkan bahan baku.", "Gangguan Jaringan");
       return false;
     }
   };
 
-  const handleRestock = async (ingredientId: number, amount: number): Promise<boolean> => {
-    try {
-      const res = await fetch("/api/v1/admin/ingredients", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: ingredientId, addStock: amount }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Stok bahan baku berhasil ditambahkan!", "Restock Berhasil");
-        fetchIngredients();
-        return true;
-      } else {
-        toast.error(data.message || "Gagal memperbarui stok.", "Restock Gagal");
-        return false;
-      }
-    } catch {
-      toast.error("Terjadi kesalahan koneksi saat memperbarui stok.", "Gangguan Koneksi");
-      return false;
-    }
-  };
-
-  // USER ACTIONS
+  // USER MANAGEMENT ACTIONS
   const handleCreateUser = async (form: any): Promise<boolean> => {
-    if (!form.name || !form.username || !form.email || !form.password || !form.role) {
-      toast.warning("Lengkapi seluruh field nama, username, email, password dan role.", "Form Belum Lengkap");
+    if (!form.name || !form.email || !form.password || !form.role) {
+      toast.warning("Mohon lengkapi seluruh field user akun.", "Validasi Akun");
       return false;
     }
     try {
@@ -499,53 +437,57 @@ export default function AdminDashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(data.message, "Akun Berhasil Dibuat");
+        toast.success(`Akun staf "${form.name}" (${form.role.toUpperCase()}) dibuat!`, "Staf Didaftarkan");
         fetchUsers();
         return true;
       } else {
-        toast.error(data.message || "Gagal menambahkan user.", "Gagal");
+        toast.error(data.message || "Gagal membuat akun user.", "Gagal");
         return false;
       }
     } catch {
-      toast.error("Terjadi kesalahan koneksi saat membuat akun.", "Gangguan Koneksi");
+      toast.error("Gagal membuat akun staf.", "Gangguan Jaringan");
       return false;
     }
   };
 
-  const handleDeleteUser = async (userId: number, userName: string) => {
-    if (!confirm(`Hapus akun pengguna "${userName}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+  const handleDeleteUser = async (id: number, name: string): Promise<void> => {
+    if (!confirm(`Hapus permanen akses akun "${name}"?`)) return;
     try {
-      const res = await fetch(`/api/v1/admin/users?id=${userId}`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/admin/users/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        toast.success(data.message, "Pengguna Dihapus");
+        toast.success(`Akses akun "${name}" berhasil dicabut.`, "Akun Dihapus");
         fetchUsers();
       } else {
-        toast.error(data.message || "Gagal menghapus user.", "Gagal Hapus");
+        toast.error(data.message || "Gagal menghapus user.", "Gagal");
       }
     } catch {
-      toast.error("Terjadi kesalahan koneksi saat menghapus user.", "Gangguan Koneksi");
+      toast.error("Gagal menghapus pengguna.", "Gangguan Jaringan");
     }
   };
 
-  // VOUCHER ACTIONS
-  const handleCreateVoucher = async (voucherData: any): Promise<boolean> => {
+  // VOUCHER MANAGEMENT ACTIONS
+  const handleCreateVoucher = async (form: any): Promise<boolean> => {
+    if (!form.code || !form.name || !form.discountValue || !form.maxUsage) {
+      toast.warning("Mohon lengkapi semua field voucher yang diperlukan.", "Validasi Voucher");
+      return false;
+    }
     try {
       const res = await fetch("/api/v1/admin/vouchers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(voucherData),
+        body: JSON.stringify(form),
       });
       const data = await res.json();
       if (!data.success) {
         toast.error(data.message || "Gagal membuat voucher.", "Gagal");
         return false;
       }
-      toast.success(`Voucher ${data.data.code} berhasil diterbitkan!`, "Promo Aktif");
+      toast.success(`Voucher ${form.code} (${form.maxUsage} kuota) berhasil diterbitkan!`, "Voucher Dibuat");
       fetchVouchers();
       return true;
-    } catch (err: any) {
-      toast.error(err.message || "Gagal membuat voucher.", "Gangguan Koneksi");
+    } catch {
+      toast.error("Gagal menghubungi server untuk membuat voucher.", "Gangguan Koneksi");
       return false;
     }
   };
@@ -591,7 +533,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // DYNAMIC COMPREHENSIVE EXCEL EXPORT (All 8 Worksheets with Full Operasional Data)
+  // DYNAMIC COMPREHENSIVE EXCEL EXPORT (All Worksheets with Full Operasional Data)
   const handleExportExcel = async () => {
     setIsExportingExcel(true);
     toast.info("Sedang menyiapkan data operasional & finansial lengkap...", "Menyiapkan Ekspor");
@@ -622,44 +564,11 @@ export default function AdminDashboardPage() {
 
   // GUARDS
   if (authLoading) {
-    return (
-      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
-        <div className="flex items-center gap-3 bg-white px-6 py-4 rounded-2xl shadow-sm border border-slate-200">
-          <RefreshCw className="w-5 h-5 animate-spin text-[#EA580C]" />
-          <span className="text-sm font-medium text-[#18181B]">Memverifikasi izin eksekutif admin...</span>
-        </div>
-      </div>
-    );
+    return <AdminLoadingScreen />;
   }
 
   if (!user || user.role !== "admin") {
-    return (
-      <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-4">
-        <div className="bg-white max-w-md w-full p-8 rounded-3xl border border-rose-200 shadow-xl text-center space-y-4">
-          <div className="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
-            <ShieldAlert className="w-7 h-7" />
-          </div>
-          <h2 className="font-serif text-2xl font-bold text-[#18181B]">Akses Terbatas</h2>
-          <p className="text-xs text-[#64748B] leading-relaxed">
-            Halaman ini khusus General Manager & Eksekutif Savoria. Silakan masuk menggunakan akun kredensial Admin.
-          </p>
-          <div className="pt-2 flex flex-col gap-2">
-            <Link
-              href="/login"
-              className="py-3 px-4 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold transition-all shadow-md shadow-[#EA580C]/25"
-            >
-              Masuk Sebagai Admin
-            </Link>
-            <Link
-              href="/"
-              className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-[#18181B] rounded-full text-xs font-semibold transition-all"
-            >
-              Kembali ke Beranda
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+    return <AdminAccessDenied />;
   }
 
   return (
@@ -678,25 +587,23 @@ export default function AdminDashboardPage() {
         onCloseMobile={() => setMobileSidebarOpen(false)}
       />
 
-      {/* MAIN ADMIN WORKSPACE */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen md:h-screen md:overflow-hidden">
-        {/* TOP HEADER BAR */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <AdminHeader
           user={user}
           activeTabTitle={
             activeTab === "analytics"
-              ? "Ringkasan Finansial & Analitik Penjualan"
+              ? "Ringkasan & Analitik Bisnis"
               : activeTab === "menus"
-              ? "Manajemen Menu & Resep"
+              ? "Katalog Menu & Resep Dapur"
               : activeTab === "tables"
-              ? "Denah Meja & Generator QR"
+              ? "Denah Meja & Tata Letak QR"
               : activeTab === "inventory"
-              ? "Inventaris & Stok Bahan Baku"
+              ? "Bahan Baku & Manajemen Stok"
               : activeTab === "shifts"
-              ? "Riwayat Shift Kasir & Audit Log"
+              ? "Pusat Log Kasir, Audit & Riwayat Update"
               : activeTab === "vouchers"
-              ? "Manajemen Voucher & Promo Diskon"
-              : "Manajemen Pengguna & Otorisasi Akses"
+              ? "Katalog Voucher Promo & Diskon"
+              : "Hak Akses & Otorisasi Pengguna"
           }
           isRefreshing={isRefreshing}
           onRefresh={refreshAllData}
@@ -705,100 +612,47 @@ export default function AdminDashboardPage() {
           isExportingExcel={isExportingExcel}
         />
 
-        <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
-          {activeTab === "analytics" && (
-            <AnalyticsTab
-              salesData={salesData}
-              isLoading={loadingAnalytics}
-              onRefresh={fetchSalesSummary}
-              onExportExcel={handleExportExcel}
-              isExportingExcel={isExportingExcel}
-            />
-          )}
-
-          {activeTab === "menus" && (
-            loadingMenus && menus.length === 0 ? (
-              <TabSkeleton title="Memuat Master Katalog Menu & Resep Dapur..." count={4} />
-            ) : (
-              <MenusTab
-                menus={menus}
-                categories={categories}
-                onCreateMenu={handleCreateMenu}
-                onUpdateMenu={handleUpdateMenu}
-                onDeleteMenu={handleDeleteMenu}
-                onToggleAvailability={handleToggleMenuAvailability}
-              />
-            )
-          )}
-
-          {activeTab === "tables" && (
-            loadingTables && tables.length === 0 ? (
-              <TabSkeleton title="Memuat Denah Meja & Tata Letak Restoran..." count={4} />
-            ) : (
-              <TablesTab
-                tables={tables}
-                onCreateTable={handleCreateTable}
-                onUpdateTable={handleUpdateTable}
-                onRegenerateQr={handleRegenerateQr}
-              />
-            )
-          )}
-
-          {activeTab === "inventory" && (
-            loadingIngredients && ingredients.length === 0 ? (
-              <TabSkeleton title="Memuat Stok Bahan Baku & Inventaris Dapur..." count={4} />
-            ) : (
-              <InventoryTab
-                ingredients={ingredients}
-                onRestock={handleRestock}
-                onCreateIngredient={handleCreateIngredient}
-              />
-            )
-          )}
-
-          {activeTab === "shifts" && (
-            loadingShifts && shiftHistory.length === 0 ? (
-              <TabSkeleton title="Memuat Riwayat Shift Kasir & Log Audit..." count={4} />
-            ) : (
-              <ShiftsTab
-                shiftHistory={shiftHistory}
-                auditLogs={auditLogs}
-                cashierOrders={cashierOrders}
-                systemUpdates={systemUpdates}
-                onRefresh={fetchShiftsAndLogs}
-              />
-            )
-          )}
-
-          {activeTab === "vouchers" && (
-            loadingVouchers && vouchers.length === 0 ? (
-              <TabSkeleton title="Memuat Katalog Voucher & Promo Diskon..." count={4} />
-            ) : (
-              <VouchersTab
-                vouchers={vouchers}
-                isLoading={loadingVouchers}
-                onRefresh={fetchVouchers}
-                onCreateVoucher={handleCreateVoucher}
-                onToggleVoucher={handleToggleVoucher}
-                onDeleteVoucher={handleDeleteVoucher}
-              />
-            )
-          )}
-
-          {activeTab === "users" && (
-            loadingUsers && usersList.length === 0 ? (
-              <TabSkeleton title="Memuat Manajemen Hak Akses Pengguna..." count={4} />
-            ) : (
-              <UsersTab
-                usersList={usersList}
-                loadingUsers={loadingUsers}
-                currentUser={user}
-                onCreateUser={handleCreateUser}
-                onDeleteUser={handleDeleteUser}
-              />
-            )
-          )}
-        </main>
+        <AdminTabRenderer
+          activeTab={activeTab}
+          salesData={salesData}
+          loadingAnalytics={loadingAnalytics}
+          onRefreshSales={fetchSalesSummary}
+          onExportExcel={handleExportExcel}
+          isExportingExcel={isExportingExcel}
+          menus={menus}
+          categories={categories}
+          loadingMenus={loadingMenus}
+          onCreateMenu={handleCreateMenu}
+          onUpdateMenu={handleUpdateMenu}
+          onDeleteMenu={handleDeleteMenu}
+          onToggleMenuAvailability={handleToggleMenuAvailability}
+          tables={tables}
+          loadingTables={loadingTables}
+          onCreateTable={handleCreateTable}
+          onUpdateTable={handleUpdateTable}
+          onRegenerateQr={handleRegenerateQr}
+          ingredients={ingredients}
+          loadingIngredients={loadingIngredients}
+          onRestock={handleRestock}
+          onCreateIngredient={handleCreateIngredient}
+          shiftHistory={shiftHistory}
+          auditLogs={auditLogs}
+          cashierOrders={cashierOrders}
+          systemUpdates={systemUpdates}
+          loadingShifts={loadingShifts}
+          onRefreshShifts={fetchShiftsAndLogs}
+          vouchers={vouchers}
+          loadingVouchers={loadingVouchers}
+          onRefreshVouchers={fetchVouchers}
+          onCreateVoucher={handleCreateVoucher}
+          onToggleVoucher={handleToggleVoucher}
+          onDeleteVoucher={handleDeleteVoucher}
+          usersList={usersList}
+          loadingUsers={loadingUsers}
+          currentUser={user}
+          onCreateUser={handleCreateUser}
+          onDeleteUser={handleDeleteUser}
+        />
       </div>
     </div>
   );

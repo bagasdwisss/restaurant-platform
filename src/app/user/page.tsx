@@ -2,46 +2,31 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
-import QRCode from "qrcode";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
-import { formatIDR, formatDate } from "@/lib/utils";
+import { formatIDR } from "@/lib/utils";
 import {
   Calendar,
   Clock,
-  Users,
-  UtensilsCrossed,
-  MapPin,
   CreditCard,
-  QrCode,
-  CheckCircle2,
-  Printer,
   Sparkles,
-  ChevronRight,
-  LogOut,
   RefreshCw,
   Receipt,
-  Search,
-  ExternalLink,
-  ShieldCheck,
   Star,
   Award,
   Crown,
-  X,
-  ArrowRight,
   Lock,
   User,
-  Phone,
-  Mail,
-  KeyRound,
   Gift,
-  Tag,
-  BellRing,
-  Check,
-  Copy,
 } from "lucide-react";
-import { CookingCountdownTracker } from "@/components/customer/CookingCountdownTracker";
+import { UserActiveOrdersTab } from "@/components/user/UserActiveOrdersTab";
+import { UserOrderHistoryTab } from "@/components/user/UserOrderHistoryTab";
+import { UserProfileSecurityTab } from "@/components/user/UserProfileSecurityTab";
+import { UserVipClubTab } from "@/components/user/UserVipClubTab";
+import { UserReceiptModal } from "@/components/user/UserReceiptModal";
+import { UserBoardingPassModal } from "@/components/user/UserBoardingPassModal";
+import { UserVoucherCelebrationModal } from "@/components/user/UserVoucherCelebrationModal";
 
 export default function UserPortalPage() {
   const router = useRouter();
@@ -54,18 +39,11 @@ export default function UserPortalPage() {
 
   // Selected receipt modal state
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
-  const [receiptQrDataUrl, setReceiptQrDataUrl] = useState<string>("");
 
   // Boarding Pass QR modal state
   const [boardingPassOrder, setBoardingPassOrder] = useState<any>(null);
-  const [boardingPassQrUrl, setBoardingPassQrUrl] = useState<string>("");
 
-  // Edit profile form state
-  const [profileName, setProfileName] = useState("");
-  const [profilePhone, setProfilePhone] = useState("");
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // Updating profile state
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   // Calling waiter state
@@ -75,16 +53,6 @@ export default function UserPortalPage() {
   // Loyalty reward redemption state
   const [isRedeemingReward, setIsRedeemingReward] = useState(false);
   const [redeemedVoucher, setRedeemedVoucher] = useState<any>(null);
-  const [copiedRewardCode, setCopiedRewardCode] = useState(false);
-
-
-  // Sync profile form when user loads
-  useEffect(() => {
-    if (user) {
-      setProfileName(user.name || "");
-      setProfilePhone(user.phone || "");
-    }
-  }, [user]);
 
   // Fetch customer orders
   const fetchMyOrders = useCallback(async () => {
@@ -97,6 +65,7 @@ export default function UserPortalPage() {
         setMyOrders(data.data || []);
       }
     } catch {
+      // non-fatal
     } finally {
       setLoadingOrders(false);
     }
@@ -108,109 +77,37 @@ export default function UserPortalPage() {
       const interval = setInterval(() => {
         if (typeof document !== "undefined" && document.hidden) return;
         fetchMyOrders();
-      }, 30000);
+      }, 15000);
       return () => clearInterval(interval);
     }
   }, [user, fetchMyOrders]);
 
-  // Generate QR Code for receipt
-  useEffect(() => {
-    if (selectedReceipt) {
-      const payload = JSON.stringify({
-        restaurant: "SAVORIA Haute Cuisine",
-        bookingCode: selectedReceipt.orderNumber,
-        table: selectedReceipt.table?.tableNumber || "VIP",
-        guestCount: selectedReceipt.guestCount || 2,
-        date: selectedReceipt.reservationDate || selectedReceipt.createdAt,
-        total: selectedReceipt.totalAmount,
-        status: selectedReceipt.paymentStatus || "PAID",
-      });
-
-      QRCode.toDataURL(payload, {
-        width: 260,
-        margin: 2,
-        color: { dark: "#18181B", light: "#FFFFFF" },
-      })
-        .then((url) => setReceiptQrDataUrl(url))
-        .catch(() => {});
-    } else {
-      setReceiptQrDataUrl("");
-    }
-  }, [selectedReceipt]);
-
-  // Generate QR Code for Boarding Pass
-  useEffect(() => {
-    if (boardingPassOrder) {
-      const payload = JSON.stringify({
-        bookingCode: boardingPassOrder.orderNumber,
-        guest: boardingPassOrder.customerName || user?.name,
-        table: boardingPassOrder.table?.tableNumber || "VIP",
-        date: boardingPassOrder.reservationDate,
-        time: boardingPassOrder.reservationTime,
-        pax: boardingPassOrder.guestCount,
-        securityHash: `SAV-VERIFIED-${boardingPassOrder.id}`,
-      });
-
-      QRCode.toDataURL(payload, {
-        width: 280,
-        margin: 2,
-        color: { dark: "#14281D", light: "#FFFFFF" },
-      })
-        .then((url) => setBoardingPassQrUrl(url))
-        .catch(() => {});
-    } else {
-      setBoardingPassQrUrl("");
-    }
-  }, [boardingPassOrder, user]);
-
   // Handle Edit Profile Submission
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profileName.trim()) {
-      toast.warning("Nama lengkap wajib diisi.", "Validasi Profil");
-      return;
-    }
-
-    if (newPassword) {
-      if (newPassword.length < 6) {
-        toast.warning("Password baru minimal 6 karakter.", "Validasi Keamanan");
-        return;
-      }
-      if (newPassword !== confirmPassword) {
-        toast.warning("Konfirmasi password baru tidak cocok.", "Validasi Keamanan");
-        return;
-      }
-      if (!oldPassword) {
-        toast.warning("Masukkan password lama untuk konfirmasi pergantian password.", "Validasi Keamanan");
-        return;
-      }
-    }
-
+  const handleUpdateProfile = async (formData: {
+    name: string;
+    phone: string;
+    oldPassword?: string;
+    newPassword?: string;
+  }): Promise<boolean> => {
     setIsUpdatingProfile(true);
     try {
       const res = await fetch("/api/v1/auth/me", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: profileName,
-          phone: profilePhone,
-          oldPassword: oldPassword || undefined,
-          newPassword: newPassword || undefined,
-        }),
+        body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (data.success) {
         toast.success(data.message || "Profil Anda berhasil diperbarui!", "Profil Disimpan");
-        setOldPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        // Refresh page after a brief moment to sync context
         setTimeout(() => window.location.reload(), 1200);
+        return true;
       } else {
         toast.error(data.message || "Gagal memperbarui profil.", "Gagal Simpan");
+        return false;
       }
     } catch {
       toast.error("Terjadi gangguan jaringan saat memperbarui profil.", "Kendala Koneksi");
+      return false;
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -244,52 +141,6 @@ export default function UserPortalPage() {
     } finally {
       setIsCallingWaiter(false);
       setCallingWaiterOrderId(null);
-    }
-  };
-
-  const handleRedeemReward = async (reward: {
-    id: string;
-    title: string;
-    pointsCost: number;
-    discountValue: number;
-  }) => {
-    if (!user) {
-      toast.warning("Silakan masuk terlebih dahulu untuk menukarkan poin reward.", "Login Diperlukan");
-      return;
-    }
-
-    if (loyaltyPoints < reward.pointsCost) {
-      toast.error(
-        `Poin Savoria Anda (${loyaltyPoints} Pts) belum cukup untuk menukar ${reward.title} (${reward.pointsCost} Pts). Kumpulkan poin dari jamuan berikutnya!`,
-        "Poin Belum Mencukupi"
-      );
-      return;
-    }
-
-    setIsRedeemingReward(true);
-    try {
-      const res = await fetch("/api/v1/customer/vouchers/redeem", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          rewardId: reward.id,
-          pointsCost: reward.pointsCost,
-          title: reward.title,
-          discountValue: reward.discountValue,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setRedeemedVoucher(data.data);
-        toast.success(data.message, "Penukaran Poin Berhasil!");
-      } else {
-        toast.error(data.message || "Gagal menukarkan poin.", "Gagal");
-      }
-    } catch {
-      toast.error("Terjadi gangguan koneksi saat menukarkan poin.", "Koneksi Gagal");
-    } finally {
-      setIsRedeemingReward(false);
     }
   };
 
@@ -327,43 +178,34 @@ export default function UserPortalPage() {
       return {
         level: "Platinum VIP",
         name: "Platinum Ambassador",
-        badgeColor: "bg-gradient-to-r from-slate-900 via-indigo-950 to-stone-900 text-indigo-200 border-indigo-400/40",
         discount: "15% Privilese Santap",
         icon: Crown,
-        nextTierPoints: null,
       };
     }
     if (loyaltyPoints >= 1500 || totalSpent >= 1500000) {
       return {
         level: "Gold Tier",
         name: "Gold Connoisseur",
-        badgeColor: "bg-gradient-to-r from-amber-950 via-stone-900 to-black text-amber-200 border-amber-500/40",
         discount: "10% Privilese Santap",
         icon: Award,
-        nextTierPoints: 3500,
       };
     }
     if (loyaltyPoints >= 500 || totalSpent >= 500000) {
       return {
         level: "Silver Tier",
         name: "Silver Gourmet",
-        badgeColor: "bg-gradient-to-r from-slate-800 to-slate-900 text-slate-200 border-slate-500/40",
         discount: "5% Privilese Santap",
         icon: Star,
-        nextTierPoints: 1500,
       };
     }
     return {
       level: "Bronze Tier",
       name: "Bronze Patron",
-      badgeColor: "bg-gradient-to-r from-stone-800 to-stone-900 text-amber-200/90 border-stone-600",
       discount: "Privilese Akses Meja",
       icon: User,
-      nextTierPoints: 500,
     };
   }, [loyaltyPoints, totalSpent]);
 
-  // Next Tier Progression Info
   const nextTierInfo = useMemo(() => {
     if (loyaltyPoints >= 3500) {
       return {
@@ -405,15 +247,6 @@ export default function UserPortalPage() {
       progressPct: Math.max(8, pct),
     };
   }, [loyaltyPoints]);
-
-  const handleCopyCode = (code: string) => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(code);
-    }
-    setCopiedRewardCode(true);
-    toast.success(`Kode voucher ${code} berhasil disalin!`, "Disalin ke Clipboard");
-    setTimeout(() => setCopiedRewardCode(false), 3000);
-  };
 
   const CLUB_REWARDS = [
     {
@@ -462,6 +295,47 @@ export default function UserPortalPage() {
       badge: "Eksklusif VIP",
     },
   ];
+
+  const handleRedeemReward = async (reward: (typeof CLUB_REWARDS)[0]) => {
+    if (!user) {
+      toast.warning("Silakan masuk terlebih dahulu untuk menukarkan poin reward.", "Login Diperlukan");
+      return;
+    }
+
+    if (loyaltyPoints < reward.pointsCost) {
+      toast.error(
+        `Poin Savoria Anda (${loyaltyPoints} Pts) belum cukup untuk menukar ${reward.title} (${reward.pointsCost} Pts). Kumpulkan poin dari jamuan berikutnya!`,
+        "Poin Belum Mencukupi"
+      );
+      return;
+    }
+
+    setIsRedeemingReward(true);
+    try {
+      const res = await fetch("/api/v1/customer/vouchers/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          rewardId: reward.id,
+          pointsCost: reward.pointsCost,
+          title: reward.title,
+          discountValue: reward.discountValue,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRedeemedVoucher(data.data);
+        toast.success(data.message, "Penukaran Poin Berhasil!");
+      } else {
+        toast.error(data.message || "Gagal menukarkan poin.", "Gagal");
+      }
+    } catch {
+      toast.error("Terjadi gangguan koneksi saat menukarkan poin.", "Koneksi Gagal");
+    } finally {
+      setIsRedeemingReward(false);
+    }
+  };
 
   if (authLoading) {
     return (
@@ -553,55 +427,43 @@ export default function UserPortalPage() {
             <button
               onClick={logout}
               className="px-3 sm:px-3.5 py-2 rounded-full bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 border border-slate-200/80 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer text-[#64748B] shadow-sm"
-              title="Keluar Akun"
             >
-              <LogOut className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Keluar</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-3.5 sm:px-8 py-6 sm:py-8 w-full flex-1 space-y-6">
-        {/* VIP Patron Membership Card & Metrics Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Virtual Membership Card */}
-          <div className={`p-6 rounded-3xl border shadow-xl flex flex-col justify-between relative overflow-hidden text-white ${vipTier.badgeColor}`}>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-
-            <div className="space-y-3 relative z-10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-[#EA580C] text-white font-serif font-black flex items-center justify-center text-sm shadow-sm">
-                    S
-                  </div>
-                  <span className="font-serif font-bold text-sm tracking-widest uppercase">
-                    SAVORIA
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 text-[11px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20">
-                  <TierIcon className="w-3 h-3 text-amber-300" />
-                  <span>{vipTier.name}</span>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <span className="text-[10px] text-slate-300 uppercase font-mono tracking-wider block">
-                  Nama Anggota Kehormatan
-                </span>
-                <h3 className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-white mt-0.5">
-                  {user.name}
-                </h3>
-              </div>
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-8 space-y-6 flex-1 w-full">
+        {/* VIP Digital Card & Metrics */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-stone-900 via-stone-800 to-black text-white border border-stone-700 shadow-xl relative overflow-hidden flex flex-col justify-between space-y-6">
+            <div className="absolute top-0 right-0 w-36 h-36 bg-[#EA580C]/15 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex items-center justify-between">
+              <span className="font-serif font-black tracking-widest text-lg text-amber-200">
+                SAVORIA
+              </span>
+              <span className="px-3 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider bg-white/10 text-amber-200 border border-white/10 flex items-center gap-1.5">
+                <TierIcon className="w-3.5 h-3.5" />
+                <span>{vipTier.level}</span>
+              </span>
             </div>
-
-            <div className="pt-6 border-t border-white/15 flex items-center justify-between relative z-10 text-xs font-mono">
+            <div>
+              <span className="text-[10px] text-slate-400 font-mono tracking-widest block uppercase">
+                Cardholder Name
+              </span>
+              <h2 className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-white mt-0.5 truncate">
+                {user.name}
+              </h2>
+              <span className="font-mono text-xs text-amber-300/80 tracking-widest mt-1 block">
+                SAV-PATRON-{user.id.toString().padStart(5, "0")}
+              </span>
+            </div>
+            <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono">
               <div>
-                <span className="text-[10px] text-slate-400 block">Nomor ID VIP</span>
-                <span className="font-bold text-white tracking-wider">
-                  #SAV-VIP-{user.id.toString().padStart(5, "0")}
-                </span>
+                <span className="text-[10px] text-slate-400 block">Status Keanggotaan</span>
+                <span className="text-emerald-400 font-bold">Terverifikasi Aktif</span>
               </div>
               <div className="text-right">
                 <span className="text-[10px] text-slate-400 block">Privilese Member</span>
@@ -610,7 +472,7 @@ export default function UserPortalPage() {
             </div>
           </div>
 
-          {/* 3 Metrics KPI Cards */}
+          {/* 3 Metrics Cards */}
           <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
             <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-2">
               <div className="flex items-center justify-between text-xs font-bold text-[#64748B]">
@@ -623,9 +485,7 @@ export default function UserPortalPage() {
                 <span className="font-serif text-2xl sm:text-3xl font-bold text-[#18181B] block">
                   {totalVisits}
                 </span>
-                <span className="text-[11px] text-[#64748B] mt-0.5 block">
-                  Kunjungan Meja Selesai
-                </span>
+                <span className="text-[11px] text-[#64748B] mt-0.5 block">Kunjungan Meja Selesai</span>
               </div>
             </div>
 
@@ -640,9 +500,7 @@ export default function UserPortalPage() {
                 <span className="font-serif text-xl sm:text-2xl font-bold text-emerald-700 block truncate">
                   {formatIDR(totalSpent)}
                 </span>
-                <span className="text-[11px] text-[#64748B] mt-0.5 block">
-                  Total Nilai Transaksi Lunas
-                </span>
+                <span className="text-[11px] text-[#64748B] mt-0.5 block">Total Nilai Transaksi Lunas</span>
               </div>
             </div>
 
@@ -657,9 +515,7 @@ export default function UserPortalPage() {
                 <span className="font-serif text-2xl sm:text-3xl font-bold text-[#EA580C] block">
                   {loyaltyPoints}
                 </span>
-                <span className="text-[11px] text-[#64748B] mt-0.5 block">
-                  Poin Dapat Ditukar Voucher
-                </span>
+                <span className="text-[11px] text-[#64748B] mt-0.5 block">Poin Dapat Ditukar Voucher</span>
               </div>
             </div>
           </div>
@@ -724,940 +580,67 @@ export default function UserPortalPage() {
           </button>
         </div>
 
-        {/* ========================================================================= */}
-        {/* TAB 1: RESERVASI & PESANAN AKTIF (LIVE STATUS TRACKER) */}
-        {/* ========================================================================= */}
+        {/* Tab 1: Reservasi & Pesanan Aktif */}
         {activeTab === "active" && (
-          <div className="space-y-4">
-            {activeOrdersList.length === 0 ? (
-              <div className="bg-white rounded-3xl border border-slate-200/80 p-8 text-center space-y-4 shadow-sm">
-                <div className="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                  <Calendar className="w-8 h-8" />
-                </div>
-                <div>
-                  <h3 className="font-serif font-bold text-lg text-[#18181B]">
-                    Tidak Ada Reservasi yang Sedang Aktif
-                  </h3>
-                  <p className="text-xs text-[#64748B] mt-1 max-w-md mx-auto">
-                    Saat ini Anda belum memiliki reservasi meja yang sedang berjalan. Rencanakan jamuan istimewa Anda berikutnya sekarang.
-                  </p>
-                </div>
-                <Link
-                  href="/reservation"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-md shadow-[#EA580C]/25 transition-all"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Mulai Reservasi Meja</span>
-                </Link>
-              </div>
-            ) : (
-              activeOrdersList.map((order) => {
-                const statusStep =
-                  order.status === "pending"
-                    ? 1
-                    : order.status === "confirmed"
-                    ? 2
-                    : order.status === "preparing"
-                    ? 3
-                    : 4;
-
-                return (
-                  <div
-                    key={order.id}
-                    className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-sm space-y-5"
-                  >
-                    {/* Top Row Info */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-mono font-bold text-base text-[#18181B]">
-                            #{order.orderNumber}
-                          </span>
-                          <span className="text-slate-300">•</span>
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-amber-50 text-amber-900 border border-amber-200">
-                            {order.table?.tableNumber ? `Meja ${order.table.tableNumber}` : "VIP Lounge"} ({order.table?.area || "Indoor"})
-                          </span>
-                          <span className="text-slate-300">•</span>
-                          <span className="text-xs text-[#64748B]">
-                            {order.guestCount ? `${order.guestCount} Tamu` : "2 Tamu"}
-                          </span>
-                        </div>
-                        <div className="text-xs text-slate-500 flex items-center gap-2 mt-1">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          <span>
-                            {order.reservationDate ? formatDate(order.reservationDate) : formatDate(order.createdAt)}
-                          </span>
-                          <span className="text-slate-300">•</span>
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{order.reservationTime || "19:00"}</span>
-                        </div>
-                      </div>
-
-                      {/* Action buttons */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <button
-                          onClick={() => setBoardingPassOrder(order)}
-                          className="px-3.5 py-2 rounded-full bg-[#14281D] hover:bg-[#14281D]/90 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
-                        >
-                          <QrCode className="w-3.5 h-3.5 text-amber-300" />
-                          <span>Boarding Pass QR</span>
-                        </button>
-
-                        {(order.tableId || order.table?.id) && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleCallWaiter(
-                                order.tableId || order.table?.id,
-                                order.orderNumber,
-                                order.id,
-                                order.table?.tableNumber
-                              )
-                            }
-                            disabled={callingWaiterOrderId === order.id}
-                            className="px-3.5 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-[#18181B] font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
-                          >
-                            {callingWaiterOrderId === order.id ? (
-                              <>
-                                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#EA580C]" />
-                                <span>Memanggil...</span>
-                              </>
-                            ) : (
-                              <>
-                                <BellRing className="w-3.5 h-3.5 text-[#EA580C]" />
-                                <span>Panggil Pelayan</span>
-                              </>
-                            )}
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => setSelectedReceipt(order)}
-                          className="px-3.5 py-2 rounded-full border border-slate-200 hover:bg-slate-50 text-[#18181B] font-semibold text-xs transition-all cursor-pointer"
-                        >
-                          Lihat Struk
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Live Dynamic Kitchen Cooking Countdown Tracker */}
-                    <CookingCountdownTracker order={order} />
-
-                    {/* Stepper Status Real-Time */}
-                    <div className="space-y-2">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block font-mono">
-                        Status Pelayanan Meja Real-Time:
-                      </span>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                        <div className={`p-3 rounded-2xl border ${statusStep >= 1 ? "bg-amber-50 border-amber-300 text-amber-900 font-bold" : "bg-slate-50 text-slate-400 border-slate-100"}`}>
-                          <span className="block text-[10px] uppercase font-mono">Tahap 1</span>
-                          <span>Menunggu Konfirmasi</span>
-                        </div>
-
-                        <div className={`p-3 rounded-2xl border ${statusStep >= 2 ? "bg-blue-50 border-blue-300 text-blue-900 font-bold" : "bg-slate-50 text-slate-400 border-slate-100"}`}>
-                          <span className="block text-[10px] uppercase font-mono">Tahap 2</span>
-                          <span>Reservasi Dikonfirmasi</span>
-                        </div>
-
-                        <div className={`p-3 rounded-2xl border ${statusStep >= 3 ? "bg-purple-50 border-purple-300 text-purple-900 font-bold" : "bg-slate-50 text-slate-400 border-slate-100"}`}>
-                          <span className="block text-[10px] uppercase font-mono">Tahap 3</span>
-                          <span>Dimasak Dapur Chef</span>
-                        </div>
-
-                        <div className={`p-3 rounded-2xl border ${statusStep >= 4 ? "bg-emerald-50 border-emerald-300 text-emerald-900 font-bold" : "bg-slate-50 text-slate-400 border-slate-100"}`}>
-                          <span className="block text-[10px] uppercase font-mono">Tahap 4</span>
-                          <span>Disajikan di Meja</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Ordered Dishes Summary */}
-                    {order.items && order.items.length > 0 && (
-                      <div className="pt-2 border-t border-slate-100">
-                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block font-mono mb-2">
-                          Hidangan Jamuan yang Dipesan:
-                        </span>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                          {order.items.map((it: any) => (
-                            <div
-                              key={it.id}
-                              className="p-2.5 rounded-xl bg-[#FDFBF7] border border-slate-200/70 flex items-center justify-between"
-                            >
-                              <div className="truncate mr-2">
-                                <span className="font-bold text-[#EA580C] mr-1.5 font-mono">
-                                  {it.quantity}x
-                                </span>
-                                <span className="font-semibold text-[#18181B]">
-                                  {it.menu?.name || "Hidangan"}
-                                </span>
-                              </div>
-                              <span className="font-mono text-slate-700 shrink-0">
-                                {formatIDR(it.subtotal)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
+          <UserActiveOrdersTab
+            orders={activeOrdersList}
+            user={user}
+            onOpenBoardingPass={(ord) => setBoardingPassOrder(ord)}
+            onOpenReceipt={(ord) => setSelectedReceipt(ord)}
+            onCallWaiter={handleCallWaiter}
+            isCallingWaiter={isCallingWaiter}
+            callingWaiterOrderId={callingWaiterOrderId}
+          />
         )}
 
-        {/* ========================================================================= */}
-        {/* TAB 2: RIWAYAT TRANSAKSI & STRUK DIGITAL */}
-        {/* ========================================================================= */}
+        {/* Tab 2: Riwayat Jamuan & Struk */}
         {activeTab === "history" && (
-          <div className="space-y-4">
-            {historyOrdersList.length === 0 ? (
-              <div className="bg-white rounded-3xl border border-slate-200/80 p-8 text-center space-y-2 shadow-sm">
-                <Receipt className="w-8 h-8 text-slate-400 mx-auto" />
-                <h3 className="font-serif font-bold text-base text-[#18181B]">
-                  Belum Ada Riwayat Jamuan Selesai
-                </h3>
-                <p className="text-xs text-[#64748B]">
-                  Seluruh transaksi yang telah lunas dan jamuan yang telah selesai akan tercatat permanen di sini.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {historyOrdersList.map((order) => (
-                  <div
-                    key={order.id}
-                    onClick={() => setSelectedReceipt(order)}
-                    className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-amber-900/30 hover:shadow-md transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono font-bold text-[#18181B] text-sm">
-                          #{order.orderNumber}
-                        </span>
-                        <span className="text-slate-300">•</span>
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700">
-                          {order.table?.tableNumber ? `Meja ${order.table.tableNumber}` : "VIP Lounge"}
-                        </span>
-                        <span className="text-slate-300">•</span>
-                        <span className="text-[11px] text-slate-500">
-                          {formatDate(order.reservationDate || order.createdAt)}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-500">
-                        {order.items?.length || 0} Hidangan dipesan • Selesai dinikmati
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
-                      <div className="text-left sm:text-right">
-                        <span className="text-[10px] text-slate-400 block font-mono">Total Pembayaran</span>
-                        <span className="font-serif font-bold text-sm text-emerald-700">
-                          {formatIDR(order.totalAmount)}
-                        </span>
-                      </div>
-
-                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 hover:bg-[#EA580C] hover:text-white transition-colors flex items-center gap-1">
-                        <span>Buka Struk</span>
-                        <ChevronRight className="w-3 h-3" />
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <UserOrderHistoryTab
+            orders={historyOrdersList}
+            onOpenReceipt={(ord) => setSelectedReceipt(ord)}
+          />
         )}
 
-        {/* ========================================================================= */}
-        {/* TAB 3: EDIT PROFIL & KEAMANAN AKUN */}
-        {/* ========================================================================= */}
+        {/* Tab 3: Edit Profil & Keamanan */}
         {activeTab === "profile" && (
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-8 shadow-sm max-w-2xl">
-            <div className="border-b border-slate-100 pb-4 mb-6">
-              <h3 className="font-serif font-bold text-xl text-[#18181B]">
-                Pengaturan Profil & Keamanan Akun
-              </h3>
-              <p className="text-xs text-[#64748B] mt-1">
-                Perbarui nama lengkap, nomor kontak, serta kata sandi akun Anda.
-              </p>
-            </div>
-
-            <form onSubmit={handleUpdateProfile} className="space-y-5">
-              {/* Account Identity */}
-              <div className="space-y-4">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono block">
-                  Informasi Utama Pelanggan
-                </span>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#18181B] flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-[#EA580C]" />
-                    <span>Nama Lengkap</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={profileName}
-                    onChange={(e) => setProfileName(e.target.value)}
-                    className="w-full text-xs p-3 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
-                    placeholder="Nama Lengkap Anda"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#18181B] flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Alamat Email (Akun)</span>
-                    </label>
-                    <input
-                      type="email"
-                      disabled
-                      value={user.email}
-                      className="w-full text-xs p-3 bg-slate-100 text-slate-500 border border-slate-200 rounded-2xl cursor-not-allowed font-mono"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#18181B] flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-[#EA580C]" />
-                      <span>Nomor Handphone / WA</span>
-                    </label>
-                    <input
-                      type="tel"
-                      value={profilePhone}
-                      onChange={(e) => setProfilePhone(e.target.value)}
-                      className="w-full text-xs p-3 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none font-mono"
-                      placeholder="0812xxxxxxxx"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Security & Password */}
-              <div className="pt-4 border-t border-slate-100 space-y-4">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono block">
-                  Ubah Kata Sandi (Kosongkan jika tidak ingin mengubah)
-                </span>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#18181B] flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Kata Sandi Lama</span>
-                  </label>
-                  <input
-                    type="password"
-                    value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
-                    className="w-full text-xs p-3 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
-                    placeholder="Masukkan kata sandi lama Anda"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#18181B] flex items-center gap-1.5">
-                      <KeyRound className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Kata Sandi Baru</span>
-                    </label>
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full text-xs p-3 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
-                      placeholder="Minimal 6 karakter"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#18181B] flex items-center gap-1.5">
-                      <KeyRound className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Ulangi Kata Sandi Baru</span>
-                    </label>
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full text-xs p-3 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#EA580C] focus:outline-none"
-                      placeholder="Konfirmasi password baru"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <button
-                  type="submit"
-                  disabled={isUpdatingProfile}
-                  className="px-6 py-3 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold flex items-center gap-2 shadow-md shadow-[#EA580C]/25 transition-all cursor-pointer disabled:opacity-50"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>{isUpdatingProfile ? "Menyimpan Perubahan..." : "Simpan Perubahan Profil"}</span>
-                </button>
-              </div>
-            </form>
-          </div>
+          <UserProfileSecurityTab
+            user={user}
+            onUpdateProfile={handleUpdateProfile}
+            isUpdatingProfile={isUpdatingProfile}
+          />
         )}
 
-        {/* ========================================================================= */}
-        {/* TAB 4: KEUNTUNGAN & VOUCHER VIP MEMBER (SAVORIA CLUB TIER & REWARDS) */}
-        {/* ========================================================================= */}
+        {/* Tab 4: Keuntungan & Voucher VIP (Savoria Club Tier) */}
         {activeTab === "privileges" && (
-          <div className="space-y-6 max-w-5xl">
-            {/* VIP Tier Progression Banner */}
-            <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-7 shadow-sm space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 rounded-full text-xs font-bold font-mono bg-[#EA580C]/10 text-[#EA580C] border border-[#EA580C]/20 flex items-center gap-1.5">
-                      <TierIcon className="w-3.5 h-3.5" />
-                      <span>{vipTier.level}</span>
-                    </span>
-                    <span className="text-xs text-slate-400 font-mono">•</span>
-                    <span className="text-xs font-semibold text-slate-600">{vipTier.name}</span>
-                  </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#18181B] tracking-tight">
-                    Savoria Club VIP Membership
-                  </h3>
-                  <p className="text-xs text-[#64748B]">
-                    Kumpulkan 1 Poin setiap pembelanjaan Rp 1.000. Tukarkan poin Anda dengan voucher diskon langsung dan complimentary hidangan karya chef.
-                  </p>
-                </div>
-
-                <div className="bg-[#FDFBF7] border border-amber-200/80 p-4 rounded-2xl sm:text-right shrink-0">
-                  <span className="text-[10px] text-slate-500 font-mono uppercase tracking-wider block font-semibold">
-                    Saldo Poin Aktif
-                  </span>
-                  <div className="flex items-baseline sm:justify-end gap-1.5 mt-0.5">
-                    <span className="font-serif text-3xl font-black text-[#EA580C]">
-                      {loyaltyPoints}
-                    </span>
-                    <span className="text-xs font-mono font-bold text-slate-600">Pts</span>
-                  </div>
-                  <span className="text-[11px] text-emerald-700 font-semibold block mt-0.5">
-                    {vipTier.discount}
-                  </span>
-                </div>
-              </div>
-
-              {/* Tier Progress Bar */}
-              <div className="space-y-2 pt-2 border-t border-slate-100">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-[#18181B] flex items-center gap-1.5">
-                    <Award className="w-4 h-4 text-amber-500" />
-                    <span>Progress Tingkat: {nextTierInfo.currentTierName}</span>
-                  </span>
-                  <span className="text-slate-500 font-mono text-[11px]">
-                    {nextTierInfo.pointsNeeded > 0
-                      ? `${nextTierInfo.pointsNeeded} Poin menuju ${nextTierInfo.nextTierName}`
-                      : "Tingkat VIP Tertinggi"}
-                  </span>
-                </div>
-                <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden relative">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-amber-500 via-[#EA580C] to-amber-600 transition-all duration-700"
-                    style={{ width: `${nextTierInfo.progressPct}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[10px] font-mono text-slate-400">
-                  <span>Bronze (0 Pts)</span>
-                  <span>Silver (500 Pts)</span>
-                  <span>Gold (1.500 Pts)</span>
-                  <span>Platinum VIP (3.500 Pts)</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Savoria Club Rewards Store (Tukar Poin) */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-serif font-bold text-xl text-[#18181B] flex items-center gap-2">
-                    <Gift className="w-5 h-5 text-[#EA580C]" />
-                    <span>Tukar Poin Hadiah (Rewards Store)</span>
-                  </h4>
-                  <p className="text-xs text-[#64748B] mt-0.5">
-                    Pilih reward yang diinginkan dan gunakan kode voucher yang didapat saat reservasi atau di kasir.
-                  </p>
-                </div>
-                <span className="hidden sm:inline-block text-xs font-mono font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
-                  Poin Anda: <strong className="text-[#EA580C]">{loyaltyPoints} Pts</strong>
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {CLUB_REWARDS.map((rew) => {
-                  const canRedeem = loyaltyPoints >= rew.pointsCost;
-
-                  return (
-                    <div
-                      key={rew.id}
-                      className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm flex flex-col justify-between space-y-4 hover:border-amber-300 transition-all relative overflow-hidden group"
-                    >
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200">
-                            {rew.category}
-                          </span>
-                          <span className="text-[10px] font-semibold text-[#EA580C] bg-[#EA580C]/10 px-2 py-0.5 rounded-full font-mono">
-                            {rew.badge}
-                          </span>
-                        </div>
-
-                        <div>
-                          <h5 className="font-serif font-bold text-base text-[#18181B] group-hover:text-[#EA580C] transition-colors">
-                            {rew.title}
-                          </h5>
-                          <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
-                            {rew.description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pt-3 border-t border-slate-100 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-slate-400 font-mono">Biaya Tukar:</span>
-                          <span className="font-serif text-lg font-black text-[#EA580C]">
-                            {rew.pointsCost} <span className="text-xs font-sans font-normal text-slate-500">Pts</span>
-                          </span>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => handleRedeemReward(rew)}
-                          disabled={!canRedeem || isRedeemingReward}
-                          className={`w-full py-2.5 rounded-full text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs ${
-                            canRedeem
-                              ? "bg-[#EA580C] hover:bg-[#C2410C] text-white shadow-md shadow-[#EA580C]/20"
-                              : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
-                          }`}
-                        >
-                          {isRedeemingReward ? (
-                            <>
-                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                              <span>Memproses...</span>
-                            </>
-                          ) : canRedeem ? (
-                            <>
-                              <Gift className="w-3.5 h-3.5" />
-                              <span>Tukar {rew.pointsCost} Pts</span>
-                            </>
-                          ) : (
-                            <span>Poin Belum Cukup ({rew.pointsCost - loyaltyPoints} lagi)</span>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Permanent VIP Member Privileges */}
-            <div className="space-y-4 pt-4 border-t border-slate-200">
-              <div>
-                <h4 className="font-serif font-bold text-lg text-[#18181B] flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  <span>Keuntungan Eksklusif Status Member VIP Anda</span>
-                </h4>
-                <p className="text-xs text-[#64748B] mt-0.5">
-                  Hak istimewa otomatis yang aktif di akun Anda pada setiap reservasi dan kunjungan ke SAVORIA.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-amber-100 text-amber-900">
-                      DISCOUNT VOUCHER
-                    </span>
-                    <span className="font-mono text-xs font-bold text-[#EA580C]">10% OFF</span>
-                  </div>
-                  <div>
-                    <h5 className="font-serif font-bold text-base text-[#18181B]">
-                      Diskon Jamuan Malam VIP
-                    </h5>
-                    <p className="text-xs text-[#64748B] mt-0.5">
-                      Potongan 10% untuk pemesanan set menu signature dinner di sesi mana pun.
-                    </p>
-                  </div>
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-400">Kode: SAVORIA-VIP10</span>
-                    <span className="text-emerald-700 font-bold">Aktif & Berlaku</span>
-                  </div>
-                </div>
-
-                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-purple-100 text-purple-900">
-                      COMPLIMENTARY
-                    </span>
-                    <span className="font-mono text-xs font-bold text-purple-700">GRATIS</span>
-                  </div>
-                  <div>
-                    <h5 className="font-serif font-bold text-base text-[#18181B]">
-                      Signature Petit Fours on Birthday
-                    </h5>
-                    <p className="text-xs text-[#64748B] mt-0.5">
-                      Nikmati sajian dessert istimewa kreasi chef koki saat Anda merayakan hari ulang tahun di SAVORIA.
-                    </p>
-                  </div>
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-400">Otomatis Tersemat</span>
-                    <span className="text-emerald-700 font-bold">Aktif & Berlaku</span>
-                  </div>
-                </div>
-
-                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-blue-100 text-blue-900">
-                      SEATING GUARANTEE
-                    </span>
-                    <span className="font-mono text-xs font-bold text-blue-700">PRIORITY</span>
-                  </div>
-                  <div>
-                    <h5 className="font-serif font-bold text-base text-[#18181B]">
-                      Jaminan Meja Utama Grand Salle
-                    </h5>
-                    <p className="text-xs text-[#64748B] mt-0.5">
-                      Prioritas alokasi meja dengan pemandangan terbaik saat melakukan booking reservasi.
-                    </p>
-                  </div>
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-400">Status Akun VIP</span>
-                    <span className="text-emerald-700 font-bold">Aktif Permanen</span>
-                  </div>
-                </div>
-
-                <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-100 text-emerald-900">
-                      SALON PRIVÉ
-                    </span>
-                    <span className="font-mono text-xs font-bold text-emerald-700">EXCLUSIVE</span>
-                  </div>
-                  <div>
-                    <h5 className="font-serif font-bold text-base text-[#18181B]">
-                      Akses Mezzanine VIP Suite
-                    </h5>
-                    <p className="text-xs text-[#64748B] mt-0.5">
-                      Hak akses eksklusif untuk memesan meja lantai 2 Mezzanine privat untuk jamuan keluarga atau pertemuan bisnis.
-                    </p>
-                  </div>
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-400">Patron Privilege</span>
-                    <span className="text-emerald-700 font-bold">Aktif Permanen</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <UserVipClubTab
+            vipTier={vipTier}
+            loyaltyPoints={loyaltyPoints}
+            nextTierInfo={nextTierInfo}
+            clubRewards={CLUB_REWARDS}
+            onRedeemReward={handleRedeemReward}
+            isRedeemingReward={isRedeemingReward}
+          />
         )}
 
-        {/* ========================================================================= */}
-        {/* MODAL 1: BOARDING PASS QR VERIFIKASI MEJA */}
-        {/* ========================================================================= */}
-        {boardingPassOrder && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 max-w-sm w-full space-y-5 text-center shadow-2xl relative my-auto">
-              <button
-                onClick={() => setBoardingPassOrder(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+        {/* Modal 1: Boarding Pass QR */}
+        <UserBoardingPassModal
+          order={boardingPassOrder}
+          user={user}
+          onClose={() => setBoardingPassOrder(null)}
+        />
 
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#EA580C] bg-[#EA580C]/10 px-2.5 py-0.5 rounded-full inline-block">
-                  Boarding Pass Digital
-                </span>
-                <h3 className="font-serif font-bold text-xl text-[#18181B]">
-                  Verifikasi Meja Reservasi
-                </h3>
-                <p className="text-xs text-[#64748B]">
-                  #{boardingPassOrder.orderNumber}
-                </p>
-              </div>
+        {/* Modal 2: Digital Receipt Struk */}
+        <UserReceiptModal
+          receipt={selectedReceipt}
+          user={user}
+          onClose={() => setSelectedReceipt(null)}
+        />
 
-              {/* QR Image Box */}
-              <div className="p-4 bg-[#FDFBF7] rounded-2xl border border-slate-200/80 inline-block">
-                {boardingPassQrUrl ? (
-                  <img
-                    src={boardingPassQrUrl}
-                    alt="Boarding Pass QR"
-                    className="w-48 h-48 mx-auto object-contain"
-                  />
-                ) : (
-                  <div className="w-48 h-48 bg-slate-100 flex items-center justify-center text-xs text-slate-400 font-mono">
-                    Membuat QR...
-                  </div>
-                )}
-              </div>
-
-              <div className="text-xs space-y-1 bg-slate-50 p-3 rounded-2xl border border-slate-200/60 font-mono">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Meja:</span>
-                  <span className="font-bold text-[#18181B]">
-                    {boardingPassOrder.table?.tableNumber || "VIP"} ({boardingPassOrder.table?.area || "Indoor"})
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Jadwal:</span>
-                  <span className="font-bold text-[#18181B]">
-                    {boardingPassOrder.reservationDate || "Hari Ini"} • {boardingPassOrder.reservationTime || "19:00"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Jumlah Tamu:</span>
-                  <span className="font-bold text-[#18181B]">
-                    {boardingPassOrder.guestCount || 2} Orang
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Tunjukkan QR ini ke staf resepsionis saat Anda tiba di SAVORIA untuk dipandu langsung ke meja Anda.
-              </p>
-
-              <button
-                onClick={() => setBoardingPassOrder(null)}
-                className="w-full py-3 rounded-full bg-[#14281D] hover:bg-[#14281D]/90 text-white font-bold text-xs cursor-pointer shadow-md"
-              >
-                Tutup Boarding Pass
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* MODAL 2: DIGITAL RECEIPT STRUK RESMI */}
-        {/* ========================================================================= */}
-        {selectedReceipt && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-white border border-slate-200 text-[#18181B] rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl relative animate-in fade-in zoom-in-95 my-8">
-              <button
-                onClick={() => setSelectedReceipt(null)}
-                className="absolute top-5 right-5 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-[#64748B] hover:text-[#18181B] transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              {/* Receipt Header */}
-              <div className="text-center space-y-1.5 pb-4 border-b border-slate-100">
-                <div className="w-12 h-12 rounded-full bg-[#EA580C] text-white flex items-center justify-center font-serif font-black text-2xl mx-auto shadow-md shadow-[#EA580C]/20">
-                  S
-                </div>
-                <h3 className="font-serif font-bold text-2xl tracking-tight text-[#18181B]">
-                  SAVORIA
-                </h3>
-                <p className="text-xs text-[#64748B] font-mono uppercase tracking-wider">
-                  Haute Cuisine & Grand Dining • Struk Resmi
-                </p>
-                <p className="text-[11px] font-mono text-[#EA580C] font-semibold">
-                  Nomor Booking: #{selectedReceipt.orderNumber}
-                </p>
-              </div>
-
-              {/* Receipt Metadata */}
-              <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
-                <div>
-                  <span className="text-[10px] text-[#64748B] block font-medium">NAMA TAMU:</span>
-                  <span className="font-bold text-[#18181B]">
-                    {selectedReceipt.customerName || user?.name}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-[#64748B] block font-medium">MEJA TERPILIH:</span>
-                  <span className="font-bold text-[#18181B]">
-                    {selectedReceipt.table?.tableNumber || "VIP Lounge"}{" "}
-                    {selectedReceipt.table?.area && `(${selectedReceipt.table.area})`}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-[#64748B] block font-medium">TANGGAL RESERVASI:</span>
-                  <span className="font-bold text-[#18181B]">
-                    {selectedReceipt.reservationDate
-                      ? formatDate(selectedReceipt.reservationDate)
-                      : formatDate(selectedReceipt.createdAt)}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-[#64748B] block font-medium">SESI & JUMLAH TAMU:</span>
-                  <span className="font-bold text-[#18181B]">
-                    {selectedReceipt.reservationTime || "19:00"} •{" "}
-                    {selectedReceipt.guestCount ? `${selectedReceipt.guestCount} Pax` : "2 Pax"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Itemized Order Dishes */}
-              <div className="space-y-2">
-                <span className="text-xs font-bold text-[#18181B] uppercase tracking-wider block font-serif">
-                  Rincian Hidangan & Minuman:
-                </span>
-                <div className="divide-y divide-slate-100 max-h-48 overflow-y-auto pr-1 text-xs">
-                  {selectedReceipt.items?.map((it: any) => (
-                    <div key={it.id} className="py-2.5 flex items-start justify-between gap-3">
-                      <div>
-                        <div className="font-semibold text-[#18181B]">
-                          <span className="text-[#EA580C] font-mono font-bold mr-1.5">
-                            {it.quantity}x
-                          </span>
-                          {it.menu?.name}
-                        </div>
-                        {it.notes && (
-                          <div className="text-[10px] text-slate-400 italic">
-                            Catatan: {it.notes}
-                          </div>
-                        )}
-                      </div>
-                      <span className="font-mono font-bold text-[#18181B] shrink-0">
-                        {formatIDR(it.subtotal)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Financial Calculation Breakdown */}
-              <div className="bg-[#FDFBF7] p-4 rounded-2xl border border-slate-200/80 text-xs space-y-1.5">
-                <div className="flex justify-between text-[#64748B]">
-                  <span>Subtotal Pesanan:</span>
-                  <span className="font-mono">{formatIDR(selectedReceipt.subtotal)}</span>
-                </div>
-                <div className="flex justify-between text-[#64748B]">
-                  <span>Pajak Restoran (PB1 10%):</span>
-                  <span className="font-mono">{formatIDR(selectedReceipt.taxAmount)}</span>
-                </div>
-                <div className="flex justify-between text-[#64748B]">
-                  <span>Biaya Layanan (Service 5%):</span>
-                  <span className="font-mono">{formatIDR(selectedReceipt.serviceCharge)}</span>
-                </div>
-                <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-sm text-[#18181B]">
-                  <span className="font-serif">TOTAL DIBAYAR:</span>
-                  <span className="text-[#EA580C] font-mono text-base">{formatIDR(selectedReceipt.totalAmount)}</span>
-                </div>
-                <div className="flex justify-between text-[11px] text-[#64748B] pt-1">
-                  <span>Metode Pembayaran:</span>
-                  <span className="uppercase text-[#18181B] font-bold">
-                    {selectedReceipt.paymentMethod || "QRIS DINAMIS"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="w-full py-3 rounded-full bg-white hover:bg-slate-50 text-[#18181B] font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer border border-slate-200 shadow-sm"
-                >
-                  <Printer className="w-4 h-4 text-[#EA580C]" />
-                  <span>Cetak Receipt / PDF</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedReceipt(null)}
-                  className="w-full py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs transition-colors cursor-pointer shadow-md shadow-[#EA580C]/25"
-                >
-                  Tutup Struk
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* MODAL 3: VOUCHER REWARD DITUKAR (CELEBRATORY POPUP) */}
-        {/* ========================================================================= */}
-        {redeemedVoucher && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 max-w-md w-full space-y-5 text-center shadow-2xl relative animate-in fade-in zoom-in-95 my-auto">
-              <button
-                onClick={() => setRedeemedVoucher(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="w-16 h-16 rounded-full bg-amber-50 text-[#EA580C] border border-amber-200 flex items-center justify-center mx-auto shadow-sm">
-                <Gift className="w-8 h-8 animate-bounce" />
-              </div>
-
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full inline-block border border-emerald-200">
-                  Penukaran Poin Berhasil
-                </span>
-                <h3 className="font-serif font-bold text-2xl text-[#18181B]">
-                  Selamat! Voucher Anda Aktif
-                </h3>
-                <p className="text-xs text-[#64748B]">
-                  {redeemedVoucher.title || "Voucher Hadiah Savoria Club"}
-                </p>
-              </div>
-
-              {/* Voucher Code Box */}
-              <div className="p-4 bg-[#FDFBF7] rounded-2xl border-2 border-dashed border-[#EA580C]/40 space-y-2">
-                <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 block font-semibold">
-                  Kode Voucher Eksklusif Anda:
-                </span>
-                <div className="flex items-center justify-center gap-2">
-                  <span className="font-mono text-xl sm:text-2xl font-black text-[#EA580C] tracking-wider select-all">
-                    {redeemedVoucher.code}
-                  </span>
-                  <button
-                    onClick={() => handleCopyCode(redeemedVoucher.code)}
-                    className="p-2 rounded-xl bg-white hover:bg-amber-50 border border-slate-200 text-[#18181B] transition-all cursor-pointer shadow-xs"
-                    title="Salin Kode Voucher"
-                  >
-                    {copiedRewardCode ? (
-                      <Check className="w-4 h-4 text-emerald-600" />
-                    ) : (
-                      <Copy className="w-4 h-4 text-slate-600" />
-                    )}
-                  </button>
-                </div>
-                <div className="text-[11px] text-slate-500 font-medium">
-                  Nilai Potongan: <strong className="text-emerald-700">{formatIDR(redeemedVoucher.discountValue)}</strong>
-                </div>
-              </div>
-
-              <div className="text-xs text-left bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 space-y-1.5 text-slate-600">
-                <div className="flex items-center gap-1.5 text-emerald-700 font-bold">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>Siap digunakan langsung saat memesan meja atau bayar di kasir</span>
-                </div>
-                <div className="text-[11px] text-slate-500">
-                  • Masa berlaku voucher: 30 hari kalender sejak penukaran
-                </div>
-                <div className="text-[11px] text-slate-500">
-                  • Masukkan kode voucher di halaman checkout atau tunjukkan ke kasir
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5 pt-1">
-                <button
-                  onClick={() => handleCopyCode(redeemedVoucher.code)}
-                  className="w-full py-3 rounded-full bg-slate-100 hover:bg-slate-200 text-[#18181B] font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>{copiedRewardCode ? "Tersalin!" : "Salin Kode"}</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setRedeemedVoucher(null);
-                    router.push("/reservation");
-                  }}
-                  className="w-full py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs cursor-pointer shadow-md shadow-[#EA580C]/25 transition-all flex items-center justify-center gap-1.5"
-                >
-                  <span>Pakai Sekarang</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Modal 3: Celebratory Redeemed Voucher */}
+        <UserVoucherCelebrationModal
+          voucher={redeemedVoucher}
+          onClose={() => setRedeemedVoucher(null)}
+        />
       </main>
 
       {/* Footer */}

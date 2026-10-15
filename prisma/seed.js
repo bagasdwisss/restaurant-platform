@@ -166,7 +166,7 @@ async function main() {
       country: 'Kaspia',
       description: 'Kaviar sturgeon Oscietra royal dengan blinis hangat buatan tangan, crème fraîche Normandy, dan cincangan telur puyuh organik.',
       price: 850000,
-      image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=800&q=80',
       modifiers: [
         {
           name: 'Pilihan Pendamping Blinis',
@@ -195,7 +195,7 @@ async function main() {
       country: 'Prancis',
       description: 'Bekicot liar Burgundy Prancis dipanggang dengan garlic herb butter, percikan Chablis white wine, dan sourdough renyah.',
       price: 260000,
-      image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=800&q=80',
     },
     {
       categoryId: catAppetizers.id,
@@ -203,7 +203,7 @@ async function main() {
       country: 'Prancis',
       description: 'Daging Wagyu segar cincang halus, bumbu kapulaga dijon, kuning telur puyuh organik, dan serutan truffle Périgord.',
       price: 340000,
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=800&q=80',
       recipes: [
         { ingName: 'Miyazaki Wagyu A5 BMS 12 (g)', qty: 80 },
         { ingName: 'Périgord Black Truffle (g)', qty: 5 },
@@ -289,7 +289,7 @@ async function main() {
       country: 'Selandia Baru',
       description: 'Iga domba Lumina lembut berbalut rempah panko aromatik, purée kacang polong manis mint, dan saus jus rosemary wangi.',
       price: 680000,
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1514516876437-be8e85501863?auto=format&fit=crop&w=800&q=80',
       recipes: [{ ingName: 'NZ Lumina Lamb Rack (g)', qty: 350 }],
     },
     {
@@ -347,7 +347,7 @@ async function main() {
       country: 'Italia',
       description: 'Pasta telur buatan tangan dengan lobster biru Brittany, bisque tomat ceri San Marzano, minyak cabai Calabria, dan basil.',
       price: 750000,
-      image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1621996346565-e3d5d6281699?auto=format&fit=crop&w=800&q=80',
       recipes: [{ ingName: 'Brittany Blue Lobster (ekor)', qty: 1 }],
     },
     {
@@ -380,7 +380,7 @@ async function main() {
       country: 'Italia',
       description: 'Gnocchi kentang lumer berbalut saus krim keju Gorgonzola Dolce DOP, kacang kenari renyah panggang, dan madu akasia.',
       price: 240000,
-      image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=800&q=80',
     },
     {
       categoryId: catPasta.id,
@@ -407,7 +407,7 @@ async function main() {
       country: 'Norwegia',
       description: 'Kaki kepiting raja raksasa dari Laut Barents dipanggang mentega asap kayu apel, emulsi daun adas dill, dan brioche renyah.',
       price: 980000,
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=800&q=80',
       recipes: [{ ingName: 'Barents Sea King Crab (g)', qty: 350 }],
     },
     {
@@ -425,7 +425,7 @@ async function main() {
       country: 'Australia',
       description: 'Salmon liar Tasmania berkulit garing lumer di lidah, kentang fondue mentega, asparagus panggang, dan saus saffron emas.',
       price: 390000,
-      image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80',
     },
     {
       categoryId: catSeafood.id,
@@ -433,7 +433,7 @@ async function main() {
       country: 'Spanyol',
       description: 'Tentakel gurita laut dalam dipanggang empuk dengan saus Romesco kacang almond Catalunya, kentang baby confit, dan paprika.',
       price: 430000,
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80',
     },
     {
       categoryId: catSeafood.id,
@@ -477,7 +477,7 @@ async function main() {
       country: 'Indonesia',
       description: 'Paha bebek confit 18 bumbu base genep Bali, kuah gulai saffron kecombrang, lawar asap, dan sambal matah kelapa murni.',
       price: 450000,
-      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1518492104633-130d0cc84637?auto=format&fit=crop&w=800&q=80',
       recipes: [{ ingName: 'French Magret Duck Breast (g)', qty: 250 }],
     },
     {
@@ -494,7 +494,7 @@ async function main() {
       country: 'Singapura',
       description: 'Kepiting lumpur jumbo segar dimasak dalam claypot dengan bihun kaca kaldu kepiting pekat lada hitam Sarawak dan daun ketumbar.',
       price: 780000,
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=800&q=80',
     },
     {
       categoryId: catNusantaraAsia.id,
@@ -502,7 +502,7 @@ async function main() {
       country: 'Thailand',
       description: 'Sup tom yum tradisi istana Thailand dengan udang galah sungai raksasa berlemak manis, galangal, serai segar, dan minyak cabai.',
       price: 320000,
-      image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1548946526-f69e2424cf45?auto=format&fit=crop&w=800&q=80',
     },
     {
       categoryId: catNusantaraAsia.id,
@@ -597,7 +597,7 @@ async function main() {
       country: 'Jepang',
       description: 'Sari jeruk yuzu Kochi Jepang, bulir buah markisa segar, sirup bunga elderflower organik, daun mint, dan soda dingin.',
       price: 95000,
-      image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80',
       modifiers: [
         {
           name: 'Tingkat Kemanisan & Es',
@@ -641,7 +641,7 @@ async function main() {
       country: 'Jamaika',
       description: 'Biji kopi single origin pegunungan Blue Mountain Jamaika diseduh presisi dengan notes cokelat lembut dan keasaman seimbang.',
       price: 145000,
-      image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80',
       recipes: [{ ingName: 'Jamaica Blue Mountain Grade 1 Beans (g)', qty: 18 }],
     },
     {
@@ -650,7 +650,7 @@ async function main() {
       country: 'Italia',
       description: 'Sari jeruk darah Sisilia merah segar, air tonik artesius berkarbonasi tinggi, dan tangkai rosemary segar dibakar wangi.',
       price: 90000,
-      image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1536935338788-846bb9981813?auto=format&fit=crop&w=800&q=80',
     },
   ];
 
@@ -704,6 +704,16 @@ async function main() {
           }
         }
       }
+    } else {
+      await prisma.menu.update({
+        where: { id: createdMenu.id },
+        data: {
+          image: item.image,
+          country: item.country,
+          description: item.description,
+          price: item.price,
+        },
+      });
     }
   }
 

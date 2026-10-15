@@ -43,7 +43,11 @@ export default function DribbbleModernLandingPage() {
   const cartCount = mounted ? items.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
   // Wishlist state
-  const [wishlist, setWishlist] = useState<number[]>([102]);
+  const [wishlist, setWishlist] = useState<number[]>([1]);
+
+  // Live Menus synchronized with database API
+  const [liveCatalog, setLiveCatalog] = useState<any[]>(ALL_CATALOG_DISHES);
+  const [livePopular, setLivePopular] = useState<any[]>(SIGNATURE_POPULAR_DISHES);
 
   // Active Menu Category Filter
   const [activeTab, setActiveTab] = useState("all");
@@ -63,6 +67,46 @@ export default function DribbbleModernLandingPage() {
 
   useEffect(() => {
     setMounted(true);
+
+    // Fetch unified menus from API so landing page & reservation page are 100% in sync
+    fetch("/api/v1/customer/menus")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          const mapped: any[] = data.data.map((m: any) => ({
+            id: m.id,
+            name: m.name,
+            category: m.category?.slug || "mains",
+            description: m.description,
+            priceUSD: `$${(m.price / 15000).toFixed(2)}`,
+            priceIDR: m.price,
+            rating: 5.0,
+            country: m.country || "Internasional",
+            image: m.image,
+          }));
+          setLiveCatalog(mapped);
+
+          const popularNames = [
+            "Miyazaki Wagyu A5 Tenderloin Rossini",
+            "Lobster Thermidor au Hennessy Cognac",
+            "Risotto al Tartufo Bianco d'Alba",
+            "Rendang Short Ribs Wagyu 48-Hour",
+          ];
+          const pop = mapped.filter((d: any) => popularNames.includes(d.name));
+          if (pop.length >= 3) {
+            setLivePopular(
+              pop.map((p: any, idx: number) => ({
+                ...p,
+                badge: idx === 0 ? "Chef's Signature" : idx === 1 ? "Popular Pick" : "Michelin Award",
+                calories: "520 kcal",
+                prepTime: "20 mins",
+                reviewsCount: 200 + idx * 40,
+              }))
+            );
+          }
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const toggleWishlist = (id: number) => {
@@ -103,7 +147,7 @@ export default function DribbbleModernLandingPage() {
     );
   };
 
-  const filteredDishes = ALL_CATALOG_DISHES.filter((d) => {
+  const filteredDishes = liveCatalog.filter((d) => {
     if (activeTab === "all") return true;
     return d.category === activeTab;
   });
@@ -127,7 +171,7 @@ export default function DribbbleModernLandingPage() {
 
       {/* 4. Signature Popular Dishes */}
       <PopularDishesSection
-        dishes={SIGNATURE_POPULAR_DISHES}
+        dishes={livePopular}
         wishlist={wishlist}
         onToggleWishlist={toggleWishlist}
         onAddToCart={handleAddToCart}
