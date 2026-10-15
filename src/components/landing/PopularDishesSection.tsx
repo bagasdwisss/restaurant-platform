@@ -11,7 +11,7 @@ interface PopularDishesSectionProps {
   dishes: PopularDish[];
   wishlist: number[];
   onToggleWishlist: (id: number) => void;
-  onAddToCart: (dishName: string) => void;
+  onAddToCart: (dish: any) => void;
 }
 
 export function PopularDishesSection({
@@ -124,7 +124,7 @@ export function PopularDishesSection({
                     </div>
 
                     <button
-                      onClick={() => onAddToCart(dish.name)}
+                      onClick={() => onAddToCart(dish)}
                       className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-[#18181B] group-hover:bg-[#EA580C] hover:bg-[#EA580C] text-white text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
                       title="Pesan Menu"
                     >

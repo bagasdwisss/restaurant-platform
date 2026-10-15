@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
+import { useCartStore } from "@/lib/cart-store";
 import { isTableCapacityEligible } from "@/components/tables/FloorTableFurniture";
 import { PaymentMethodId } from "@/components/ui/PaymentLogos";
 
@@ -138,9 +139,22 @@ export default function SavoriaReservationPage() {
   const [completedOrder, setCompletedOrder] = useState<any>(null);
   const [receiptQrDataUrl, setReceiptQrDataUrl] = useState<string>("");
 
+  // Strict Staff Guard: Admin & Kasir are strictly blocked from reservation booking
+  const isStaff = Boolean(user && (user.role === "admin" || user.role === "kasir"));
+
+  useEffect(() => {
+    if (isStaff) {
+      toast.warning(
+        "Akun Staf (Admin/Kasir) tidak dapat melakukan booking reservasi. Mengalihkan ke dashboard kerja...",
+        "Akses Terbatas"
+      );
+      router.replace(user?.role === "admin" ? "/admin" : "/pos");
+    }
+  }, [isStaff, user, router, toast]);
+
   // Prefill customer name if logged in & URL search params if navigated from landing
   useEffect(() => {
-    if (user) {
+    if (user && !isStaff) {
       if (!customerName) setCustomerName(user.name);
       if (!customerPhone && user.phone) setCustomerPhone(user.phone);
     }
@@ -162,7 +176,23 @@ export default function SavoriaReservationPage() {
         if (!isNaN(parsed) && parsed > 0) setGuestCount(parsed);
       }
     }
-  }, [user]);
+  }, [user, isStaff]);
+
+  // Hydrate cart from useCartStore if customer added items from landing page
+  const storeItems = useCartStore((state) => state.items);
+  useEffect(() => {
+    if (cart.length === 0 && storeItems.length > 0) {
+      const converted: CartItem[] = storeItems.map((item) => ({
+        menuId: item.menuId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        selectedVariants: item.selectedVariants || [],
+        notes: item.notes || "",
+      }));
+      setCart(converted);
+    }
+  }, [storeItems]);
 
   // Fetch Menus
   useEffect(() => {
@@ -469,6 +499,32 @@ export default function SavoriaReservationPage() {
     if (selectedCategory === "all") return true;
     return categories.find((c) => String(c.id) === selectedCategory)?.menus?.some((item: any) => item.id === m.id);
   });
+
+  if (isStaff) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-6 text-center">
+        <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-xl max-w-md space-y-4">
+          <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-2xl font-bold">
+            !
+          </div>
+          <h2 className="font-serif text-xl font-bold text-[#18181B]">
+            Akses Reservasi Dibatasi
+          </h2>
+          <p className="text-xs text-[#64748B] leading-relaxed">
+            Akun Staf ({user?.role === "admin" ? "Administrator" : "Kasir"}) tidak diizinkan membuat pesanan reservasi. Anda sedang dialihkan kembali ke Dashboard...
+          </p>
+          <div className="pt-2">
+            <Link
+              href={user?.role === "admin" ? "/admin" : "/pos"}
+              className="px-6 py-2.5 rounded-full bg-[#18181B] text-white text-xs font-bold shadow-md hover:bg-[#EA580C] transition-all inline-block"
+            >
+              Kembali ke Dashboard
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] selection:bg-[#EA580C] selection:text-white flex flex-col justify-between font-sans antialiased">

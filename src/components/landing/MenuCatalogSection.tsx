@@ -12,7 +12,7 @@ interface MenuCatalogSectionProps {
   activeTab: string;
   onTabChange: (id: string) => void;
   dishes: CatalogDish[];
-  onAddToCart: (dishName: string) => void;
+  onAddToCart: (dish: any) => void;
 }
 
 const INITIAL_DISPLAY_LIMIT = 6;
@@ -134,7 +134,7 @@ export function MenuCatalogSection({
                 </div>
 
                 <button
-                  onClick={() => onAddToCart(item.name)}
+                  onClick={() => onAddToCart(item)}
                   className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#18181B] group-hover:bg-[#EA580C] hover:bg-[#EA580C] text-white text-xs font-bold transition-all shadow-sm shrink-0 active:scale-95 cursor-pointer"
                   title={`Pesan ${item.name}`}
                 >

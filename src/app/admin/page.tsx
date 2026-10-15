@@ -98,13 +98,30 @@ export default function AdminDashboardPage() {
   const [loadingVouchers, setLoadingVouchers] = useState(false);
   const [isExportingExcel, setIsExportingExcel] = useState(false);
 
+  // Initial lightweight sidebar counters
+  const [sidebarCounts, setSidebarCounts] = useState<{
+    menus: number;
+    tables: number;
+    ingredients: number;
+    vouchers: number;
+    users: number;
+  }>({ menus: 0, tables: 0, ingredients: 0, vouchers: 0, users: 0 });
+
   // 1. Fetch Sales Summary
   const fetchSalesSummary = useCallback(async () => {
     setLoadingAnalytics(true);
     try {
       const res = await fetch("/api/v1/admin/reports/sales-summary");
       const data = await res.json();
-      if (data.success) setSalesData(data.data);
+      if (data.success) {
+        setSalesData(data.data);
+        if (data.data.counts) {
+          setSidebarCounts((prev) => ({
+            ...prev,
+            ...data.data.counts,
+          }));
+        }
+      }
     } catch {
       console.error("Failed to load sales summary");
     } finally {
@@ -121,6 +138,7 @@ export default function AdminDashboardPage() {
       if (data.success) {
         setMenus(data.data.menus);
         setCategories(data.data.categories);
+        setSidebarCounts((prev) => ({ ...prev, menus: data.data.menus.length }));
       }
     } catch {
       console.error("Failed to load menus");
@@ -135,7 +153,10 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch("/api/v1/admin/tables");
       const data = await res.json();
-      if (data.success) setTables(data.data);
+      if (data.success) {
+        setTables(data.data);
+        setSidebarCounts((prev) => ({ ...prev, tables: data.data.length }));
+      }
     } catch {
       console.error("Failed to load tables");
     } finally {
@@ -149,7 +170,10 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch("/api/v1/admin/ingredients");
       const data = await res.json();
-      if (data.success) setIngredients(data.data);
+      if (data.success) {
+        setIngredients(data.data);
+        setSidebarCounts((prev) => ({ ...prev, ingredients: data.data.length }));
+      }
     } catch {
       console.error("Failed to load ingredients");
     } finally {
@@ -182,7 +206,10 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch("/api/v1/admin/users");
       const data = await res.json();
-      if (data.success) setUsersList(data.data);
+      if (data.success) {
+        setUsersList(data.data);
+        setSidebarCounts((prev) => ({ ...prev, users: data.data.length }));
+      }
     } catch {
       console.error("Failed to load users");
     } finally {
@@ -196,7 +223,10 @@ export default function AdminDashboardPage() {
     try {
       const res = await fetch("/api/v1/admin/vouchers");
       const data = await res.json();
-      if (data.success) setVouchers(data.data);
+      if (data.success) {
+        setVouchers(data.data);
+        setSidebarCounts((prev) => ({ ...prev, vouchers: data.data.length }));
+      }
     } catch {
       console.error("Failed to load vouchers");
     } finally {
@@ -384,7 +414,55 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleUpdateTable = async (tableId: number, dataToUpdate: any): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/v1/admin/tables/${tableId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataToUpdate),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Data meja berhasil diperbarui!", "Update Berhasil");
+        fetchTables();
+        return true;
+      } else {
+        toast.error(data.message || "Gagal memperbarui data meja.", "Gagal Update");
+        return false;
+      }
+    } catch {
+      toast.error("Terjadi gangguan koneksi saat memperbarui meja.", "Gangguan Koneksi");
+      return false;
+    }
+  };
+
   // INVENTORY ACTIONS
+  const handleCreateIngredient = async (form: any): Promise<boolean> => {
+    if (!form.name || !form.unit) {
+      toast.warning("Nama bahan dan satuan unit wajib diisi.", "Form Belum Lengkap");
+      return false;
+    }
+    try {
+      const res = await fetch("/api/v1/admin/ingredients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`Bahan baku "${form.name}" berhasil ditambahkan!`, "Bahan Baku Disimpan");
+        fetchIngredients();
+        return true;
+      } else {
+        toast.error(data.message || "Gagal menyimpan bahan baku.", "Gagal Simpan");
+        return false;
+      }
+    } catch {
+      toast.error("Terjadi gangguan koneksi saat menambahkan bahan baku.", "Gangguan Koneksi");
+      return false;
+    }
+  };
+
   const handleRestock = async (ingredientId: number, amount: number): Promise<boolean> => {
     try {
       const res = await fetch("/api/v1/admin/ingredients", {
@@ -590,11 +668,11 @@ export default function AdminDashboardPage() {
       <AdminSidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        menuCount={menus.length}
-        tableCount={tables.length}
-        ingredientCount={ingredients.length}
-        userCount={usersList.length}
-        voucherCount={vouchers.length}
+        menuCount={menus.length > 0 ? menus.length : sidebarCounts.menus}
+        tableCount={tables.length > 0 ? tables.length : sidebarCounts.tables}
+        ingredientCount={ingredients.length > 0 ? ingredients.length : sidebarCounts.ingredients}
+        userCount={usersList.length > 0 ? usersList.length : sidebarCounts.users}
+        voucherCount={vouchers.length > 0 ? vouchers.length : sidebarCounts.vouchers}
         onLogout={logout}
         mobileOpen={mobileSidebarOpen}
         onCloseMobile={() => setMobileSidebarOpen(false)}
@@ -660,6 +738,7 @@ export default function AdminDashboardPage() {
               <TablesTab
                 tables={tables}
                 onCreateTable={handleCreateTable}
+                onUpdateTable={handleUpdateTable}
                 onRegenerateQr={handleRegenerateQr}
               />
             )
@@ -672,6 +751,7 @@ export default function AdminDashboardPage() {
               <InventoryTab
                 ingredients={ingredients}
                 onRestock={handleRestock}
+                onCreateIngredient={handleCreateIngredient}
               />
             )
           )}

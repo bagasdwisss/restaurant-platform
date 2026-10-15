@@ -1,7 +1,18 @@
 "use client";
 
-import React from "react";
-import { UtensilsCrossed, Plus, Minus, ArrowRight, ArrowLeft, ShoppingBag, Sparkles } from "lucide-react";
+import React, { useState } from "react";
+import {
+  UtensilsCrossed,
+  Plus,
+  Minus,
+  ArrowRight,
+  ArrowLeft,
+  ShoppingBag,
+  Sparkles,
+  X,
+  Trash2,
+  Receipt,
+} from "lucide-react";
 import { MenuItem, CartItem } from "./types";
 import { DishImage } from "@/components/ui/DishImage";
 import { formatIDR } from "@/lib/utils";
@@ -29,8 +40,13 @@ export function ReservationMenuStep({
   onPrev,
   onNext,
 }: ReservationMenuStepProps) {
+  const [showCartDrawer, setShowCartDrawer] = useState(false);
+
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalCartAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const taxAmount = Math.round(totalCartAmount * 0.1);
+  const serviceAmount = Math.round(totalCartAmount * 0.05);
+  const grandTotal = totalCartAmount + taxAmount + serviceAmount;
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-fadeIn pb-24">
@@ -187,33 +203,170 @@ export function ReservationMenuStep({
         })}
       </div>
 
-      {/* Floating Bottom Cart Dock */}
+      {/* Floating Bottom Cart Dock with Detail Drawer Trigger */}
       {cart.length > 0 && (
         <div className="fixed bottom-4 left-0 right-0 z-40 px-3 sm:px-6 pointer-events-none">
           <div className="max-w-3xl mx-auto bg-[#18181B]/95 backdrop-blur-md text-white rounded-3xl p-3.5 sm:p-4 shadow-2xl flex items-center justify-between pointer-events-auto border border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#EA580C] text-white flex items-center justify-center relative">
+            <div
+              onClick={() => setShowCartDrawer(true)}
+              className="flex items-center gap-3 cursor-pointer group"
+              title="Klik untuk melihat rincian keranjang"
+            >
+              <div className="w-10 h-10 rounded-2xl bg-[#EA580C] text-white flex items-center justify-center relative group-hover:scale-105 transition-transform">
                 <ShoppingBag className="w-5 h-5" />
                 <span className="absolute -top-1.5 -right-1.5 bg-white text-[#EA580C] text-[10px] font-mono font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-xs">
                   {totalCartCount}
                 </span>
               </div>
               <div>
-                <p className="text-xs text-slate-300">Total Sementara ({totalCartCount} Hidangan)</p>
+                <p className="text-xs text-slate-300 flex items-center gap-1">
+                  <span>Total Sementara ({totalCartCount} Hidangan)</span>
+                  <span className="text-[10px] text-[#EA580C] underline font-semibold sm:inline hidden">Lihat Rincian</span>
+                </p>
                 <p className="font-mono font-bold text-sm sm:text-base text-white">
                   {formatIDR(totalCartAmount)}
                 </p>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={onNext}
-              className="px-5 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#EA580C]/30 transition-all cursor-pointer"
-            >
-              <span>Pilih Meja</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowCartDrawer(true)}
+                className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer hidden sm:flex items-center gap-1"
+              >
+                <Receipt className="w-3.5 h-3.5 text-amber-400" />
+                <span>Rincian Item</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onNext}
+                className="px-5 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#EA580C]/30 transition-all cursor-pointer"
+              >
+                <span>Pilih Meja</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cart Detail Modal / Slide-over */}
+      {showCartDrawer && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-5 sm:p-6 space-y-4 my-auto border border-slate-200/80 animate-scaleIn">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center">
+                  <ShoppingBag className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-base text-[#18181B]">
+                    Rincian Menu Jamuan Reservasi
+                  </h3>
+                  <p className="text-xs text-[#64748B]">
+                    {totalCartCount} porsi hidangan dipilih
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowCartDrawer(false)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-[#64748B] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Itemized List */}
+            <div className="max-h-72 overflow-y-auto space-y-2.5 pr-1">
+              {cart.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 bg-[#FDFBF7] rounded-2xl border border-slate-200/80 flex items-center justify-between text-xs gap-3"
+                >
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-[#18181B] truncate">{item.name}</h4>
+                    {item.selectedVariants && item.selectedVariants.length > 0 && (
+                      <p className="text-[10px] text-[#64748B] font-mono truncate">
+                        {item.selectedVariants.map((v) => v.option).join(", ")}
+                      </p>
+                    )}
+                    {item.notes && (
+                      <p className="text-[10px] text-amber-700 italic truncate">
+                        Catatan: {item.notes}
+                      </p>
+                    )}
+                    <span className="font-mono font-bold text-[#EA580C] text-[11px] block mt-0.5">
+                      {formatIDR(item.price * item.quantity)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-full p-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => onUpdateCartQty(item.menuId, -1)}
+                      className="w-5 h-5 rounded-full bg-slate-100 hover:bg-slate-200 text-[#18181B] flex items-center justify-center font-bold text-xs cursor-pointer"
+                    >
+                      <Minus className="w-2.5 h-2.5" />
+                    </button>
+                    <span className="font-mono font-bold text-xs px-1.5 min-w-[18px] text-center">
+                      {item.quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onUpdateCartQty(item.menuId, 1)}
+                      className="w-5 h-5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white flex items-center justify-center font-bold text-xs cursor-pointer"
+                    >
+                      <Plus className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Price Breakdown */}
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1.5 text-xs text-[#64748B]">
+              <div className="flex justify-between">
+                <span>Subtotal Makanan</span>
+                <span className="font-mono font-semibold text-[#18181B]">{formatIDR(totalCartAmount)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Pajak Restoran PB1 (10%)</span>
+                <span className="font-mono font-semibold text-[#18181B]">{formatIDR(taxAmount)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Biaya Pelayanan (5%)</span>
+                <span className="font-mono font-semibold text-[#18181B]">{formatIDR(serviceAmount)}</span>
+              </div>
+              <div className="flex justify-between text-sm font-bold text-[#18181B] pt-1.5 border-t border-slate-200">
+                <span className="font-serif">Estimasi Total Tagihan</span>
+                <span className="font-mono text-base text-[#EA580C]">{formatIDR(grandTotal)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowCartDrawer(false)}
+                className="px-4 py-2 rounded-full border border-slate-200 text-[#64748B] text-xs font-bold hover:bg-slate-50 cursor-pointer"
+              >
+                Tutup
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCartDrawer(false);
+                  onNext();
+                }}
+                className="px-5 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#EA580C]/25 cursor-pointer"
+              >
+                <span>Lanjut Pilih Meja</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       )}

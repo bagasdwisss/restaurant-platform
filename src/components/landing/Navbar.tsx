@@ -10,23 +10,13 @@ interface NavbarProps {
   user: any;
   logout: () => void;
   cartCount: number;
+  onOpenCart?: () => void;
 }
 
-export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
+export function Navbar({ mounted, user, logout, cartCount, onOpenCart }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { toast } = useToast();
 
   const isStaff = Boolean(user && (user.role === "admin" || user.role === "kasir"));
-
-  const handleBookingClick = (e: React.MouseEvent) => {
-    if (isStaff) {
-      e.preventDefault();
-      toast.warning(
-        "Akun Admin & Kasir tidak dapat melakukan booking reservasi. Fitur reservasi khusus untuk akun pembeli/pelanggan.",
-        "Akses Khusus Pembeli"
-      );
-    }
-  };
 
   return (
     <header className="sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#E2E8F0]/70 px-3.5 sm:px-6 lg:px-12 py-3.5 sm:py-4 transition-all">
@@ -68,16 +58,8 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
 
         {/* Right Action Group */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Mobile Instant Booking Button */}
-          {isStaff ? (
-            <button
-              type="button"
-              onClick={handleBookingClick}
-              className="sm:hidden px-3 py-1.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-xs flex items-center gap-1 cursor-pointer"
-            >
-              <span>Booking</span>
-            </button>
-          ) : (
+          {/* Mobile Instant Booking Button: Completely Hidden for Staff */}
+          {!isStaff && (
             <Link
               href="/reservation"
               className="sm:hidden px-3 py-1.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-xs flex items-center gap-1"
@@ -86,19 +68,20 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
             </Link>
           )}
 
-          {/* Cart Icon with Badge */}
-          <Link
-            href="/reservation"
+          {/* Cart Icon with Badge (Opens interactive Cart Drawer) */}
+          <button
+            type="button"
+            onClick={onOpenCart}
             className="relative p-2.5 rounded-full bg-white hover:bg-[#F3EFE6] text-[#18181B] border border-[#E2E8F0] transition-colors shadow-sm cursor-pointer"
-            title="Cart Items"
+            title="Buka Keranjang Pesanan"
           >
             <ShoppingBag className="w-4 h-4 text-[#18181B]" />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#EA580C] text-white text-[10px] font-bold flex items-center justify-center shadow-md">
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#EA580C] text-white text-[10px] font-bold flex items-center justify-center shadow-md animate-scaleIn">
                 {cartCount}
               </span>
             )}
-          </Link>
+          </button>
 
           {/* User Session or Login */}
           {mounted && user ? (
@@ -121,18 +104,8 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
                 )}
               </Link>
 
-              {/* 2. Middle Button: Booking Reservasi (between Dashboard/Profile and Logout) */}
-              {isStaff ? (
-                <button
-                  type="button"
-                  onClick={handleBookingClick}
-                  className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#EA580C]/85 hover:bg-[#EA580C] text-white font-bold text-xs shadow-cta transition-all flex items-center gap-1.5 cursor-pointer"
-                  title="Khusus Pelanggan/Pembeli"
-                >
-                  <span>Booking Reservasi</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              ) : (
+              {/* 2. Middle Button: Booking Reservasi - Completely Hidden for Staff */}
+              {!isStaff && (
                 <Link
                   href="/reservation"
                   className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white font-bold text-xs shadow-cta transition-all flex items-center gap-1.5"
@@ -240,18 +213,7 @@ export function Navbar({ mounted, user, logout, cartCount }: NavbarProps) {
                     Keluar
                   </button>
                 </div>
-                {isStaff ? (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      handleBookingClick(e);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full text-center py-2 text-xs font-bold rounded-full bg-[#EA580C]/85 hover:bg-[#EA580C] text-white cursor-pointer"
-                  >
-                    Booking Reservasi
-                  </button>
-                ) : (
+                {!isStaff && (
                   <Link
                     href="/reservation"
                     onClick={() => setMobileMenuOpen(false)}

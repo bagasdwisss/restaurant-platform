@@ -7,7 +7,17 @@ export async function GET(request: NextRequest) {
     const auth = await requireAuth(request, ["admin"]);
     if (!auth.authorized) return auth.response!;
 
-    const [aggregates, payments, topItemGroups, recentOrders, allMenus] = await Promise.all([
+    const [
+      aggregates,
+      payments,
+      topItemGroups,
+      recentOrders,
+      allMenus,
+      tableCount,
+      ingredientCount,
+      voucherCount,
+      userCount,
+    ] = await Promise.all([
       prisma.order.aggregate({
         where: { paymentStatus: "paid" },
         _sum: {
@@ -34,13 +44,15 @@ export async function GET(request: NextRequest) {
       prisma.order.findMany({
         where: { paymentStatus: "paid" },
         orderBy: { createdAt: "desc" },
-        take: 50,
+        take: 100,
         select: {
           id: true,
           orderNumber: true,
           customerName: true,
           totalAmount: true,
+          subtotal: true,
           paymentMethod: true,
+          orderType: true,
           createdAt: true,
           status: true,
         },
@@ -48,6 +60,10 @@ export async function GET(request: NextRequest) {
       prisma.menu.findMany({
         select: { id: true, name: true, price: true, image: true },
       }),
+      prisma.table.count(),
+      prisma.ingredient.count(),
+      prisma.voucher.count(),
+      prisma.user.count(),
     ]);
 
     const totalRevenue = aggregates._sum.totalAmount || 0;
@@ -91,6 +107,56 @@ export async function GET(request: NextRequest) {
       .slice(0, 10)
       .map((m) => ({ name: m.name, price: m.price, sales: 0 }));
 
+    // 1. Daily trend (past 7 days)
+    const dailyMap = new Map<string, { date: string; label: string; revenue: number; profit: number; count: number }>();
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      const dayName = d.toLocaleDateString("id-ID", { weekday: "short" });
+      dailyMap.set(key, { date: key, label: dayName, revenue: 0, profit: 0, count: 0 });
+    }
+
+    // 2. Order type breakdown
+    const orderTypeBreakdown: Record<string, { count: number; revenue: number }> = {
+      dine_in: { count: 0, revenue: 0 },
+      takeaway: { count: 0, revenue: 0 },
+      reservation: { count: 0, revenue: 0 },
+    };
+
+    // 3. Peak dining hours (11:00 - 22:00)
+    const hourlyDistribution: Record<string, number> = {
+      "11:00": 0, "12:00": 0, "13:00": 0, "14:00": 0,
+      "15:00": 0, "16:00": 0, "17:00": 0, "18:00": 0,
+      "19:00": 0, "20:00": 0, "21:00": 0, "22:00": 0,
+    };
+
+    for (const ord of recentOrders) {
+      const dateKey = new Date(ord.createdAt).toISOString().slice(0, 10);
+      if (dailyMap.has(dateKey)) {
+        const item = dailyMap.get(dateKey)!;
+        item.revenue += ord.totalAmount;
+        item.profit += Math.max(0, Math.round(ord.totalAmount - (ord.subtotal * 0.35)));
+        item.count += 1;
+      }
+
+      const oType = ord.orderType || "dine_in";
+      if (!orderTypeBreakdown[oType]) {
+        orderTypeBreakdown[oType] = { count: 0, revenue: 0 };
+      }
+      orderTypeBreakdown[oType].count += 1;
+      orderTypeBreakdown[oType].revenue += ord.totalAmount;
+
+      const hour = new Date(ord.createdAt).getHours();
+      const hourSlot = `${String(hour).padStart(2, "0")}:00`;
+      if (hourlyDistribution[hourSlot] !== undefined) {
+        hourlyDistribution[hourSlot] += 1;
+      }
+    }
+
+    const dailyTrend = Array.from(dailyMap.values());
+
     return NextResponse.json({
       success: true,
       data: {
@@ -109,9 +175,19 @@ export async function GET(request: NextRequest) {
           qris: qrisTotal,
           debit: debitTotal,
         },
+        orderTypeBreakdown,
+        dailyTrend,
+        hourlyDistribution,
         topSellingItems,
         deadStockItems,
         recentOrders,
+        counts: {
+          menus: allMenus.length,
+          tables: tableCount,
+          ingredients: ingredientCount,
+          vouchers: voucherCount,
+          users: userCount,
+        },
       },
     });
   } catch (error: any) {
