@@ -103,28 +103,28 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss:
         const isWarning = item.type === "warning";
 
         const cardBorder = isError
-          ? "border-rose-500/80 border-l-[6px] border-l-rose-500"
+          ? "border-slate-200 border-l-[6px] border-l-rose-600"
           : isSuccess
-          ? "border-emerald-500/80 border-l-[6px] border-l-emerald-500"
+          ? "border-slate-200 border-l-[6px] border-l-emerald-600"
           : isWarning
-          ? "border-amber-500/80 border-l-[6px] border-l-amber-500"
-          : "border-[#EA580C]/80 border-l-[6px] border-l-[#EA580C]";
+          ? "border-slate-200 border-l-[6px] border-l-amber-500"
+          : "border-slate-200 border-l-[6px] border-l-[#EA580C]";
 
         const iconContainer = isError
-          ? "bg-rose-600 text-white shadow-md shadow-rose-600/40"
+          ? "bg-rose-50 text-rose-600 border border-rose-200/80"
           : isSuccess
-          ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/40"
+          ? "bg-emerald-50 text-emerald-700 border border-emerald-200/80"
           : isWarning
-          ? "bg-amber-500 text-black shadow-md shadow-amber-500/40"
-          : "bg-[#EA580C] text-white shadow-md shadow-[#EA580C]/40";
+          ? "bg-amber-50 text-amber-700 border border-amber-200/80"
+          : "bg-orange-50 text-[#EA580C] border border-orange-200/80";
 
         const badgeColor = isError
-          ? "text-rose-400"
+          ? "text-rose-700"
           : isSuccess
-          ? "text-emerald-400"
+          ? "text-emerald-700"
           : isWarning
-          ? "text-amber-400"
-          : "text-[#FB923C]";
+          ? "text-amber-800"
+          : "text-[#EA580C]";
 
         const defaultTitle = isError
           ? "Peringatan / Kendala"
@@ -146,7 +146,8 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss:
           <div
             key={item.id}
             role="status"
-            className={`pointer-events-auto bg-[#131B16] rounded-2xl border ${cardBorder} p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/15 flex items-start gap-3.5 transition-all duration-300 animate-toast`}
+            style={{ backgroundColor: "#ffffff", opacity: 1 }}
+            className={`pointer-events-auto rounded-2xl border ${cardBorder} p-4 shadow-[0_20px_45px_rgba(0,0,0,0.22)] flex items-start gap-3.5 transition-all duration-300 animate-toast`}
           >
             {/* Status Icon */}
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconContainer}`}>
@@ -155,12 +156,12 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss:
 
             {/* Content */}
             <div className="flex-1 min-w-0 pr-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`text-xs font-mono uppercase tracking-wider font-extrabold ${badgeColor}`}>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className={`text-[11px] font-mono uppercase tracking-wider font-extrabold ${badgeColor}`}>
                   {item?.title || defaultTitle}
                 </span>
               </div>
-              <p className="text-xs sm:text-[13px] text-white font-medium font-sans leading-snug break-words">
+              <p className="text-xs sm:text-[13px] text-slate-900 font-medium font-sans leading-snug break-words">
                 {item?.message || ""}
               </p>
             </div>
@@ -168,7 +169,7 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss:
             {/* Dismiss Button */}
             <button
               onClick={() => onDismiss(item?.id)}
-              className="text-stone-300 hover:text-white p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors cursor-pointer shrink-0"
+              className="text-slate-400 hover:text-slate-700 p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer shrink-0"
               title="Tutup Notifikasi"
             >
               <X className="w-4 h-4 stroke-[2.2]" />

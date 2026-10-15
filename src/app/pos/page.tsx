@@ -220,7 +220,6 @@ export default function PosCashierPage() {
     setIsRefreshingOrders(true);
     try {
       await fetchAllData();
-      toast.success("Data pesanan berhasil disinkronkan secara real-time.", "Sinkronisasi Berhasil");
     } catch {
       toast.error("Gagal menyinkronkan data pesanan.", "Gangguan Koneksi");
     } finally {

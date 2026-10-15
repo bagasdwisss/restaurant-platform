@@ -283,7 +283,6 @@ export default function SavoriaReservationPage() {
         },
       ]);
     }
-    toast.success(`"${menu.name}" berhasil ditambahkan ke keranjang.`, "Menu Ditambahkan");
   };
 
   const handleToggleModifier = (groupId: number, optionId: number, maxSelection: number) => {
@@ -367,7 +366,6 @@ export default function SavoriaReservationPage() {
       ]);
     }
 
-    toast.success(`"${customizingMenu.name}" dengan kustomisasi ditambahkan ke keranjang!`, "Menu Ditambahkan");
     setCustomizingMenu(null);
   };
 
@@ -386,7 +384,6 @@ export default function SavoriaReservationPage() {
   // Table confirmation & advance directly to Payment
   const handleConfirmTableAndAdvance = (table: TableItem) => {
     setSelectedTable(table);
-    toast.success(`Meja ${table.tableNumber} dikonfirmasi! Lanjut ke pembayaran.`, "Meja Dipilih");
     setCurrentStep(4);
   };
 

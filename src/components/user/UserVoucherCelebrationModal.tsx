@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, Gift, Check, Copy, CheckCircle2, ArrowRight } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
-import { useToast } from "@/lib/toast-context";
 import { Modal } from "@/components/ui/Modal";
 
 interface UserVoucherCelebrationModalProps {
@@ -17,7 +16,6 @@ export function UserVoucherCelebrationModal({
   onClose,
 }: UserVoucherCelebrationModalProps) {
   const router = useRouter();
-  const { toast } = useToast();
   const [copiedRewardCode, setCopiedRewardCode] = useState(false);
 
   if (!voucher) return null;
@@ -27,7 +25,6 @@ export function UserVoucherCelebrationModal({
       navigator.clipboard.writeText(code);
     }
     setCopiedRewardCode(true);
-    toast.success(`Kode voucher ${code} berhasil disalin!`, "Disalin ke Clipboard");
     setTimeout(() => setCopiedRewardCode(false), 3000);
   };
 

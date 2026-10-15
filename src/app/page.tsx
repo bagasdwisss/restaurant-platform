@@ -112,10 +112,8 @@ export default function DribbbleModernLandingPage() {
   const toggleWishlist = (id: number) => {
     if (wishlist.includes(id)) {
       setWishlist(wishlist.filter((x) => x !== id));
-      toast.info("Menu dihapus dari daftar favorit.", "Favorit");
     } else {
       setWishlist([...wishlist, id]);
-      toast.success("Menu ditambahkan ke daftar favorit!", "Favorit");
     }
   };
 
@@ -129,7 +127,6 @@ export default function DribbbleModernLandingPage() {
       notes: "",
       selectedVariants: [],
     });
-    toast.success(`"${dish.name}" berhasil masuk ke keranjang pesanan!`, "Keranjang Pesanan");
     setShowCartDrawer(true);
   };
 

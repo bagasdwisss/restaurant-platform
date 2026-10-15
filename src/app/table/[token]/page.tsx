@@ -294,7 +294,6 @@ export default function CustomerTablePage({
       selectedVariants,
     });
 
-    toast.success(`"${selectedMenu.name}" berhasil masuk ke pesanan meja!`, "Keranjang Meja");
     setSelectedMenu(null);
   };
 
