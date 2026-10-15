@@ -11,7 +11,6 @@ import {
   Sparkles,
   BellRing,
   Coffee,
-  Fingerprint,
 } from "lucide-react";
 
 interface PosHeaderProps {
@@ -24,7 +23,6 @@ interface PosHeaderProps {
   onOpenShiftModal: () => void;
   onCloseShiftModal: () => void;
   onOpenWaiterCalls?: () => void;
-  onOpenAttendance?: () => void;
   onLogout: () => void;
 }
 
@@ -38,7 +36,6 @@ export function PosHeader({
   onOpenShiftModal,
   onCloseShiftModal,
   onOpenWaiterCalls,
-  onOpenAttendance,
   onLogout,
 }: PosHeaderProps) {
 
@@ -164,18 +161,6 @@ export function PosHeader({
             >
               <BellRing className="w-3.5 h-3.5 text-slate-400" />
               <span className="hidden sm:inline">Panggilan Tamu</span>
-            </button>
-          )}
-
-          {onOpenAttendance && (
-            <button
-              type="button"
-              onClick={onOpenAttendance}
-              className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
-              title="Terminal Presensi Staf (PIN / Biometrik)"
-            >
-              <Fingerprint className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="hidden sm:inline">Presensi Staf</span>
             </button>
           )}
 

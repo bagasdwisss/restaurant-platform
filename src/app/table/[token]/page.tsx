@@ -15,7 +15,6 @@ import {
   AlertCircle,
   ArrowRight,
   RefreshCw,
-  Flame,
 } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { useCartStore, SelectedVariant } from "@/lib/cart-store";
@@ -23,7 +22,6 @@ import { TableHeroHeader } from "@/components/table/TableHeroHeader";
 import { TableActiveOrderCard } from "@/components/table/TableActiveOrderCard";
 import { TableMenuCustomizerModal } from "@/components/table/TableMenuCustomizerModal";
 import { TableCartDrawer } from "@/components/table/TableCartDrawer";
-import { SteakDonenessFlavorModal } from "@/components/menu/SteakDonenessFlavorModal";
 
 interface Option {
   id: number;
@@ -78,7 +76,6 @@ export default function CustomerTablePage({
 
   // Modal customization state
   const [selectedMenu, setSelectedMenu] = useState<MenuItem | null>(null);
-  const [steakStudioMenu, setSteakStudioMenu] = useState<any | null>(null);
   const [customModifiers, setCustomModifiers] = useState<Record<number, number[]>>({});
   const [itemNotes, setItemNotes] = useState("");
   const [itemQty, setItemQty] = useState(1);
@@ -300,26 +297,6 @@ export default function CustomerTablePage({
     setSelectedMenu(null);
   };
 
-  const handleConfirmSteakCustomization = (customization: any) => {
-    if (!steakStudioMenu) return;
-    const selectedVariants: SelectedVariant[] = [
-      { group: "Tingkat Kematangan", option: customization.doneness, extraPrice: 0 },
-      { group: "Artisan Butter", option: customization.butterGlaze, extraPrice: customization.butterExtraPrice },
-      { group: "Garam & Bumbu", option: customization.saltLevelName, extraPrice: 0 },
-      { group: "Kerak Karamel", option: customization.pepperCrust, extraPrice: 0 },
-    ];
-    cart.addItem({
-      menuId: steakStudioMenu.id,
-      name: steakStudioMenu.name,
-      price: steakStudioMenu.price + customization.extraTotalPrice,
-      image: steakStudioMenu.image,
-      quantity: 1,
-      notes: customization.summaryNotes,
-      selectedVariants,
-    });
-    setSteakStudioMenu(null);
-  };
-
   // Submit order to cashier
   const handleCheckout = async () => {
     if (cart.items.length === 0) {
@@ -513,32 +490,16 @@ export default function CustomerTablePage({
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-1.5 pt-3 mt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between pt-3 mt-2 border-t border-slate-100">
                   <span className="font-serif font-bold text-sm text-[#EA580C] font-mono">
                     {formatIDR(menu.price)}
                   </span>
-                  <div className="flex items-center gap-1.5">
-                    {/steak|wagyu|ribeye|tenderloin|beef|tomahawk|lamb|grill/i.test(menu.name + " " + (menu.description || "")) && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSteakStudioMenu(menu);
-                        }}
-                        className="px-2 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 border border-amber-300 rounded-full text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all active:scale-95"
-                        title="Atur tingkat kematangan & bumbu"
-                      >
-                        <Flame className="w-3 h-3 text-[#EA580C]" />
-                        <span>Doneness &amp; Rasa</span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-[#EA580C] text-[#18181B] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-[#EA580C] text-[#18181B] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -602,16 +563,6 @@ export default function CustomerTablePage({
           isSubmitting={isSubmitting}
           onClose={() => setIsCartOpen(false)}
           onCheckout={handleCheckout}
-        />
-      )}
-
-      {/* Modal Steak Doneness & Flavor Studio */}
-      {steakStudioMenu && (
-        <SteakDonenessFlavorModal
-          isOpen={Boolean(steakStudioMenu)}
-          onClose={() => setSteakStudioMenu(null)}
-          menuItem={steakStudioMenu}
-          onConfirm={handleConfirmSteakCustomization}
         />
       )}
     </div>

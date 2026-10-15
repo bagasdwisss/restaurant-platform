@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
@@ -18,12 +18,6 @@ import { ReservationStepsNav } from "@/components/reservation/ReservationStepsNa
 import { ReservationScheduleStep } from "@/components/reservation/ReservationScheduleStep";
 import { ReservationMenuStep } from "@/components/reservation/ReservationMenuStep";
 
-const StepLoading = ({ title }: { title: string }) => (
-  <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-xs text-center py-24 text-slate-400 text-xs font-serif font-bold animate-pulse">
-    {title}
-  </div>
-);
-
 // Dynamic Code-Splitting Lazy Loading for Heavy Steps & Modals
 const ReservationFloorPlanStep = dynamic(
   () =>
@@ -31,7 +25,19 @@ const ReservationFloorPlanStep = dynamic(
       (m) => m.ReservationFloorPlanStep
     ),
   {
-    loading: () => <StepLoading title="Memuat Arsitektur Denah Meja SAVORIA..." />,
+    loading: () => (
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6 animate-pulse">
+        <div className="space-y-2">
+          <div className="h-6 w-56 bg-slate-200 rounded-lg" />
+          <div className="h-3.5 w-80 bg-slate-100 rounded-full" />
+        </div>
+        <div className="h-[460px] w-full bg-slate-100 rounded-2xl flex items-center justify-center">
+          <div className="text-slate-400 text-xs font-serif font-bold">
+            Memuat Arsitektur Denah Meja SAVORIA...
+          </div>
+        </div>
+      </div>
+    ),
     ssr: false,
   }
 );
@@ -42,7 +48,19 @@ const ReservationPaymentStep = dynamic(
       (m) => m.ReservationPaymentStep
     ),
   {
-    loading: () => <StepLoading title="Memuat Kanal Pembayaran Digital..." />,
+    loading: () => (
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6 animate-pulse">
+        <div className="space-y-2">
+          <div className="h-6 w-48 bg-slate-200 rounded-lg" />
+          <div className="h-3.5 w-72 bg-slate-100 rounded-full" />
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-16 w-full bg-slate-100 rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    ),
     ssr: false,
   }
 );
@@ -53,7 +71,14 @@ const ReservationReceiptStep = dynamic(
       (m) => m.ReservationReceiptStep
     ),
   {
-    loading: () => <StepLoading title="Menyiapkan E-Struk & QR Pass..." />,
+    loading: () => (
+      <div className="max-w-md mx-auto bg-white p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-4 animate-pulse">
+        <div className="w-16 h-16 rounded-full bg-slate-200 mx-auto" />
+        <div className="h-6 w-48 bg-slate-200 rounded-lg mx-auto" />
+        <div className="h-3 w-64 bg-slate-100 rounded-full mx-auto" />
+        <div className="h-48 w-full bg-slate-100 rounded-2xl mt-4" />
+      </div>
+    ),
     ssr: false,
   }
 );
@@ -62,22 +87,6 @@ const MenuCustomizationModal = dynamic(
   () =>
     import("@/components/reservation/MenuCustomizationModal").then(
       (m) => m.MenuCustomizationModal
-    ),
-  { ssr: false }
-);
-
-const SteakDonenessFlavorModal = dynamic(
-  () =>
-    import("@/components/menu/SteakDonenessFlavorModal").then(
-      (m) => m.SteakDonenessFlavorModal
-    ),
-  { ssr: false }
-);
-
-const DynamicQrisModal = dynamic(
-  () =>
-    import("@/components/payment/DynamicQrisModal").then(
-      (m) => m.DynamicQrisModal
     ),
   { ssr: false }
 );
@@ -125,19 +134,10 @@ export default function SavoriaReservationPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodId>("qris");
   const [paymentCategory, setPaymentCategory] = useState<string>("all");
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
-  const [showDynamicQrisModal, setShowDynamicQrisModal] = useState<boolean>(false);
 
   // STEP 5 STATE: Final Completed Order & QR Receipt
   const [completedOrder, setCompletedOrder] = useState<any>(null);
   const [receiptQrDataUrl, setReceiptQrDataUrl] = useState<string>("");
-  const [steakStudioMenu, setSteakStudioMenu] = useState<MenuItem | null>(null);
-
-  const totalReservationAmount = useMemo(() => {
-    const sub = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const tax = Math.round(sub * 0.1);
-    const srv = Math.round(sub * 0.05);
-    return sub + tax + srv;
-  }, [cart]);
 
   // Strict Staff Guard: Admin & Kasir are strictly blocked from reservation booking
   const isStaff = Boolean(user && (user.role === "admin" || user.role === "kasir"));
@@ -369,28 +369,6 @@ export default function SavoriaReservationPage() {
     setCustomizingMenu(null);
   };
 
-  const handleConfirmSteakCustomization = (customization: any) => {
-    if (!steakStudioMenu) return;
-    const variantsList = [
-      { group: "Tingkat Kematangan", option: customization.doneness, extraPrice: 0 },
-      { group: "Artisan Butter", option: customization.butterGlaze, extraPrice: customization.butterExtraPrice },
-      { group: "Garam & Bumbu", option: customization.saltLevelName, extraPrice: 0 },
-      { group: "Kerak Karamel", option: customization.pepperCrust, extraPrice: 0 },
-    ];
-    setCart([
-      ...cart,
-      {
-        menuId: steakStudioMenu.id,
-        name: steakStudioMenu.name,
-        price: steakStudioMenu.price + customization.extraTotalPrice,
-        quantity: 1,
-        selectedVariants: variantsList,
-        notes: customization.summaryNotes,
-      },
-    ]);
-    setSteakStudioMenu(null);
-  };
-
   const handleUpdateCartQty = (menuId: number, delta: number) => {
     const updated = cart
       .map((item) => {
@@ -410,7 +388,7 @@ export default function SavoriaReservationPage() {
   };
 
   // Process Complete Reservation & Payment
-  const handleExecutePayment = async (voucherCode?: string, bypassQris = false) => {
+  const handleExecutePayment = async (voucherCode?: string) => {
     if (!user) {
       toast.error("Sesi login Anda belum aktif. Harap masuk terlebih dahulu untuk menyelesaikan reservasi.", "Otorisasi Diperlukan");
       router.push("/login?redirect=/reservation");
@@ -434,11 +412,6 @@ export default function SavoriaReservationPage() {
     if (cart.length === 0) {
       toast.warning("Pilih setidaknya 1 hidangan untuk jamuan Anda.", "Keranjang Menu Kosong");
       setCurrentStep(2);
-      return;
-    }
-
-    if (paymentMethod === "qris" && !bypassQris) {
-      setShowDynamicQrisModal(true);
       return;
     }
 
@@ -670,7 +643,6 @@ export default function SavoriaReservationPage() {
             cart={cart}
             onAddToCart={handleAddToCart}
             onUpdateCartQty={handleUpdateCartQty}
-            onOpenSteakStudio={(menu) => setSteakStudioMenu(menu)}
             onPrev={() => setCurrentStep(1)}
             onNext={() => {
               if (cart.length === 0) {
@@ -733,30 +705,6 @@ export default function SavoriaReservationPage() {
           onChangeNotes={setItemNotes}
           onConfirm={handleConfirmCustomization}
           onClose={() => setCustomizingMenu(null)}
-        />
-      )}
-
-      {/* MODAL: STEAK DONENESS & FLAVOR MATRIX */}
-      {steakStudioMenu && (
-        <SteakDonenessFlavorModal
-          isOpen={Boolean(steakStudioMenu)}
-          onClose={() => setSteakStudioMenu(null)}
-          menuItem={steakStudioMenu}
-          onConfirm={handleConfirmSteakCustomization}
-        />
-      )}
-
-      {/* MODAL: DYNAMIC QRIS (1-DETIK WEBHOOK SETTLEMENT) */}
-      {showDynamicQrisModal && (
-        <DynamicQrisModal
-          isOpen={showDynamicQrisModal}
-          onClose={() => setShowDynamicQrisModal(false)}
-          amount={totalReservationAmount}
-          customerName={customerName || (user ? user.name : "Tamu VIP")}
-          onPaymentSuccess={() => {
-            setShowDynamicQrisModal(false);
-            handleExecutePayment(undefined, true);
-          }}
         />
       )}
     </div>
