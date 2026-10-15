@@ -25,7 +25,7 @@ export function AdminHeader({
   isExportingExcel = false,
 }: AdminHeaderProps) {
   return (
-    <header className="bg-white border-b border-[#E2E8F0] px-3.5 sm:px-8 py-3 sm:py-4 sticky top-0 z-40 backdrop-blur-md bg-white/95">
+    <header className="bg-white border-b border-[#E2E8F0] px-3.5 sm:px-8 py-3 sm:py-4 sticky top-0 z-30 backdrop-blur-md bg-white/95">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           {onToggleMobileSidebar && (

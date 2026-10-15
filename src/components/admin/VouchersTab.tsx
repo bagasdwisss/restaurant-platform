@@ -22,6 +22,7 @@ import {
   Info,
 } from "lucide-react";
 import { formatIDR, formatDate } from "@/lib/utils";
+import { Modal } from "@/components/ui/Modal";
 
 export interface VoucherItem {
   id: string;
@@ -446,10 +447,9 @@ export function VouchersTab({
       )}
 
       {/* Modal: Buat Voucher Baru */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 my-8">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>
+        <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 my-8">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-orange-100 text-[#EA580C] flex items-center justify-center">
                   <Ticket className="w-4 h-4" />
@@ -665,8 +665,7 @@ export function VouchersTab({
               </div>
             </form>
           </div>
-        </div>
-      )}
-    </div>
+        </Modal>
+      </div>
   );
 }

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { Plus, Search, Edit, Trash2, Coffee, X, RefreshCw } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
+import { Modal } from "@/components/ui/Modal";
 
 interface MenusTabProps {
   menus: any[];
@@ -336,113 +337,117 @@ export function MenusTab({
       </div>
 
       {/* MODAL: ADD MENU */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-serif font-bold text-[#18181B] text-base">Tambah Menu Baru</h3>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-bold text-[#18181B] block mb-1">Kategori</label>
-                <select
-                  value={menuForm.categoryId}
-                  onChange={(e) => setMenuForm({ ...menuForm, categoryId: e.target.value })}
-                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl bg-white"
-                >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#18181B] block mb-1">Nama Menu</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Wagyu A5 Striploin"
-                  value={menuForm.name}
-                  onChange={(e) => setMenuForm({ ...menuForm, name: e.target.value })}
-                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#18181B] block mb-1">Harga (IDR)</label>
-                <input
-                  type="number"
-                  placeholder="450000"
-                  value={menuForm.price}
-                  onChange={(e) => setMenuForm({ ...menuForm, price: e.target.value })}
-                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#18181B] block mb-1">URL Foto (Unsplash)</label>
-                <input
-                  type="text"
-                  value={menuForm.image}
-                  onChange={(e) => setMenuForm({ ...menuForm, image: e.target.value })}
-                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#18181B] block mb-1">Deskripsi Singkat</label>
-                <textarea
-                  rows={2}
-                  value={menuForm.description}
-                  onChange={(e) => setMenuForm({ ...menuForm, description: e.target.value })}
-                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
-                />
-              </div>
-            </div>
-
+      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)}>
+        <div className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="font-serif font-bold text-[#18181B] text-base">Tambah Menu Baru</h3>
             <button
-              onClick={handleCreate}
-              disabled={isCreating}
-              className="w-full bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white font-bold py-3 rounded-full text-xs transition-all shadow-md shadow-[#EA580C]/25 flex items-center justify-center gap-2 cursor-pointer"
+              onClick={() => setShowAddModal(false)}
+              className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
             >
-              {isCreating ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Menyimpan Menu...</span>
-                </>
-              ) : (
-                <span>Simpan Menu Baru</span>
-              )}
+              <X className="w-5 h-5" />
             </button>
           </div>
-        </div>
-      )}
 
-      {/* MODAL: EDIT MENU */}
-      {showEditModal && editMenuForm && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-serif font-bold text-[#18181B] text-base">Edit Menu</h3>
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditMenuForm(null);
-                }}
-                className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-bold text-[#18181B] block mb-1">Kategori</label>
+              <select
+                value={menuForm.categoryId}
+                onChange={(e) => setMenuForm({ ...menuForm, categoryId: e.target.value })}
+                className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl bg-white"
               >
-                <X className="w-5 h-5" />
-              </button>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
+            <div>
+              <label className="text-xs font-bold text-[#18181B] block mb-1">Nama Menu</label>
+              <input
+                type="text"
+                placeholder="Contoh: Wagyu A5 Striploin"
+                value={menuForm.name}
+                onChange={(e) => setMenuForm({ ...menuForm, name: e.target.value })}
+                className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-[#18181B] block mb-1">Harga (IDR)</label>
+              <input
+                type="number"
+                placeholder="450000"
+                value={menuForm.price}
+                onChange={(e) => setMenuForm({ ...menuForm, price: e.target.value })}
+                className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-[#18181B] block mb-1">URL Foto (Unsplash)</label>
+              <input
+                type="text"
+                value={menuForm.image}
+                onChange={(e) => setMenuForm({ ...menuForm, image: e.target.value })}
+                className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-[#18181B] block mb-1">Deskripsi Singkat</label>
+              <textarea
+                rows={2}
+                value={menuForm.description}
+                onChange={(e) => setMenuForm({ ...menuForm, description: e.target.value })}
+                className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={handleCreate}
+            disabled={isCreating}
+            className="w-full bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white font-bold py-3 rounded-full text-xs transition-all shadow-md shadow-[#EA580C]/25 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            {isCreating ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Menyimpan Menu...</span>
+              </>
+            ) : (
+              <span>Simpan Menu Baru</span>
+            )}
+          </button>
+        </div>
+      </Modal>
+
+      {/* MODAL: EDIT MENU */}
+      <Modal
+        isOpen={Boolean(showEditModal && editMenuForm)}
+        onClose={() => {
+          setShowEditModal(false);
+          setEditMenuForm(null);
+        }}
+      >
+        <div className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="font-serif font-bold text-[#18181B] text-base">Edit Menu</h3>
+            <button
+              onClick={() => {
+                setShowEditModal(false);
+                setEditMenuForm(null);
+              }}
+              className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {editMenuForm && (
             <div className="space-y-3">
               <div>
                 <label className="text-xs font-bold text-[#18181B] block mb-1">Kategori</label>
@@ -514,37 +519,37 @@ export function MenusTab({
                 </label>
               </div>
             </div>
+          )}
 
-            <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditMenuForm(null);
-                }}
-                className="flex-1 py-3 rounded-full border border-slate-200 text-xs font-bold text-[#64748B] hover:bg-slate-50 cursor-pointer"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleUpdate}
-                disabled={isUpdating}
-                className="flex-1 py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white text-xs font-bold cursor-pointer shadow-md shadow-[#EA580C]/25 flex items-center justify-center gap-2"
-              >
-                {isUpdating ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Menyimpan...</span>
-                  </>
-                ) : (
-                  <span>Simpan Perubahan</span>
-                )}
-              </button>
-            </div>
+          <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => {
+                setShowEditModal(false);
+                setEditMenuForm(null);
+              }}
+              className="flex-1 py-3 rounded-full border border-slate-200 text-xs font-bold text-[#64748B] hover:bg-slate-50 cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleUpdate}
+              disabled={isUpdating}
+              className="flex-1 py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white text-xs font-bold cursor-pointer shadow-md shadow-[#EA580C]/25 flex items-center justify-center gap-2"
+            >
+              {isUpdating ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <span>Simpan Perubahan</span>
+              )}
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

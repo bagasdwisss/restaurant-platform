@@ -17,6 +17,7 @@ import {
   Edit,
   Eye,
 } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
 
 interface TablesTabProps {
   tables: any[];
@@ -426,190 +427,192 @@ export function TablesTab({
       </div>
 
       {/* MODAL: ADD TABLE */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-sm rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="font-serif font-bold text-[#18181B] text-base">Tambah Meja Baru</h3>
-                <p className="text-xs text-[#64748B]">Generate otomatis token QR pemesanan unik</p>
-              </div>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)}>
+        <div className="bg-white w-full max-w-sm rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="font-serif font-bold text-[#18181B] text-base">Tambah Meja Baru</h3>
+              <p className="text-xs text-[#64748B]">Generate otomatis token QR pemesanan unik</p>
+            </div>
+            <button
+              onClick={() => setShowAddModal(false)}
+              className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="space-y-3 text-xs">
+            <div>
+              <label className="block text-[#64748B] font-bold mb-1">Nomor / Nama Meja</label>
+              <input
+                type="text"
+                placeholder="Contoh: Table 12 / VIP Room 01"
+                value={tableForm.tableNumber}
+                onChange={(e) => setTableForm({ ...tableForm, tableNumber: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden"
+              />
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block text-[#64748B] font-bold mb-1">Nomor / Nama Meja</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Table 12 / VIP Room 01"
-                  value={tableForm.tableNumber}
-                  onChange={(e) => setTableForm({ ...tableForm, tableNumber: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden"
-                />
+            <div>
+              <label className="block text-[#64748B] font-bold mb-1">Kapasitas (Pax / Kursi)</label>
+              <div className="grid grid-cols-4 gap-2 mb-2">
+                {["2", "4", "6", "8"].map((cap) => (
+                  <button
+                    key={cap}
+                    type="button"
+                    onClick={() => setTableForm({ ...tableForm, capacity: cap })}
+                    className={`py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      tableForm.capacity === cap
+                        ? "bg-[#18181B] text-white border-[#18181B]"
+                        : "border-slate-200 text-[#64748B] hover:bg-slate-50"
+                    }`}
+                  >
+                    {cap} Orang
+                  </button>
+                ))}
               </div>
-
-              <div>
-                <label className="block text-[#64748B] font-bold mb-1">Kapasitas (Pax / Kursi)</label>
-                <div className="grid grid-cols-4 gap-2 mb-2">
-                  {["2", "4", "6", "8"].map((cap) => (
-                    <button
-                      key={cap}
-                      type="button"
-                      onClick={() => setTableForm({ ...tableForm, capacity: cap })}
-                      className={`py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                        tableForm.capacity === cap
-                          ? "bg-[#18181B] text-white border-[#18181B]"
-                          : "border-slate-200 text-[#64748B] hover:bg-slate-50"
-                      }`}
-                    >
-                      {cap} Orang
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="number"
-                  placeholder="Atau masukkan angka bebas..."
-                  value={tableForm.capacity}
-                  onChange={(e) => setTableForm({ ...tableForm, capacity: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[#64748B] font-bold mb-1">Zona / Area Restoran</label>
-                <select
-                  value={tableForm.area}
-                  onChange={(e) => setTableForm({ ...tableForm, area: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden bg-white"
-                >
-                  <option value="Indoor">Indoor (Main Dining Hall)</option>
-                  <option value="Outdoor">Outdoor Garden Terrace</option>
-                  <option value="VIP Room">Private VIP Chamber</option>
-                  <option value="Rooftop">Rooftop Skyview</option>
-                </select>
-              </div>
+              <input
+                type="number"
+                placeholder="Atau masukkan angka bebas..."
+                value={tableForm.capacity}
+                onChange={(e) => setTableForm({ ...tableForm, capacity: e.target.value })}
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden"
+              />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 rounded-full border border-slate-200 text-[#64748B] text-xs font-bold cursor-pointer"
+            <div>
+              <label className="block text-[#64748B] font-bold mb-1">Zona / Area Restoran</label>
+              <select
+                value={tableForm.area}
+                onChange={(e) => setTableForm({ ...tableForm, area: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden bg-white"
               >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleCreate}
-                disabled={isCreating || !tableForm.tableNumber}
-                className="px-5 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold disabled:opacity-50 flex items-center gap-1.5 shadow-md shadow-[#EA580C]/25 cursor-pointer"
-              >
-                {isCreating ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-                <span>Simpan Meja</span>
-              </button>
+                <option value="Indoor">Indoor (Main Dining Hall)</option>
+                <option value="Outdoor">Outdoor Garden Terrace</option>
+                <option value="VIP Room">Private VIP Chamber</option>
+                <option value="Rooftop">Rooftop Skyview</option>
+              </select>
             </div>
           </div>
+
+          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowAddModal(false)}
+              className="px-4 py-2 rounded-full border border-slate-200 text-[#64748B] text-xs font-bold cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleCreate}
+              disabled={isCreating || !tableForm.tableNumber}
+              className="px-5 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold disabled:opacity-50 flex items-center gap-1.5 shadow-md shadow-[#EA580C]/25 cursor-pointer"
+            >
+              {isCreating ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+              <span>Simpan Meja</span>
+            </button>
+          </div>
         </div>
-      )}
+      </Modal>
 
       {/* MODAL: EDIT TABLE */}
-      {showEditModal && editingTable && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-sm rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="font-serif font-bold text-[#18181B] text-base">Edit Data Meja</h3>
-                <p className="text-xs text-[#64748B]">{editingTable.tableNumber}</p>
-              </div>
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <Modal
+        isOpen={Boolean(showEditModal && editingTable)}
+        onClose={() => setShowEditModal(false)}
+      >
+        <div className="bg-white w-full max-w-sm rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="font-serif font-bold text-[#18181B] text-base">Edit Data Meja</h3>
+              <p className="text-xs text-[#64748B]">{editingTable?.tableNumber}</p>
+            </div>
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="space-y-3 text-xs">
+            <div>
+              <label className="block text-[#64748B] font-bold mb-1">Nomor / Nama Meja</label>
+              <input
+                type="text"
+                value={editForm.tableNumber}
+                onChange={(e) => setEditForm({ ...editForm, tableNumber: e.target.value })}
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden"
+              />
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block text-[#64748B] font-bold mb-1">Nomor / Nama Meja</label>
-                <input
-                  type="text"
-                  value={editForm.tableNumber}
-                  onChange={(e) => setEditForm({ ...editForm, tableNumber: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[#64748B] font-bold mb-1">Kapasitas (Pax)</label>
-                <input
-                  type="number"
-                  value={editForm.capacity}
-                  onChange={(e) => setEditForm({ ...editForm, capacity: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[#64748B] font-bold mb-1">Zona / Area</label>
-                <select
-                  value={editForm.area}
-                  onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden bg-white"
-                >
-                  <option value="Indoor">Indoor (Main Dining Hall)</option>
-                  <option value="Outdoor">Outdoor Garden Terrace</option>
-                  <option value="VIP Room">Private VIP Chamber</option>
-                  <option value="Rooftop">Rooftop Skyview</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[#64748B] font-bold mb-1">Status Ketersediaan</label>
-                <select
-                  value={editForm.status}
-                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden bg-white"
-                >
-                  <option value="available">Tersedia (Ready for Guest)</option>
-                  <option value="occupied">Terisi (Dining in Progress)</option>
-                  <option value="reserved">Reserved (Disiapkan untuk Reservasi)</option>
-                  <option value="maintenance">Maintenance / Sanitasi</option>
-                </select>
-              </div>
+            <div>
+              <label className="block text-[#64748B] font-bold mb-1">Kapasitas (Pax)</label>
+              <input
+                type="number"
+                value={editForm.capacity}
+                onChange={(e) => setEditForm({ ...editForm, capacity: e.target.value })}
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden"
+              />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 rounded-full border border-slate-200 text-[#64748B] text-xs font-bold cursor-pointer"
+            <div>
+              <label className="block text-[#64748B] font-bold mb-1">Zona / Area</label>
+              <select
+                value={editForm.area}
+                onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden bg-white"
               >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveEdit}
-                disabled={isUpdating}
-                className="px-5 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold disabled:opacity-50 flex items-center gap-1.5 shadow-md shadow-[#EA580C]/25 cursor-pointer"
+                <option value="Indoor">Indoor (Main Dining Hall)</option>
+                <option value="Outdoor">Outdoor Garden Terrace</option>
+                <option value="VIP Room">Private VIP Chamber</option>
+                <option value="Rooftop">Rooftop Skyview</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[#64748B] font-bold mb-1">Status Ketersediaan</label>
+              <select
+                value={editForm.status}
+                onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200/80 focus:border-[#EA580C] focus:outline-hidden bg-white"
               >
-                {isUpdating ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                <span>Simpan Perubahan</span>
-              </button>
+                <option value="available">Tersedia (Ready for Guest)</option>
+                <option value="occupied">Terisi (Dining in Progress)</option>
+                <option value="reserved">Reserved (Disiapkan untuk Reservasi)</option>
+                <option value="maintenance">Maintenance / Sanitasi</option>
+              </select>
             </div>
           </div>
+
+          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowEditModal(false)}
+              className="px-4 py-2 rounded-full border border-slate-200 text-[#64748B] text-xs font-bold cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveEdit}
+              disabled={isUpdating}
+              className="px-5 py-2 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold disabled:opacity-50 flex items-center gap-1.5 shadow-md shadow-[#EA580C]/25 cursor-pointer"
+            >
+              {isUpdating ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+              <span>Simpan Perubahan</span>
+            </button>
+          </div>
         </div>
-      )}
+      </Modal>
 
       {/* MODAL: LUXURY PRINTABLE QR STANDEE PREVIEW */}
-      {selectedTableQr && qrDataUrl && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+      <Modal
+        isOpen={Boolean(selectedTableQr && qrDataUrl)}
+        onClose={() => setSelectedTableQr(null)}
+      >
+        {selectedTableQr && qrDataUrl && (
           <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-5 my-auto border border-slate-200/80">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
@@ -691,8 +694,8 @@ export function TablesTab({
               </a>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }

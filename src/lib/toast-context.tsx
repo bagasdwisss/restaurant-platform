@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { AlertCircle, CheckCircle2, AlertTriangle, Sparkles, X } from "lucide-react";
 
 export type ToastType = "success" | "error" | "warning" | "info";
@@ -83,12 +84,18 @@ export function useToast() {
 }
 
 function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss: (id: string) => void }) {
-  if (toasts.length === 0) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || toasts.length === 0) return null;
+
+  return createPortal(
     <div
       aria-live="polite"
-      className="fixed top-20 right-3 sm:top-24 sm:right-6 z-[99999] flex flex-col gap-3 pointer-events-none max-w-sm sm:max-w-md w-[calc(100vw-1.5rem)] select-none"
+      className="fixed top-5 right-3 sm:top-6 sm:right-6 z-[999999] flex flex-col gap-3 pointer-events-none max-w-sm sm:max-w-md w-[calc(100vw-1.5rem)] select-none"
     >
       {toasts.map((item) => {
         const isError = item.type === "error";
@@ -139,7 +146,7 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss:
           <div
             key={item.id}
             role="status"
-            className={`pointer-events-auto bg-[#131B16] rounded-2xl border ${cardBorder} p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/15 flex items-start gap-3.5 transition-all duration-300 animate-in fade-in slide-in-from-top-4`}
+            className={`pointer-events-auto bg-[#131B16] rounded-2xl border ${cardBorder} p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/15 flex items-start gap-3.5 transition-all duration-300 animate-toast`}
           >
             {/* Status Icon */}
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconContainer}`}>
@@ -169,6 +176,7 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss:
           </div>
         );
       })}
-    </div>
+    </div>,
+    document.body
   );
 }

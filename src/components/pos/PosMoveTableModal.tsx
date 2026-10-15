@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ArrowRightLeft, X } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
 
 interface PosMoveTableModalProps {
   show: boolean;
@@ -24,10 +25,8 @@ export function PosMoveTableModal({
   onExecuteMoveTable,
   onClose,
 }: PosMoveTableModalProps) {
-  if (!show || !moveFromTable) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <Modal isOpen={Boolean(show && moveFromTable)} onClose={onClose}>
       <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 animate-fadeIn">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
@@ -85,6 +84,6 @@ export function PosMoveTableModal({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

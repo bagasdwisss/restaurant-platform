@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Users, Plus, Trash2, KeyRound, ShieldCheck, X, Sparkles, RefreshCw } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { Modal } from "@/components/ui/Modal";
 
 interface UsersTabProps {
   usersList: any[];
@@ -286,137 +287,135 @@ export function UsersTab({
       </div>
 
       {/* MODAL: ADD USER / STAFF */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="font-serif font-bold text-[#18181B] text-base">
-                  Tambah Akun Baru
-                </h3>
-                <p className="text-[11px] text-[#64748B]">
-                  Pilih peran sebagai kunci otorisasi akses sistem
-                </p>
-              </div>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
+      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)}>
+        <div className="bg-white w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="font-serif font-bold text-[#18181B] text-base">
+                Tambah Akun Baru
+              </h3>
+              <p className="text-[11px] text-[#64748B]">
+                Pilih peran sebagai kunci otorisasi akses sistem
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAddModal(false)}
+              className="text-[#64748B] hover:text-[#18181B] cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <label className="text-xs font-bold text-[#18181B] block mb-1">
+                Pilihan Peran (Role as Unique Key)
+              </label>
+              <select
+                value={userForm.role}
+                onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+                className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl bg-white font-semibold"
               >
-                <X className="w-5 h-5" />
-              </button>
+                <option value="user">Pembeli (Pelanggan / VIP Patron Reservasi)</option>
+                <option value="kasir">Kasir (Staff POS & Pembayaran Meja)</option>
+                <option value="admin">Admin (Executive Back-Office & Manajemen)</option>
+              </select>
+              <p className="text-[10px] text-[#64748B] mt-1 font-mono">
+                *Email apapun yang didaftarkan akan memperoleh hak akses sesuai peran yang dipilih.
+              </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label className="text-xs font-bold text-[#18181B] block mb-1">
-                  Pilihan Peran (Role as Unique Key)
-                </label>
-                <select
-                  value={userForm.role}
-                  onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
-                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl bg-white font-semibold"
-                >
-                  <option value="user">Pembeli (Pelanggan / VIP Patron Reservasi)</option>
-                  <option value="kasir">Kasir (Staff POS & Pembayaran Meja)</option>
-                  <option value="admin">Admin (Executive Back-Office & Manajemen)</option>
-                </select>
-                <p className="text-[10px] text-[#64748B] mt-1 font-mono">
-                  *Email apapun yang didaftarkan akan memperoleh hak akses sesuai peran yang dipilih.
-                </p>
-              </div>
+            <div>
+              <label className="text-xs font-bold text-[#18181B] block mb-1">Nama Lengkap</label>
+              <input
+                type="text"
+                required
+                placeholder="Contoh: Rina Melati"
+                value={userForm.name}
+                onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
+              />
+            </div>
 
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs font-bold text-[#18181B] block mb-1">Nama Lengkap</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Username</label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: Rina Melati"
-                  value={userForm.name}
-                  onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
+                  placeholder="rina_kasir"
+                  value={userForm.username}
+                  onChange={(e) =>
+                    setUserForm({
+                      ...userForm,
+                      username: e.target.value.toLowerCase().replace(/\s+/g, ""),
+                    })
+                  }
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl font-mono"
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs font-bold text-[#18181B] block mb-1">Username</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="rina_kasir"
-                    value={userForm.username}
-                    onChange={(e) =>
-                      setUserForm({
-                        ...userForm,
-                        username: e.target.value.toLowerCase().replace(/\s+/g, ""),
-                      })
-                    }
-                    className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-[#18181B] block mb-1">Nomor WhatsApp / HP</label>
-                  <input
-                    type="text"
-                    placeholder="08123456789"
-                    value={userForm.phone}
-                    onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })}
-                    className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl font-mono"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label className="text-xs font-bold text-[#18181B] block mb-1">Alamat Email</label>
+                <label className="text-xs font-bold text-[#18181B] block mb-1">Nomor WhatsApp / HP</label>
                 <input
-                  type="email"
-                  required
-                  placeholder="rina@savoria.com"
-                  value={userForm.email}
-                  onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
+                  type="text"
+                  placeholder="08123456789"
+                  value={userForm.phone}
+                  onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })}
+                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl font-mono"
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="text-xs font-bold text-[#18181B] block mb-1">Kata Sandi (Password)</label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Minimal 6 karakter"
-                  value={userForm.password}
-                  onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-                  className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
-                />
-              </div>
+            <div>
+              <label className="text-xs font-bold text-[#18181B] block mb-1">Alamat Email</label>
+              <input
+                type="email"
+                required
+                placeholder="rina@savoria.com"
+                value={userForm.email}
+                onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
+              />
+            </div>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-3 rounded-full border border-slate-200 text-xs font-bold text-[#64748B] hover:bg-slate-50 cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold cursor-pointer shadow-md shadow-[#EA580C]/25 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {submitting ? (
-                    <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Menyimpan...</span>
-                    </>
-                  ) : (
-                    <span>Simpan Akun</span>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
+            <div>
+              <label className="text-xs font-bold text-[#18181B] block mb-1">Kata Sandi (Password)</label>
+              <input
+                type="password"
+                required
+                placeholder="Minimal 6 karakter"
+                value={userForm.password}
+                onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                className="w-full text-xs p-3 border border-slate-200/80 rounded-2xl"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="flex-1 py-3 rounded-full border border-slate-200 text-xs font-bold text-[#64748B] hover:bg-slate-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 py-3 rounded-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold cursor-pointer shadow-md shadow-[#EA580C]/25 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {submitting ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <span>Simpan Akun</span>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

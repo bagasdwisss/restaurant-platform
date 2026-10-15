@@ -3,6 +3,7 @@
 import React from "react";
 import { X, Receipt } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
+import { Modal } from "@/components/ui/Modal";
 
 interface TableCartDrawerProps {
   isOpen: boolean;
@@ -36,10 +37,8 @@ export function TableCartDrawer({
   onClose,
   onCheckout,
 }: TableCartDrawerProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <Modal isOpen={isOpen} onClose={onClose} className="items-end sm:items-center p-0 sm:p-4">
       <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between">
@@ -195,6 +194,6 @@ export function TableCartDrawer({
           </p>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

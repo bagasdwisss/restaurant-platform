@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -28,7 +29,21 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const router = useRouter();
   const { user } = useAuth();
   const { toast } = useToast();
+  const [mounted, setMounted] = useState(false);
   const isStaff = Boolean(user && (user.role === "admin" || user.role === "kasir"));
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = orig;
+    };
+  }, [isOpen]);
 
   const {
     items,
@@ -41,7 +56,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     getTotal,
   } = useCartStore();
 
-  if (!isOpen) return null;
+  if (!mounted || !isOpen) return null;
 
   const totalItemsCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = getSubtotal();
@@ -61,8 +76,8 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     router.push("/reservation");
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-hidden animate-fadeIn">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] overflow-hidden animate-fadeIn">
       {/* Backdrop */}
       <div
         onClick={onClose}
@@ -269,6 +284,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

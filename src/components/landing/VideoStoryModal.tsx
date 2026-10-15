@@ -1,8 +1,7 @@
-"use client";
-
 import React from "react";
 import Image from "next/image";
 import { X, Play } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
 
 interface VideoStoryModalProps {
   isOpen: boolean;
@@ -10,10 +9,8 @@ interface VideoStoryModalProps {
 }
 
 export function VideoStoryModal({ isOpen, onClose }: VideoStoryModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <Modal isOpen={isOpen} onClose={onClose} className="bg-black/80 backdrop-blur-md">
       <div className="bg-[#14281D] text-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 border border-white/20 relative shadow-2xl">
         <button
           onClick={onClose}
@@ -57,6 +54,6 @@ export function VideoStoryModal({ isOpen, onClose }: VideoStoryModalProps) {
           Tutup Video
         </button>
       </div>
-    </div>
+    </Modal>
   );
 }

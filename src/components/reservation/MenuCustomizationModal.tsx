@@ -4,6 +4,7 @@ import React from "react";
 import { X, Sparkles, Plus } from "lucide-react";
 import { MenuItem } from "./types";
 import { formatIDR } from "@/lib/utils";
+import { Modal } from "@/components/ui/Modal";
 
 interface MenuCustomizationModalProps {
   customizingMenu: MenuItem;
@@ -44,7 +45,7 @@ export function MenuCustomizationModal({
   const totalItemPrice = customizingMenu.price + extraTotal;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <Modal isOpen={Boolean(customizingMenu)} onClose={onClose}>
       <div className="bg-white w-full max-w-lg rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-slate-100 pb-3">
@@ -174,6 +175,6 @@ export function MenuCustomizationModal({
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

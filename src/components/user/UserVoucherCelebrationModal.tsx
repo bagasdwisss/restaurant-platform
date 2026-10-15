@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { X, Gift, Check, Copy, CheckCircle2, ArrowRight } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { useToast } from "@/lib/toast-context";
+import { Modal } from "@/components/ui/Modal";
 
 interface UserVoucherCelebrationModalProps {
   voucher: any;
@@ -19,8 +20,6 @@ export function UserVoucherCelebrationModal({
   const { toast } = useToast();
   const [copiedRewardCode, setCopiedRewardCode] = useState(false);
 
-  if (!voucher) return null;
-
   const handleCopyCode = (code: string) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(code);
@@ -31,7 +30,7 @@ export function UserVoucherCelebrationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+    <Modal isOpen={Boolean(voucher)} onClose={onClose}>
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 max-w-md w-full space-y-5 text-center shadow-2xl relative animate-in fade-in zoom-in-95 my-auto">
         <button
           type="button"
@@ -119,6 +118,6 @@ export function UserVoucherCelebrationModal({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

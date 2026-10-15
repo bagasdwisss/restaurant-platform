@@ -11,6 +11,7 @@ import {
   MapPin,
   Users,
 } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
 
 interface WaiterCallItem {
   id: number;
@@ -59,10 +60,8 @@ export function WaiterCallsModal({
   onRefresh,
   isRefreshing = false,
 }: WaiterCallsModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <Modal isOpen={isOpen} onClose={onClose}>
       <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
@@ -220,6 +219,6 @@ export function WaiterCallsModal({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

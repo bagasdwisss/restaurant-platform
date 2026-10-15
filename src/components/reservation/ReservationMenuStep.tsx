@@ -16,6 +16,7 @@ import {
 import { MenuItem, CartItem } from "./types";
 import { DishImage } from "@/components/ui/DishImage";
 import { formatIDR } from "@/lib/utils";
+import { Modal } from "@/components/ui/Modal";
 
 interface ReservationMenuStepProps {
   categories: any[];
@@ -253,9 +254,8 @@ export function ReservationMenuStep({
       )}
 
       {/* Cart Detail Modal / Slide-over */}
-      {showCartDrawer && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-5 sm:p-6 space-y-4 my-auto border border-slate-200/80 animate-scaleIn">
+      <Modal isOpen={showCartDrawer} onClose={() => setShowCartDrawer(false)}>
+        <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-5 sm:p-6 space-y-4 my-auto border border-slate-200/80 animate-scaleIn">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center">
@@ -368,8 +368,7 @@ export function ReservationMenuStep({
               </button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        </Modal>
+      </div>
   );
 }

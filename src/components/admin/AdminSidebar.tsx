@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   TrendingUp,
@@ -42,6 +43,21 @@ export function AdminSidebar({
   mobileOpen = false,
   onCloseMobile,
 }: AdminSidebarProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = orig;
+    };
+  }, [mobileOpen]);
+
   const tabs = [
     { id: "analytics" as AdminTab, label: "Ringkasan & Sales", icon: TrendingUp },
     { id: "menus" as AdminTab, label: "Daftar Menu & Kategori", icon: UtensilsCrossed, count: menuCount },
@@ -146,8 +162,8 @@ export function AdminSidebar({
   return (
     <>
       {/* Mobile Drawer Backdrop */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex animate-fadeIn">
+      {mounted && mobileOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] md:hidden flex animate-fadeIn">
           <div
             className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
             onClick={onCloseMobile}
@@ -155,7 +171,8 @@ export function AdminSidebar({
           <aside className="relative w-72 max-w-[85vw] bg-white h-full p-4 shadow-2xl z-10 flex flex-col justify-between">
             {sidebarContent}
           </aside>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Desktop Persistent Sidebar */}

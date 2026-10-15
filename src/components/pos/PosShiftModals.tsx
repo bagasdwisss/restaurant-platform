@@ -3,6 +3,7 @@
 import React from "react";
 import { Coffee, DollarSign, X, CheckCircle2, AlertTriangle, RefreshCw } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
+import { Modal } from "@/components/ui/Modal";
 
 interface OpenShiftModalProps {
   show: boolean;
@@ -25,10 +26,8 @@ export function OpenShiftModal({
   onSubmit,
   onClose,
 }: OpenShiftModalProps) {
-  if (!show) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <Modal isOpen={show} onClose={onClose}>
       <div className="bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4 animate-fadeIn">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
@@ -102,7 +101,7 @@ export function OpenShiftModal({
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -127,10 +126,8 @@ export function CloseShiftModal({
   onSubmit,
   onClose,
 }: CloseShiftModalProps) {
-  if (!show || !currentShift) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <Modal isOpen={Boolean(show && currentShift)} onClose={onClose}>
       <div className="bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4 animate-fadeIn">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
@@ -243,6 +240,6 @@ export function CloseShiftModal({
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 }

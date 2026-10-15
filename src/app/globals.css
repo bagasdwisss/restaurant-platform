@@ -22,7 +22,10 @@
   --shadow-cta: 0 10px 25px -5px rgba(234, 88, 12, 0.4);
 }
 
+html,
 body {
+  margin: 0;
+  padding: 0;
   color: var(--text-primary);
   background-color: var(--bg-canvas);
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -67,6 +70,22 @@ h1, h2, h3, .font-display {
 .animate-float-delayed {
   animation: gentle-float 4s ease-in-out infinite alternate;
   animation-delay: 1.5s;
+}
+
+/* Toast Smooth Notification Keyframes */
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-toast {
+  animation: toast-slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Thermal Printer Styling for 58mm / 80mm ESC/POS Receipts */

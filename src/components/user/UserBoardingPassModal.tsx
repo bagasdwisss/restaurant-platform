@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import QRCode from "qrcode";
 import { X } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
 
 interface UserBoardingPassModalProps {
   order: any;
@@ -41,10 +42,8 @@ export function UserBoardingPassModal({
     }
   }, [order, user]);
 
-  if (!order) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+    <Modal isOpen={Boolean(order)} onClose={onClose}>
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 max-w-sm w-full space-y-5 text-center shadow-2xl relative my-auto">
         <button
           type="button"
@@ -114,6 +113,6 @@ export function UserBoardingPassModal({
           Tutup Boarding Pass
         </button>
       </div>
-    </div>
+    </Modal>
   );
 }

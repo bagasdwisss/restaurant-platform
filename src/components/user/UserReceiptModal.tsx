@@ -3,6 +3,7 @@
 import React from "react";
 import { X, Printer } from "lucide-react";
 import { formatIDR, formatDate } from "@/lib/utils";
+import { Modal } from "@/components/ui/Modal";
 
 interface UserReceiptModalProps {
   receipt: any;
@@ -15,10 +16,8 @@ export function UserReceiptModal({
   user,
   onClose,
 }: UserReceiptModalProps) {
-  if (!receipt) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+    <Modal isOpen={Boolean(receipt)} onClose={onClose}>
       <div className="bg-white border border-slate-200 text-[#18181B] rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl relative animate-in fade-in zoom-in-95 my-8">
         <button
           type="button"
@@ -151,6 +150,6 @@ export function UserReceiptModal({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

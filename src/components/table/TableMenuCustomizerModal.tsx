@@ -3,6 +3,7 @@
 import React from "react";
 import { X, Plus, Minus } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
+import { Modal } from "@/components/ui/Modal";
 
 interface Option {
   id: number;
@@ -56,7 +57,7 @@ export function TableMenuCustomizerModal({
   if (!selectedMenu) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+    <Modal isOpen={Boolean(selectedMenu)} onClose={onClose} className="items-end sm:items-center p-0 sm:p-4">
       <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="relative p-5 border-b border-slate-100 flex items-start justify-between">
@@ -180,6 +181,6 @@ export function TableMenuCustomizerModal({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

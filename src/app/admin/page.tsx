@@ -572,7 +572,7 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#18181B] flex flex-col md:flex-row font-sans">
+    <div className="h-screen bg-[#FDFBF7] text-[#18181B] flex flex-col md:flex-row font-sans overflow-hidden">
       {/* SIDEBAR NAVIGATION */}
       <AdminSidebar
         activeTab={activeTab}
