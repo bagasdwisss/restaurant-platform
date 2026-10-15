@@ -157,17 +157,17 @@ function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss:
             <div className="flex-1 min-w-0 pr-1">
               <div className="flex items-center gap-2 mb-1">
                 <span className={`text-xs font-mono uppercase tracking-wider font-extrabold ${badgeColor}`}>
-                  {item.title || defaultTitle}
+                  {item?.title || defaultTitle}
                 </span>
               </div>
               <p className="text-xs sm:text-[13px] text-white font-medium font-sans leading-snug break-words">
-                {item.message}
+                {item?.message || ""}
               </p>
             </div>
 
             {/* Dismiss Button */}
             <button
-              onClick={() => onDismiss(item.id)}
+              onClick={() => onDismiss(item?.id)}
               className="text-stone-300 hover:text-white p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors cursor-pointer shrink-0"
               title="Tutup Notifikasi"
             >

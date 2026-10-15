@@ -132,25 +132,27 @@ export function UserVipClubTab({
 
             return (
               <div
-                key={rew.id}
+                key={rew?.id || Math.random()}
                 className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm flex flex-col justify-between space-y-4 hover:border-amber-300 transition-all relative overflow-hidden group"
               >
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200">
-                      {rew.category}
+                      {rew?.category || "Hadiah"}
                     </span>
-                    <span className="text-[10px] font-semibold text-[#EA580C] bg-[#EA580C]/10 px-2 py-0.5 rounded-full font-mono">
-                      {rew.badge}
-                    </span>
+                    {rew?.badge && (
+                      <span className="text-[10px] font-semibold text-[#EA580C] bg-[#EA580C]/10 px-2 py-0.5 rounded-full font-mono">
+                        {rew.badge}
+                      </span>
+                    )}
                   </div>
 
                   <div>
                     <h5 className="font-serif font-bold text-base text-[#18181B] group-hover:text-[#EA580C] transition-colors">
-                      {rew.title}
+                      {rew?.title || "Hadiah Eksklusif"}
                     </h5>
                     <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
-                      {rew.description}
+                      {rew?.description || ""}
                     </p>
                   </div>
                 </div>
@@ -159,7 +161,7 @@ export function UserVipClubTab({
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-400 font-mono">Biaya Tukar:</span>
                     <span className="font-serif text-lg font-black text-[#EA580C]">
-                      {rew.pointsCost} <span className="text-xs font-sans font-normal text-slate-500">Pts</span>
+                      {rew?.pointsCost || 0} <span className="text-xs font-sans font-normal text-slate-500">Pts</span>
                     </span>
                   </div>
 

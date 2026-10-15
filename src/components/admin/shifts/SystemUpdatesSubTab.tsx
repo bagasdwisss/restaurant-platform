@@ -308,7 +308,7 @@ export function SystemUpdatesSubTab({
               </div>
 
               <h4 className="font-serif font-bold text-sm sm:text-base text-slate-900">
-                {release.title}
+                {release?.title || "Pembaruan Sistem"}
               </h4>
 
               {/* Feature Checklist */}

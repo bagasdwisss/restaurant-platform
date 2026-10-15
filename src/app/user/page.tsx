@@ -303,9 +303,9 @@ export default function UserPortalPage() {
       return;
     }
 
-    if (loyaltyPoints < reward.pointsCost) {
+    if (loyaltyPoints < (reward?.pointsCost || 0)) {
       toast.error(
-        `Poin Savoria Anda (${loyaltyPoints} Pts) belum cukup untuk menukar ${reward.title} (${reward.pointsCost} Pts). Kumpulkan poin dari jamuan berikutnya!`,
+        `Poin Savoria Anda (${loyaltyPoints} Pts) belum cukup untuk menukar ${reward?.title || "Hadiah"} (${reward?.pointsCost || 0} Pts). Kumpulkan poin dari jamuan berikutnya!`,
         "Poin Belum Mencukupi"
       );
       return;
@@ -320,8 +320,8 @@ export default function UserPortalPage() {
           userId: user.id,
           rewardId: reward.id,
           pointsCost: reward.pointsCost,
-          title: reward.title,
-          discountValue: reward.discountValue,
+          title: reward?.title || "Hadiah Member",
+          discountValue: reward?.discountValue || 0,
         }),
       });
       const data = await res.json();
