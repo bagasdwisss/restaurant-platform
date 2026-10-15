@@ -221,9 +221,10 @@ export default function SavoriaReservationPage() {
           if (selectedTable) {
             const found = data.data.find((t: any) => t.id === selectedTable.id);
             if (found && found.status !== "available") {
+              const prevTableNum = selectedTable.tableNumber;
               setSelectedTable(null);
               toast.warning(
-                `Meja ${selectedTable.tableNumber} tidak tersedia pada jadwal yang dipilih (${selectedDate} - ${selectedTimeSlot}). Silakan pilih meja lain.`,
+                `Meja ${prevTableNum} tidak tersedia pada jadwal yang dipilih (${selectedDate} - ${selectedTimeSlot}). Silakan pilih meja lain.`,
                 "Jadwal Meja Direservasi"
               );
             }

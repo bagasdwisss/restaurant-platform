@@ -48,6 +48,8 @@ export function VisualTableCard({
   onPayOrder,
   onMoveTable,
 }: VisualTableCardProps) {
+  if (!table) return null;
+
   const isAvailable = table.status === "available";
   const isReserved = table.status === "reserved";
   const hasActiveOrder = table.orders && table.orders.length > 0;

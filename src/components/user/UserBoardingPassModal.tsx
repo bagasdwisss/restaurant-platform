@@ -42,6 +42,8 @@ export function UserBoardingPassModal({
     }
   }, [order, user]);
 
+  if (!order) return null;
+
   return (
     <Modal isOpen={Boolean(order)} onClose={onClose}>
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 max-w-sm w-full space-y-5 text-center shadow-2xl relative my-auto">
@@ -61,7 +63,7 @@ export function UserBoardingPassModal({
             Verifikasi Meja Reservasi
           </h3>
           <p className="text-xs text-[#64748B]">
-            #{order.orderNumber}
+            #{order?.orderNumber}
           </p>
         </div>
 

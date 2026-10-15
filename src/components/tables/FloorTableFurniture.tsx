@@ -90,6 +90,8 @@ export function FloorTableFurniture({
 }: FloorTableFurnitureProps) {
   const { toast } = useToast();
 
+  if (!table) return null;
+
   const isAvailable = table.status === "available";
   const isReserved = table.status === "reserved";
   const hasActiveOrder = table.orders && table.orders.length > 0;

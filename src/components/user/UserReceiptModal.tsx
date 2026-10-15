@@ -16,6 +16,8 @@ export function UserReceiptModal({
   user,
   onClose,
 }: UserReceiptModalProps) {
+  if (!receipt) return null;
+
   return (
     <Modal isOpen={Boolean(receipt)} onClose={onClose}>
       <div className="bg-white border border-slate-200 text-[#18181B] rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl relative animate-in fade-in zoom-in-95 my-8">
@@ -39,7 +41,7 @@ export function UserReceiptModal({
             Haute Cuisine & Grand Dining • Struk Resmi
           </p>
           <p className="text-[11px] font-mono text-[#EA580C] font-semibold">
-            Nomor Booking: #{receipt.orderNumber}
+            Nomor Booking: #{receipt?.orderNumber}
           </p>
         </div>
 

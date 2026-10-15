@@ -25,6 +25,8 @@ export function PosVoidModal({
   onExecuteVoid,
   onClose,
 }: PosVoidModalProps) {
+  if (!show) return null;
+
   return (
     <Modal isOpen={show} onClose={onClose}>
       <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 animate-fadeIn">

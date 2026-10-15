@@ -271,7 +271,7 @@ export function CashierLogsSubTab({
                       <td className="py-3 px-3">
                         <div className="font-bold text-[#18181B]">{shift.cashierName}</div>
                         <div className="text-[10px] text-slate-400 font-mono">
-                          ID: {shift.id.slice(0, 8)}...
+                          ID: #{shift.id}
                         </div>
                       </td>
                       <td className="py-3 px-3">

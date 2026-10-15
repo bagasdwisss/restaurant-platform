@@ -198,10 +198,10 @@ export function VisualFloorPlan({
       </div>
 
       {/* DOCK / INSPECTOR PANEL DI BAWAH DENAH */}
-      {selectedTable ? (() => {
+      {selectedTable && selectedTable.tableNumber ? (() => {
         const dockEligibility =
           mode === "reservation"
-            ? isTableCapacityEligible(selectedTable.capacity, guestCount)
+            ? isTableCapacityEligible(selectedTable.capacity || 2, guestCount)
             : { eligible: true, reason: "", badge: "" };
 
         return (
@@ -216,7 +216,7 @@ export function VisualFloorPlan({
                     Meja {selectedTable.tableNumber}
                   </h4>
                   <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold border border-emerald-500/30">
-                    {selectedTable.capacity} Kursi
+                    {selectedTable.capacity || 2} Kursi
                   </span>
                   {mode === "reservation" && !dockEligibility.eligible ? (
                     <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold flex items-center gap-1">
@@ -225,12 +225,12 @@ export function VisualFloorPlan({
                     </span>
                   ) : (
                     <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-white/10 text-stone-300">
-                      {selectedTable.status === "available" ? "Tersedia" : selectedTable.status}
+                      {selectedTable.status === "available" ? "Tersedia" : selectedTable.status || "Tersedia"}
                     </span>
                   )}
                 </div>
                 <p className="text-xs text-stone-300 mt-0.5 font-light">
-                  Area: <strong className="text-white font-medium">{selectedTable.area}</strong> • Terhubung Real-Time ke Sistem Restoran
+                  Area: <strong className="text-white font-medium">{selectedTable.area || "Indoor"}</strong> • Terhubung Real-Time ke Sistem Restoran
                 </p>
               </div>
             </div>
@@ -283,7 +283,7 @@ export function VisualFloorPlan({
                   onClick={() => onOpenBill && onOpenBill(selectedTable)}
                   className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-bold shadow-cta cursor-pointer"
                 >
-                  + Buka Bill Baru Meja {selectedTable.tableNumber}
+                  + Buka Bill Baru Meja {selectedTable?.tableNumber || ""}
                 </button>
               ) : selectedTable.orders && selectedTable.orders.length > 0 ? (
                 <button
@@ -291,7 +291,7 @@ export function VisualFloorPlan({
                   onClick={() => onPayOrder && onPayOrder(selectedTable.orders![0])}
                   className="px-6 py-2.5 bg-[#EA580C] hover:bg-[#C2410C] text-white rounded-full text-xs font-bold shadow-cta cursor-pointer"
                 >
-                  Bayar Tagihan ({selectedTable.orders[0].customerName})
+                  Bayar Tagihan ({selectedTable?.orders?.[0]?.customerName || "Tamu"})
                 </button>
               ) : (
                 <span className="text-xs text-stone-300 font-mono">Meja Telah Direservasi</span>

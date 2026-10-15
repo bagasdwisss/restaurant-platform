@@ -60,6 +60,8 @@ export function WaiterCallsModal({
   onRefresh,
   isRefreshing = false,
 }: WaiterCallsModalProps) {
+  if (!isOpen) return null;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden">
@@ -137,7 +139,7 @@ export function WaiterCallsModal({
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-base font-black font-mono text-slate-900 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200 shadow-2xs">
-                          {call.tableNumber}
+                          {call?.tableNumber || call?.table?.tableNumber || "Meja"}
                         </span>
                         {isInProgress ? (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200 flex items-center gap-1">

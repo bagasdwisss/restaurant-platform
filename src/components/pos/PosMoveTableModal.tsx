@@ -25,6 +25,8 @@ export function PosMoveTableModal({
   onExecuteMoveTable,
   onClose,
 }: PosMoveTableModalProps) {
+  if (!show || !moveFromTable) return null;
+
   return (
     <Modal isOpen={Boolean(show && moveFromTable)} onClose={onClose}>
       <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 animate-fadeIn">
@@ -43,7 +45,7 @@ export function PosMoveTableModal({
         </div>
 
         <p className="text-xs text-[#64748B]">
-          Pindahkan seluruh tagihan dari <strong>{moveFromTable.tableNumber}</strong> ke meja kosong yang baru:
+          Pindahkan seluruh tagihan dari <strong>{moveFromTable?.tableNumber || "Meja"}</strong> ke meja kosong yang baru:
         </p>
 
         <select
@@ -54,7 +56,7 @@ export function PosMoveTableModal({
           <option value="">Pilih Meja Tujuan...</option>
           {availableTables.map((t) => (
             <option key={t.id} value={t.id}>
-              {t.tableNumber} ({t.area} - Kapasitas {t.capacity})
+              {t?.tableNumber || "Meja"} ({t?.area || "Indoor"} - Kapasitas {t?.capacity || 0})
             </option>
           ))}
         </select>
